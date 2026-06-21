@@ -1,0 +1,92 @@
+<h2>系统架构总览</h2>
+<p class="subtitle">蠢驴电竞陪玩派单管理系统 — 技术架构方案</p>
+
+<div class="mockup">
+  <div class="mockup-header">🏗️ 整体架构</div>
+  <div class="mockup-body" style="padding:16px;font-family:monospace;font-size:13px;line-height:1.8;">
+<pre style="margin:0;background:#1a1a2e;color:#e0e0e0;padding:20px;border-radius:8px;overflow-x:auto;">
+┌──────────────────────────────────────────────────────────┐
+│                    浏览器 (Browser)                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │ 老板端 React  │  │ 管理端 React │  │ 客服端 React │   │
+│  │ 盈亏/客户/员工│  │ 派单/报账/电脑│  │ 对话/派单面板 │   │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘   │
+└─────────┼──────────────────┼──────────────────┼──────────┘
+          │    HTTP/WS       │                  │
+          ▼                  ▼                  ▼
+┌──────────────────────────────────────────────────────────┐
+│              Nginx 反向代理 + 静态资源                     │
+└──────────────────────┬───────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────┐
+│            Node.js + TypeScript 后端                       │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │ 鉴权模块 │ │ 报账模块 │ │ 派单模块 │ │ 客户模块   │  │
+│  │ JWT+RBAC │ │ 流水统计 │ │ 订单分发 │ │ CRM 管理   │  │
+│  └──────────┘ └──────────┘ └──────────┘ └────────────┘  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │ 员工模块 │ │ 盈亏模块 │ │ WebSocket │ │ REST API   │  │
+│  │ 排名/收入│ │ 日/月报表│ │ 实时推送  │ │ Gateway    │  │
+│  └──────────┘ └──────────┘ └─────┬─────┘ └────────────┘  │
+└──────────────────────────────────┼───────────────────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    ▼                              ▼
+          ┌──────────────┐              ┌──────────────────┐
+          │  PostgreSQL  │              │   Redis Cache    │
+          │  主数据库     │              │  Session/状态缓存 │
+          └──────────────┘              └──────────────────┘
+                                   │
+                    WebSocket / HTTP │
+                                   ▼
+┌──────────────────────────────────────────────────────────┐
+│              Go Agent (陪玩电脑)                           │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │ 状态上报 │ │ 网络限流 │ │ 远程控制 │ │ 桌面通知   │  │
+│  │ 接单/空闲│ │ 带宽控制 │ │ 开关机   │ │ 订单弹窗   │  │
+│  └──────────┘ └──────────┘ └──────────┘ └────────────┘  │
+│  ┌──────────────────────────────────────────────────┐    │
+│  │          本地 Web UI (localhost:xxxxx)            │    │
+│  └──────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────┘
+</pre>
+  </div>
+</div>
+
+<div style="height:24px;"></div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">📦 推荐技术选型</div>
+    <div class="mockup-body" style="padding:16px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">🖥️ 前端</td><td style="padding:6px;">React 18 + TypeScript + Ant Design</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">⚙️ 后端</td><td style="padding:6px;">Nest.js (Express/Fastify)</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">🗄️ 数据库</td><td style="padding:6px;">PostgreSQL + Prisma ORM</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">📡 实时</td><td style="padding:6px;">Socket.IO (WebSocket)</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">⚡ 缓存</td><td style="padding:6px;">Redis</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">🤖 Agent</td><td style="padding:6px;">Go + WebView 本地 UI</td></tr>
+        <tr style="border-bottom:1px solid #333;"><td style="padding:6px;">📂 存储</td><td style="padding:6px;">MinIO / 本地文件系统</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">📁 Monorepo 结构</div>
+    <div class="mockup-body" style="padding:16px;font-family:monospace;font-size:12px;line-height:1.6;">
+<pre style="margin:0;color:#a0ffa0;">
+chunlv-esports/
+├── apps/
+│   ├── web/           # React 前端
+│   ├── server/        # Nest.js 后端
+│   └── agent/         # Go 陪玩端
+├── packages/
+│   ├── shared/        # 共享类型/常量
+│   └── ui/            # 共享 UI 组件
+├── docs/              # 文档
+├── docker/            # Docker 配置
+└── pnpm-workspace.yaml
+</pre>
+    </div>
+  </div>
+</div>

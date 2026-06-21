@@ -1,0 +1,158 @@
+<h2>Go Agent 设计</h2>
+<p class="subtitle">陪玩端桌面客户端 — 后台服务 + 本地 WebView UI</p>
+
+<div class="mockup">
+  <div class="mockup-header">🏗️ Agent 内部架构</div>
+  <div class="mockup-body" style="padding:14px;">
+<pre style="margin:0;background:#1a1a2e;color:#e0e0e0;padding:16px;border-radius:8px;font-size:12px;line-height:1.5;overflow-x:auto;">
+┌───────────────────────────────────────────────┐
+│                 Go Agent                       │
+│                                                │
+│  ┌─────────────┐  ┌─────────────┐              │
+│  │  HTTP Server │  │  WebSocket  │              │
+│  │  (localhost) │  │  Client     │              │
+│  │  本地 Web UI │  │  连后端     │              │
+│  └──────┬──────┘  └──────┬──────┘              │
+│         │                │                      │
+│         ▼                ▼                      │
+│  ┌─────────────────────────────────────────┐   │
+│  │            Core Engine                   │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌─────────┐  │   │
+│  │  │ 状态管理  │ │ 计时引擎 │ │ 指令执行 │  │   │
+│  │  │ 接单/空闲 │ │ 模式计时 │ │ 关机/限速│  │   │
+│  │  └──────────┘ └──────────┘ └─────────┘  │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌─────────┐  │   │
+│  │  │ 心跳上报  │ │ 弹窗通知 │ │ 网络控制 │  │   │
+│  │  │ 30s/次   │ │ 订单弹窗 │ │ 限速/恢复│  │   │
+│  │  └──────────┘ └──────────┘ └─────────┘  │   │
+│  └─────────────────────────────────────────┘   │
+│                                                │
+│  ┌─────────────────────────────────────────┐   │
+│  │          System Layer (平台抽象)          │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌─────────┐  │   │
+│  │  │ Windows  │ │  网络    │ │  进程    │  │   │
+│  │  │ 服务注册  │ │  QoS API │ │  守护    │  │   │
+│  │  └──────────┘ └──────────┘ └─────────┘  │   │
+│  └─────────────────────────────────────────┘   │
+└───────────────────────────────────────────────┘
+</pre>
+  </div>
+</div>
+
+<div style="height:20px;"></div>
+
+<h2>核心模块详解</h2>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">⏱️ 计时引擎</div>
+    <div class="mockup-body" style="padding:12px;font-size:12px;line-height:1.6;">
+      <p>追踪陪玩在不同模式下的累计时间，随心跳上报：</p>
+      <pre style="margin:0;background:#1a1a2e;color:#a0ffa0;padding:10px;border-radius:4px;font-size:11px;">
+type TimeTracker struct {
+    CurrentMode    string        // WORK / ENTERTAINMENT
+    ModeStartedAt  time.Time     // 当前模式开始时间
+    WorkSeconds    int64         // 累计接单秒数
+    EntertainSeconds int64       // 累计娱乐秒数
+    TotalRuntime   int64         // 总运行秒数
+}
+
+// 心跳携带数据
+type Heartbeat struct {
+    CompanionID string
+    Status      string  // ONLINE / BUSY / IDLE
+    Mode        string
+    WorkSec     int64
+    EntertainSec int64
+    Timestamp   int64
+}
+</pre>
+      <p style="margin-top:8px;">每次心跳上报累计秒数，后端持久化到 <code>CompanionTimeLog</code>。</p>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">🌐 网络限速控制</div>
+    <div class="mockup-body" style="padding:12px;font-size:12px;line-height:1.6;">
+      <p><b>两层策略：</b></p>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="background:#2a2a3e;">
+          <td style="padding:4px;"><b>策略</b></td><td style="padding:4px;"><b>实现</b></td><td style="padding:4px;"><b>适用</b></td>
+        </tr>
+        <tr>
+          <td style="padding:4px;">PC 本机</td>
+          <td style="padding:4px;">Windows QoS API / netsh</td>
+          <td style="padding:4px;">单机精确限速</td>
+        </tr>
+        <tr style="background:#2a2a3e;">
+          <td style="padding:4px;">路由器</td>
+          <td style="padding:4px;">SSH 登路由器执行 tc/iptables</td>
+          <td style="padding:4px;">整网段控制</td>
+        </tr>
+      </table>
+      <p style="margin-top:8px;">优先用本机 QoS，路由器 SSH 作为备用方案。</p>
+    </div>
+  </div>
+</div>
+
+<div class="split" style="margin-top:12px;">
+  <div class="mockup">
+    <div class="mockup-header">🖥️ 远程控制指令</div>
+    <div class="mockup-body" style="padding:12px;font-size:12px;line-height:1.6;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="background:#2a2a3e;">
+          <td style="padding:4px;"><b>指令</b></td><td style="padding:4px;"><b>Windows 实现</b></td>
+        </tr>
+        <tr>
+          <td style="padding:4px;">关机</td>
+          <td style="padding:4px;"><code>shutdown /s /t 0</code> 或 <code>InitiateSystemShutdownEx</code></td>
+        </tr>
+        <tr style="background:#2a2a3e;">
+          <td style="padding:4px;">重启</td>
+          <td style="padding:4px;"><code>shutdown /r /t 0</code></td>
+        </tr>
+        <tr>
+          <td style="padding:4px;">限速</td>
+          <td style="padding:4px;">QoS Policy 设置出站带宽上限</td>
+        </tr>
+        <tr style="background:#2a2a3e;">
+          <td style="padding:4px;">取消限速</td>
+          <td style="padding:4px;">移除 QoS Policy</td>
+        </tr>
+        <tr>
+          <td style="padding:4px;">隐藏运行</td>
+          <td style="padding:4px;">注册为 Windows Service，无窗口</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">🛡️ 安全与自保</div>
+    <div class="mockup-body" style="padding:12px;font-size:12px;line-height:1.6;">
+      <ul style="margin:0;padding-left:16px;">
+        <li><b>Token 认证：</b>首次启动弹出登录窗口 → 获取 JWT → 加密存本地</li>
+        <li><b>自启动：</b>注册 Windows Service，开机自动运行</li>
+        <li><b>崩溃恢复：</b>守护进程监控，异常退出自动重启</li>
+        <li><b>版本更新：</b>心跳回带版本号，后端推送新版本下载 URL</li>
+        <li><b>低资源：</b>Go 编译单文件 &lt;15MB，内存占用 &lt;50MB</li>
+        <li><b>静默：</b>无托盘图标时可完全隐藏，仅 WebView 供陪玩交互</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div style="height:20px;"></div>
+
+<h2>Agent 生命周期</h2>
+
+<div class="mockup">
+  <div class="mockup-body" style="padding:14px;">
+<pre style="margin:0;background:#1a1a2e;color:#e0e0e0;padding:14px;border-radius:6px;font-size:12px;line-height:1.5;">
+  安装:  陪玩运行 installer → 注册 Windows Service → 弹出登录 → 输入账号密码 → 获取 Token
+  启动:  Service 自动拉起 → 读取本地 Token → 连接 WebSocket → 上报心跳
+  运行:  每 30s 心跳 → 监听 WS 指令 → 本地 HTTP 提供 Web UI → 计时引擎持续记录
+  模式切换: 陪玩点击 Web UI 切换 娱乐/接单 → 本地计时引擎记录切换点 → 下个心跳上报
+  限速触达: 管理员下发限速指令 → Agent 执行 QoS Policy → 回复 ack → 心跳持续报告限速状态
+  更新:  心跳回带版本号 → 后端判断需更新 → 下发新版本 URL → Agent 下载 → 重启自身
+</pre>
+  </div>
+</div>
