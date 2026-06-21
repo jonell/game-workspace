@@ -7,6 +7,7 @@ import { CompanionsModule } from './companions/companions.module';
 import { CustomersModule } from './customers/customers.module';
 import { OrdersModule } from './orders/orders.module';
 import { BillingModule } from './billing/billing.module';
+import { WsModule } from './ws/ws.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { BillingModule } from './billing/billing.module';
     CustomersModule,
     OrdersModule,
     BillingModule,
+    WsModule,
   ],
 })
 export class AppModule {}
