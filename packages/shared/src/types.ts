@@ -1,3 +1,5 @@
+import type { UserRole } from './enums';
+
 export interface ApiResponse<T> {
   code: number;
   message: string;
@@ -5,14 +7,10 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
-  code: number;
-  message: string;
-  data: {
-    list: T[];
-    total: number;
-    page: number;
-    pageSize: number;
-  };
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface LoginRequest {
@@ -22,15 +20,14 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   user: UserInfo;
 }
 
 export interface UserInfo {
-  id: number;
+  id: string;
   username: string;
-  nickname: string;
-  role: import('./enums').UserRole;
-  avatar?: string;
-  createdAt: string;
-  updatedAt: string;
+  role: UserRole;
+  studioId: string | null;
+  companionId?: string;
 }

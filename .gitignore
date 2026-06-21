@@ -35,6 +35,12 @@ apps/server/prisma/*.db-journal
 # Coverage
 coverage/
 
+# Tool artifacts
+.codegraph/
+.understand-anything/
+.superpowers/
+.remember/
+
 # Misc
 .cache/
 tmp/
