@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  username           String   @unique
+  passwordHash       String
+  role               String   @default("COMPANION")
+  studioId           String?
+  isAuthorized       Boolean  @default(false)
+  secondPasswordHash String?
+  createdAt          DateTime @default(now())
+
+  studio    Studio?     @relation(fields: [studioId], references: [id])
+  companion Companion?
+  csOrders  Order[]     @relation("CSUser")
+}
+
+model Studio {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users      User[]
+  companions Companion[]
+  orders     Order[]
+  customers  Customer[]
+  expenses   Expense[]
+}
+
+model Companion {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  studioId       String
+  games          Json     @default("[]")
+  status         String   @default("OFFLINE")
+  billingCode    String   @unique
+  revenueShare   Float    @default(0.6)
+  monthlyRevenue Float    @default(0)
+  createdAt      DateTime @default(now())
+
+  user      User            @relation(fields: [userId], references: [id])
+  studio    Studio          @relation(fields: [studioId], references: [id])
+  pc        CompanionPC?
+  timeLogs  CompanionTimeLog[]
+  orders    Order[]
+  customers Customer[]
+  transactions Transaction[]
+}
+
+model CompanionPC {
+  id              String    @id @default(uuid())
+  companionId     String    @unique
+  agentVersion    String    @default("0.0.0")
+  lastHeartbeat   DateTime?
+  currentMode     String    @default("ENTERTAINMENT")
+  isThrottled     Boolean   @default(false)
+  throttleLimitKB Int?
+  createdAt       DateTime  @default(now())
+
+  companion      Companion        @relation(fields: [companionId], references: [id])
+  operationLogs  PCOperationLog[]
+}
+
+model CompanionTimeLog {
+  id              String    @id @default(uuid())
+  companionId     String
+  mode            String
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  durationSeconds Int       @default(0)
+
+  companion Companion @relation(fields: [companionId], references: [id])
+}
+
+model Order {
+  id           String   @id @default(uuid())
+  type         String
+  studioId     String
+  csUserId     String
+  companionId  String?
+  customerId   String
+  dispatchType String
+  status       String   @default("PENDING")
+  amount       Float
+  gameName     String
+  duration     Float?
+  customFields Json?
+  isOnline     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  studio       Studio        @relation(fields: [studioId], references: [id])
+  csUser       User          @relation("CSUser", fields: [csUserId], references: [id])
+  companion    Companion?    @relation(fields: [companionId], references: [id])
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  transactions Transaction[]
+}
+
+model Customer {
+  id                  String   @id @default(uuid())
+  studioId            String
+  customerCode        String   @unique
+  wechatId            String
+  companionId         String?
+  platform            String?
+  platformAccount     String?
+  consultDate         DateTime?
+  wechatAddDate       DateTime?
+  isAccountBanned     Boolean  @default(false)
+  isDeletedByCustomer Boolean  @default(false)
+  notes               String?
+  totalSpent          Float    @default(0)
+  createdAt           DateTime @default(now())
+
+  studio    Studio    @relation(fields: [studioId], references: [id])
+  companion Companion? @relation(fields: [companionId], references: [id])
+  orders    Order[]
+}
+
+model Transaction {
+  id              String   @id @default(uuid())
+  orderId         String
+  companionId     String
+  amount          Float
+  paymentMethod   String
+  screenshotUrl   String
+  status          String   @default("PENDING")
+  reviewedById    String?
+  paidAt          DateTime
+  createdAt       DateTime @default(now())
+
+  order     Order     @relation(fields: [orderId], references: [id])
+  companion Companion @relation(fields: [companionId], references: [id])
+}
+
+model RevenueDaily {
+  id               String   @id @default(uuid())
+  date             DateTime
+  studioId         String
+  companionId      String?
+  newOrderCount    Int      @default(0)
+  newOrderAmount   Float    @default(0)
+  renewCount       Int      @default(0)
+  renewAmount      Float    @default(0)
+  repurchaseCount  Int      @default(0)
+  repurchaseAmount Float    @default(0)
+  tipCount         Int      @default(0)
+  tipAmount        Float    @default(0)
+
+  @@unique([date, studioId, companionId])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  studioId    String
+  category    String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+
+  studio Studio @relation(fields: [studioId], references: [id])
+}
+
+model PCOperationLog {
+  id         String   @id @default(uuid())
+  pcId       String
+  operation  String
+  operatorId String
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  pc CompanionPC @relation(fields: [pcId], references: [id])
+}
