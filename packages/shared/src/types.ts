@@ -1,4 +1,4 @@
-import type { UserRole } from './enums';
+import type { UserRole } from './enums.js';
 
 export interface ApiResponse<T> {
   code: number;
