@@ -91,9 +91,11 @@ const CustomersPage: React.FC = () => {
     setCompanionsLoading(true);
     try {
       const { data } = await companionsApi.list();
-      setCompanionOptions(data.data ?? []);
+      const raw = data.data ?? [];
+      const opts = raw.map((c: any) => ({ id: c.id, username: c.user?.username ?? '未知' }));
+      setCompanionOptions(opts);
     } catch {
-      // silently ignore — will show empty select
+      message.warning('加载陪玩列表失败');
     } finally {
       setCompanionsLoading(false);
     }
