@@ -16,6 +16,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { BillingService } from './billing.service';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
@@ -32,7 +33,7 @@ export class BillingController {
   @Post('api/transactions')
   @Roles(UserRole.COMPANION)
   async createTransaction(
-    @Body() dto: any,
+    @Body() dto: CreateTransactionDto,
     @Req() req: any,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.billingService.createTransaction({

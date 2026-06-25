@@ -7,6 +7,7 @@ import { CompanionsModule } from './companions/companions.module';
 import { CustomersModule } from './customers/customers.module';
 import { OrdersModule } from './orders/orders.module';
 import { BillingModule } from './billing/billing.module';
+import { HealthModule } from './health/health.module';
 import { WsModule } from './ws/ws.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { WsModule } from './ws/ws.module';
     CustomersModule,
     OrdersModule,
     BillingModule,
+    HealthModule,
     WsModule,
   ],
 })

@@ -39,6 +39,7 @@ Auto-generated from [Conventional Commits](https://www.conventionalcommits.org/)
 - fix: address code review - add tool dirs to gitignore, fix shared types and composite, move docs
 - fix: build shared package to dist/ and point main to compiled output
 - fix: go mod tidy, add go.sum, ignore .exe binaries
+- fix(server): add billing DTO, fix assign validation, add health endpoint
 
 ### Changed
 - docs: add README, CHANGELOG, CLAUDE.md with auto-update scripts
