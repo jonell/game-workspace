@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { WsGateway } from '../ws/ws.gateway';
 import { OrderStatus } from '@chunlv/shared';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -10,7 +11,10 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private wsGateway: WsGateway,
+  ) {}
 
   private validateTransition(order: { id: string; status: string }, targetStatus: string) {
     const allowed = VALID_TRANSITIONS[order.status];
@@ -34,7 +38,7 @@ export class OrdersService {
     isOnline: boolean;
     companionId?: string;
   }) {
-    return this.prisma.order.create({
+    const newOrder = await this.prisma.order.create({
       data: {
         type: dto.type,
         studioId: dto.studioId,
@@ -51,6 +55,12 @@ export class OrdersService {
       },
       include: { customer: true },
     });
+
+    if (newOrder.dispatchType === 'POOL') {
+      this.wsGateway.broadcastToStudio(dto.studioId, 'order:pool_updated', newOrder);
+    }
+
+    return newOrder;
   }
 
   async findPool() {
@@ -86,17 +96,21 @@ export class OrdersService {
     ) {
       throw new ForbiddenException('该订单不可抢');
     }
-    return this.prisma.order.update({
+    const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: OrderStatus.GRABBED, companionId },
     });
+    this.wsGateway.broadcastToStudio(updatedOrder.studioId, 'order:pool_updated', updatedOrder);
+    return updatedOrder;
   }
 
   async assign(orderId: string, companionId: string) {
-    return this.prisma.order.update({
+    const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { dispatchType: 'DIRECT', companionId },
     });
+    this.wsGateway.pushOrder(companionId, updatedOrder);
+    return updatedOrder;
   }
 
   async confirm(orderId: string, companionId: string) {
