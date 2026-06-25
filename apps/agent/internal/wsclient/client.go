@@ -3,6 +3,7 @@ package wsclient
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/chunlv/agent/internal/engine"
@@ -16,6 +17,31 @@ type CommandParams struct {
 type Command struct {
 	Command string        `json:"command"`
 	Params  CommandParams `json:"params"`
+}
+
+// Shared order storage — written by readLoop, read by httplocal API.
+var (
+	latestOrderMu    sync.RWMutex
+	latestOrderBytes []byte
+)
+
+// SetLatestOrder stores the raw JSON bytes of the most recent order.
+// Called from readLoop when an order:new event arrives.
+func SetLatestOrder(raw json.RawMessage) {
+	latestOrderMu.Lock()
+	defer latestOrderMu.Unlock()
+	latestOrderBytes = raw
+}
+
+// GetLatestOrder returns the raw JSON bytes of the most recent order, or nil.
+// Called from httplocal to serve /api/orders/latest.
+func GetLatestOrder() json.RawMessage {
+	latestOrderMu.RLock()
+	defer latestOrderMu.RUnlock()
+	if latestOrderBytes == nil {
+		return nil
+	}
+	return latestOrderBytes
 }
 
 type Client struct {
@@ -101,13 +127,20 @@ func (c *Client) readLoop() {
 			continue
 		}
 		event, ok := raw[0].(string)
-		if !ok || event != "pc:command" {
+		if !ok {
 			continue
 		}
-		dataBytes, _ := json.Marshal(raw[1])
-		var cmd Command
-		if json.Unmarshal(dataBytes, &cmd) == nil {
-			c.CommandChan <- cmd
+		switch event {
+		case "pc:command":
+			dataBytes, _ := json.Marshal(raw[1])
+			var cmd Command
+			if json.Unmarshal(dataBytes, &cmd) == nil {
+				c.CommandChan <- cmd
+			}
+		case "order:new":
+			dataBytes, _ := json.Marshal(raw[1])
+			log.Printf("Received order:new: %s", string(dataBytes))
+			SetLatestOrder(dataBytes)
 		}
 	}
 }

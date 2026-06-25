@@ -23,6 +23,68 @@
   .btn-entertainment { background: #00ff88; color: #1a1a2e; }
   .btn:hover { opacity: 0.85; transform: translateY(-1px); }
   .btn:active { transform: translateY(0); }
+
+  /* Order notification */
+  .order-notify {
+    margin-top: 16px;
+    border-radius: 8px;
+    background: #0f3460;
+    border: 1px solid #e94560;
+    overflow: hidden;
+    animation: slideIn 0.4s ease-out;
+  }
+  .order-notify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(233,69,96,0.15);
+    cursor: pointer;
+  }
+  .order-notify-header .title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #e94560;
+  }
+  .order-notify-header .dismiss {
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .order-notify-header .dismiss:hover { color: #e94560; }
+  .order-notify-body { padding: 12px 14px; }
+  .order-notify-body .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .order-notify-body .row:last-child { margin-bottom: 0; }
+  .order-notify-body .label { font-size: 12px; color: #888; }
+  .order-notify-body .val { font-size: 13px; color: #e0e0e0; }
+  .order-notify-body .amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ff88;
+  }
+  .order-type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .tag-NEW { background: #1e90ff; color: white; }
+  .tag-RENEW { background: #00bcd4; color: white; }
+  .tag-REPURCHASE { background: #9b59b6; color: white; }
+  .tag-TIP { background: #ff9800; color: white; }
+
+  @keyframes slideIn {
+    from { transform: translateY(-24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
 </style>
 </head>
 <body>
@@ -48,6 +110,26 @@
   <div class="buttons">
     <button class="btn btn-work" onclick="switchMode('WORK')">🔴 接单模式</button>
     <button class="btn btn-entertainment" onclick="switchMode('ENTERTAINMENT')">🟢 娱乐模式</button>
+  </div>
+  <div id="orderNotify" class="order-notify" style="display:none;">
+    <div class="order-notify-header" onclick="dismissOrder()">
+      <span class="title">📋 新订单</span>
+      <span class="dismiss">&times;</span>
+    </div>
+    <div class="order-notify-body">
+      <div class="row">
+        <span class="label">游戏</span>
+        <span class="val" id="orderGameName">--</span>
+      </div>
+      <div class="row">
+        <span class="label">金额</span>
+        <span class="amount" id="orderAmount">¥0.00</span>
+      </div>
+      <div class="row">
+        <span class="label">类型</span>
+        <span id="orderTypeTag">--</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -94,6 +176,61 @@ async function switchMode(mode) {
 
 fetchStatus();
 setInterval(fetchStatus, 5000);
+
+// ---- Order Notification ----
+const ORDER_TYPE_LABELS = {
+  NEW: '新单',
+  RENEW: '续费',
+  REPURCHASE: '复购',
+  TIP: '打赏',
+};
+
+let lastOrderId = '';
+let orderDismissTimer = null;
+
+function dismissOrder() {
+  const el = document.getElementById('orderNotify');
+  el.style.display = 'none';
+  if (orderDismissTimer) {
+    clearTimeout(orderDismissTimer);
+    orderDismissTimer = null;
+  }
+}
+
+async function fetchLatestOrder() {
+  try {
+    const res = await fetch('/api/orders/latest');
+    const order = await res.json();
+    if (!order || !order.id) return;
+    if (order.id === lastOrderId) return;
+
+    lastOrderId = order.id;
+    document.getElementById('orderGameName').textContent = order.gameName || '--';
+    document.getElementById('orderAmount').textContent =
+      '¥' + (order.amount != null ? Number(order.amount).toFixed(2) : '0.00');
+
+    const orderType = order.type || order.orderType || '';
+    const label = ORDER_TYPE_LABELS[orderType] || orderType;
+    const tag = document.getElementById('orderTypeTag');
+    tag.textContent = label;
+    tag.className = 'order-type-tag tag-' + orderType;
+
+    const el = document.getElementById('orderNotify');
+    // Trigger re-animation
+    el.style.display = 'none';
+    void el.offsetWidth;
+    el.style.display = 'block';
+
+    // Auto-dismiss after 10s
+    if (orderDismissTimer) clearTimeout(orderDismissTimer);
+    orderDismissTimer = setTimeout(dismissOrder, 10000);
+  } catch (e) {
+    // Silently ignore — endpoint may not be ready yet
+  }
+}
+
+setInterval(fetchLatestOrder, 3000);
+fetchLatestOrder();
 </script>
 </body>
 </html>
