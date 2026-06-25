@@ -80,6 +80,40 @@ export class BillingService {
     });
   }
 
+  // ── Batch operations ──
+
+  async batchApprove(ids: string[], reviewerId: string) {
+    const results = { succeeded: 0, failed: 0, errors: [] as string[] };
+
+    for (const id of ids) {
+      try {
+        await this.approve(id, reviewerId);
+        results.succeeded++;
+      } catch (err: any) {
+        results.failed++;
+        results.errors.push(`${id}: ${err.message}`);
+      }
+    }
+
+    return results;
+  }
+
+  async batchReject(ids: string[], reviewerId: string) {
+    const results = { succeeded: 0, failed: 0, errors: [] as string[] };
+
+    for (const id of ids) {
+      try {
+        await this.reject(id, reviewerId);
+        results.succeeded++;
+      } catch (err: any) {
+        results.failed++;
+        results.errors.push(`${id}: ${err.message}`);
+      }
+    }
+
+    return results;
+  }
+
   async findAll(user: any, status?: string) {
     const where: any = {};
 

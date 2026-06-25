@@ -75,6 +75,7 @@ const BillingPage: React.FC = () => {
   );
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -114,6 +115,36 @@ const BillingPage: React.FC = () => {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message || err?.message || '操作失败';
+      message.error(msg);
+    }
+  };
+
+  const handleBatchApprove = async () => {
+    const ids = selectedRowKeys as string[];
+    try {
+      const { data } = await billingApi.batchApprove(ids);
+      const result = data.data;
+      message.success(data.message || `批量通过：成功 ${result?.succeeded ?? ids.length} 条`);
+      setSelectedRowKeys([]);
+      fetchTransactions();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || '批量操作失败';
+      message.error(msg);
+    }
+  };
+
+  const handleBatchReject = async () => {
+    const ids = selectedRowKeys as string[];
+    try {
+      const { data } = await billingApi.batchReject(ids);
+      const result = data.data;
+      message.success(data.message || `批量拒绝：成功 ${result?.succeeded ?? ids.length} 条`);
+      setSelectedRowKeys([]);
+      fetchTransactions();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || '批量操作失败';
       message.error(msg);
     }
   };
@@ -336,9 +367,54 @@ const BillingPage: React.FC = () => {
       {/* Tabs + Table */}
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as TransactionStatus)}
+        onChange={(key) => {
+          setSelectedRowKeys([]);
+          setActiveTab(key as TransactionStatus);
+        }}
         items={tabItems}
       />
+
+      {/* Batch action bar */}
+      {selectedRowKeys.length > 0 && activeTab === TransactionStatus.PENDING && (
+        <div
+          style={{
+            marginBottom: 12,
+            padding: '8px 12px',
+            background: '#e6f4ff',
+            borderRadius: 6,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <Text>
+            已选择 <strong>{selectedRowKeys.length}</strong> 条记录
+          </Text>
+          <Popconfirm
+            title={`确认批量通过 ${selectedRowKeys.length} 条报账？`}
+            onConfirm={handleBatchApprove}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="primary" size="small">
+              批量通过
+            </Button>
+          </Popconfirm>
+          <Popconfirm
+            title={`确认批量拒绝 ${selectedRowKeys.length} 条报账？`}
+            onConfirm={handleBatchReject}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button danger size="small">
+              批量拒绝
+            </Button>
+          </Popconfirm>
+          <Button size="small" onClick={() => setSelectedRowKeys([])}>
+            取消选择
+          </Button>
+        </div>
+      )}
 
       <Table
         columns={columns}
@@ -346,6 +422,14 @@ const BillingPage: React.FC = () => {
         rowKey="id"
         loading={loading}
         locale={{ emptyText: '暂无报账记录' }}
+        rowSelection={
+          activeTab === TransactionStatus.PENDING
+            ? {
+                selectedRowKeys,
+                onChange: (keys) => setSelectedRowKeys(keys),
+              }
+            : undefined
+        }
         pagination={{
           pageSize: 20,
           showSizeChanger: true,

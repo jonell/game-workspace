@@ -41,6 +41,8 @@
     "@nestjs/cli": "^10.3.0",
     "@nestjs/schematics": "^10.1.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
     "@types/node": "^20.14.0",
     "@types/passport-jwt": "^4.0.1",
     "prisma": "^5.14.0",
