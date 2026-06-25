@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import CustomersPage from './pages/owner/CustomersPage';
 import DispatchPage from './pages/cs/DispatchPage';
 import CompanionsStatusPage from './pages/cs/CompanionsStatusPage';
+import OrdersPage from './pages/cs/OrdersPage';
 
 const PlaceholderPage = ({ title }: { title: string }) => (
   <div style={{ padding: 24 }}>
@@ -74,7 +75,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'cs/orders',
-        element: <PlaceholderPage title="派单记录" />,
+        element: <OrdersPage />,
       },
       {
         path: 'cs/companions',
