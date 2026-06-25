@@ -19,6 +19,19 @@ import {
 } from '@ant-design/icons';
 import { authApi } from '../../api/client';
 import { billingApi } from '../../api/billing';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 const { Text, Title } = Typography;
 
@@ -37,6 +50,16 @@ interface ExpenseItem {
   description?: string | null;
   date: string;
 }
+
+const EXPENSE_CATEGORY_COLORS: Record<string, string> = {
+  '工资': '#ff4d4f',
+  '租金': '#fa8c16',
+  '设备': '#722ed1',
+  '推广': '#1677ff',
+  '其他': '#8c8c8c',
+};
+
+const FALLBACK_PIE_COLORS = ['#ff4d4f', '#fa8c16', '#722ed1', '#1677ff', '#52c41a', '#08979c', '#eb2f96', '#a0d911'];
 
 const SECOND_TOKEN_KEY = 'secondToken';
 
@@ -233,22 +256,82 @@ const RevenuePage: React.FC = () => {
         </Col>
       </Row>
 
-      {expenses.length > 0 && (
-        <Card title="支出明细" size="small" style={{ marginTop: 16 }}>
-          {expenses.map((e) => (
-            <Row key={e.id} style={{ marginBottom: 8 }}>
-              <Col span={8}>
-                <Text>{e.category}</Text>
-              </Col>
-              <Col span={8}>
-                <Text type="secondary">{e.description ?? '-'}</Text>
-              </Col>
-              <Col span={8} style={{ textAlign: 'right' }}>
-                <Text strong style={{ color: '#cf1322' }}>¥{e.amount.toFixed(2)}</Text>
-              </Col>
-            </Row>
-          ))}
-        </Card>
+      {/* Charts */}
+      {(data || expenses.length > 0) && (
+        <>
+          {/* Revenue vs Expense comparison */}
+          {data && (
+            <Card title="收入 vs 支出" size="small" style={{ marginTop: 16 }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={[
+                    { name: '收入', amount: data.totalRevenue },
+                    { name: '支出', amount: data.totalExpense },
+                    { name: '利润', amount: data.profit },
+                  ]}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip formatter={(value: any) => `¥${Number(value).toFixed(2)}`} />
+                  <Legend />
+                  <Bar dataKey="amount" name="金额" radius={[4, 4, 0, 0]}>
+                    <Cell key="revenue" fill="#3f8600" />
+                    <Cell key="expense" fill="#cf1322" />
+                    <Cell key="profit" fill="#1677ff" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          )}
+
+          {/* Expense category pie chart */}
+          {expenses.length > 0 && (
+            <Card title="支出分类占比" size="small" style={{ marginTop: 16 }}>
+              <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                  <Pie
+                    data={(() => {
+                      const catMap = new Map<string, number>();
+                      for (const e of expenses) {
+                        const cat = e.category || '其他';
+                        catMap.set(cat, (catMap.get(cat) ?? 0) + e.amount);
+                      }
+                      return Array.from(catMap.entries()).map(([name, value]) => ({
+                        name,
+                        value: Math.round(value * 100) / 100,
+                      }));
+                    })()}
+                    cx="50%"
+                    cy="50%"
+                    labelLine
+                    label={({ name, percent }) =>
+                      `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                    }
+                    outerRadius={120}
+                    dataKey="value"
+                  >
+                    {(() => {
+                      const catMap = new Map<string, number>();
+                      for (const e of expenses) {
+                        const cat = e.category || '其他';
+                        catMap.set(cat, (catMap.get(cat) ?? 0) + e.amount);
+                      }
+                      return Array.from(catMap.keys()).map((name, i) => (
+                        <Cell
+                          key={name}
+                          fill={EXPENSE_CATEGORY_COLORS[name] ?? FALLBACK_PIE_COLORS[i % FALLBACK_PIE_COLORS.length]}
+                        />
+                      ));
+                    })()}
+                  </Pie>
+                  <RechartsTooltip formatter={(value: any) => `¥${Number(value).toFixed(2)}`} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );
