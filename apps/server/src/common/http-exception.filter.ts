@@ -40,6 +40,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     // Catch-all for unexpected errors
+    console.error(exception);
     reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       message: '服务器内部错误',
