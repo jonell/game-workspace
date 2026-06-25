@@ -30,6 +30,14 @@ interface ProfitLossData {
   profit: number;
 }
 
+interface ExpenseItem {
+  id: string;
+  category: string;
+  amount: number;
+  description?: string | null;
+  date: string;
+}
+
 const SECOND_TOKEN_KEY = 'secondToken';
 
 const RevenuePage: React.FC = () => {
@@ -40,6 +48,8 @@ const RevenuePage: React.FC = () => {
   const [verifying, setVerifying] = useState(false);
   const [data, setData] = useState<ProfitLossData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const [expensesLoading, setExpensesLoading] = useState(false);
 
   const handleVerify = async () => {
     if (!password.trim()) {
@@ -71,7 +81,6 @@ const RevenuePage: React.FC = () => {
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || '加载盈亏数据失败';
       message.error(msg);
-      // Token might be expired
       if (err?.response?.status === 401) {
         sessionStorage.removeItem(SECOND_TOKEN_KEY);
         setSecondToken('');
@@ -82,16 +91,32 @@ const RevenuePage: React.FC = () => {
     }
   }, [secondToken]);
 
+  const fetchExpenses = useCallback(async () => {
+    if (!secondToken) return;
+    setExpensesLoading(true);
+    try {
+      const { data: res } = await billingApi.expenses(secondToken);
+      setExpenses(res.data ?? []);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '加载支出数据失败';
+      message.error(msg);
+    } finally {
+      setExpensesLoading(false);
+    }
+  }, [secondToken]);
+
   useEffect(() => {
     if (secondToken) {
       fetchStats();
+      fetchExpenses();
     }
-  }, [secondToken, fetchStats]);
+  }, [secondToken, fetchStats, fetchExpenses]);
 
   const handleLogout = () => {
     sessionStorage.removeItem(SECOND_TOKEN_KEY);
     setSecondToken('');
     setData(null);
+    setExpenses([]);
   };
 
   const profitColor = data ? (data.profit >= 0 ? '#3f8600' : '#cf1322') : undefined;
@@ -156,8 +181,8 @@ const RevenuePage: React.FC = () => {
         <Space>
           <Button
             icon={React.createElement(ReloadOutlined)}
-            onClick={fetchStats}
-            loading={loading}
+            onClick={() => { fetchStats(); fetchExpenses(); }}
+            loading={loading || expensesLoading}
           >
             刷新
           </Button>
@@ -207,6 +232,24 @@ const RevenuePage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {expenses.length > 0 && (
+        <Card title="支出明细" size="small" style={{ marginTop: 16 }}>
+          {expenses.map((e) => (
+            <Row key={e.id} style={{ marginBottom: 8 }}>
+              <Col span={8}>
+                <Text>{e.category}</Text>
+              </Col>
+              <Col span={8}>
+                <Text type="secondary">{e.description ?? '-'}</Text>
+              </Col>
+              <Col span={8} style={{ textAlign: 'right' }}>
+                <Text strong style={{ color: '#cf1322' }}>¥{e.amount.toFixed(2)}</Text>
+              </Col>
+            </Row>
+          ))}
+        </Card>
+      )}
     </div>
   );
 };

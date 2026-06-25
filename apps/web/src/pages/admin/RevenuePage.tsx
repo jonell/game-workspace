@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
+  Button,
   Card,
   Col,
   DatePicker,
@@ -11,6 +12,7 @@ import {
   Typography,
   message,
 } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import {
   DollarOutlined,
   ShoppingCartOutlined,
@@ -21,6 +23,16 @@ import {
 import dayjs, { Dayjs } from 'dayjs';
 import { OrderType } from '@chunlv/shared';
 import { billingApi } from '../../api/billing';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 const { Text } = Typography;
 
@@ -82,6 +94,10 @@ const RevenuePage: React.FC = () => {
   const [monthlyData, setMonthlyData] = useState<MonthlyRevenueData | null>(null);
   const [monthlyLoading, setMonthlyLoading] = useState(false);
 
+  // Download state
+  const [dailyDownloading, setDailyDownloading] = useState(false);
+  const [monthlyDownloading, setMonthlyDownloading] = useState(false);
+
   const fetchDaily = useCallback(async () => {
     setDailyLoading(true);
     try {
@@ -109,6 +125,32 @@ const RevenuePage: React.FC = () => {
       message.error(msg);
     } finally {
       setMonthlyLoading(false);
+    }
+  }, [monthlyMonth]);
+
+  const handleDownloadDailyCSV = useCallback(async () => {
+    setDailyDownloading(true);
+    try {
+      await billingApi.downloadDailyCSV(dailyDate.format('YYYY-MM-DD'));
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || '导出日收入CSV失败';
+      message.error(msg);
+    } finally {
+      setDailyDownloading(false);
+    }
+  }, [dailyDate]);
+
+  const handleDownloadMonthlyCSV = useCallback(async () => {
+    setMonthlyDownloading(true);
+    try {
+      await billingApi.downloadMonthlyCSV(monthlyMonth.format('YYYY-MM'));
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || '导出月收入CSV失败';
+      message.error(msg);
+    } finally {
+      setMonthlyDownloading(false);
     }
   }, [monthlyMonth]);
 
@@ -187,8 +229,8 @@ const RevenuePage: React.FC = () => {
 
       {mode === 'daily' && (
         <>
-          {/* Date picker */}
-          <div style={{ marginBottom: 16 }}>
+          {/* Date picker + Export */}
+          <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
             <DatePicker
               value={dailyDate}
               onChange={(d) => {
@@ -197,6 +239,13 @@ const RevenuePage: React.FC = () => {
               allowClear={false}
               style={{ width: 200 }}
             />
+            <Button
+              icon={React.createElement(DownloadOutlined)}
+              loading={dailyDownloading}
+              onClick={handleDownloadDailyCSV}
+            >
+              导出 CSV
+            </Button>
           </div>
 
           {/* Revenue cards */}
@@ -247,6 +296,27 @@ const RevenuePage: React.FC = () => {
             </Col>
           </Row>
 
+          {/* Revenue category bar chart */}
+          <Card title="分类收入对比" size="small" style={{ marginBottom: 16 }}>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={orderTypes.map((type) => ({
+                  name: orderTypeLabel[type],
+                  amount: dailyData?.breakdown?.[type]?.amount ?? 0,
+                  count: dailyData?.breakdown?.[type]?.count ?? 0,
+                }))}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip formatter={(value: any) => `¥${Number(value).toFixed(2)}`} />
+                <Legend />
+                <Bar dataKey="amount" name="金额" fill="#1677ff" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+
           {/* Daily breakdown table */}
           <Card title="分类明细" size="small">
             <Table
@@ -291,8 +361,8 @@ const RevenuePage: React.FC = () => {
 
       {mode === 'monthly' && (
         <>
-          {/* Month picker */}
-          <div style={{ marginBottom: 16 }}>
+          {/* Month picker + Export */}
+          <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
             <DatePicker
               picker="month"
               value={monthlyMonth}
@@ -302,6 +372,13 @@ const RevenuePage: React.FC = () => {
               allowClear={false}
               style={{ width: 200 }}
             />
+            <Button
+              icon={React.createElement(DownloadOutlined)}
+              loading={monthlyDownloading}
+              onClick={handleDownloadMonthlyCSV}
+            >
+              导出 CSV
+            </Button>
           </div>
 
           {/* Total card */}
@@ -319,6 +396,27 @@ const RevenuePage: React.FC = () => {
               </Card>
             </Col>
           </Row>
+
+          {/* Companion revenue bar chart (top 20) */}
+          <Card title="陪玩收入对比" size="small" style={{ marginBottom: 16 }}>
+            <ResponsiveContainer width="100%" height={Math.max(300, (monthlyData?.companionRevenue ?? []).slice(0, 20).length * 30)}>
+              <BarChart
+                data={(monthlyData?.companionRevenue ?? []).slice(0, 20).map((c) => ({
+                  name: c.name,
+                  amount: c.amount,
+                }))}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="name" width={80} />
+                <RechartsTooltip formatter={(value: any) => `¥${Number(value).toFixed(2)}`} />
+                <Legend />
+                <Bar dataKey="amount" name="收入" fill="#cf1322" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
 
           {/* Companion breakdown table */}
           <Card title="陪玩收入明细" size="small">
