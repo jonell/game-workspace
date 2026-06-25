@@ -111,13 +111,25 @@ const CompanionsPage: React.FC = () => {
   }, [fetchCompanions]);
 
   const loadTimeLogs = useCallback(async (companionId: string) => {
-    const cached = timeLogsCache[companionId];
-    if (cached?.logs && !cached.error) return;
+    let shouldFetch = false;
 
-    setTimeLogsCache((prev) => ({
-      ...prev,
-      [companionId]: { loading: true, logs: [], error: undefined },
-    }));
+    // Use functional setState to check cache atomically — no stale closure on timeLogsCache
+    setTimeLogsCache((prev) => {
+      const cached = prev[companionId];
+      if (cached?.logs && !cached.error) {
+        return prev; // Already have data, skip
+      }
+      if (cached?.loading) {
+        return prev; // Already in-flight, skip
+      }
+      shouldFetch = true;
+      return {
+        ...prev,
+        [companionId]: { loading: true, logs: [], error: undefined },
+      };
+    });
+
+    if (!shouldFetch) return;
 
     try {
       const { data } = await companionsApi.getById(companionId);
@@ -135,7 +147,7 @@ const CompanionsPage: React.FC = () => {
         [companionId]: { loading: false, logs: [], error: msg },
       }));
     }
-  }, [timeLogsCache]);
+  }, []);
 
   const columns = [
     {
@@ -209,11 +221,15 @@ const CompanionsPage: React.FC = () => {
     },
   ];
 
-  const expandedRowRender = (record: Companion) => {
+  // Inner component with useEffect to avoid side effects during render
+  const ExpandableRow: React.FC<{ record: Companion }> = ({ record }) => {
     const cache = timeLogsCache[record.id];
 
-    if (!cache) {
+    useEffect(() => {
       loadTimeLogs(record.id);
+    }, [record.id, loadTimeLogs]);
+
+    if (!cache) {
       return (
         <div style={{ padding: 24, textAlign: 'center' }}>
           <Spin tip="加载中..." />
@@ -333,7 +349,7 @@ const CompanionsPage: React.FC = () => {
           showTotal: (t) => `共 ${t} 位陪玩`,
         }}
         expandable={{
-          expandedRowRender,
+          expandedRowRender: (record) => <ExpandableRow record={record} />,
           rowExpandable: () => true,
         }}
       />
