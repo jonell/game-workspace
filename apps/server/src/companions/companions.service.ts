@@ -57,7 +57,7 @@ export class CompanionsService {
     return {
       companionId: id,
       transactions,
-      total: transactions.reduce((s, t) => s + t.amount, 0),
+      total: transactions.reduce((s: number, t: { amount: number }) => s + t.amount, 0),
     };
   }
 }

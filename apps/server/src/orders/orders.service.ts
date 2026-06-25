@@ -1,9 +1,25 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrderStatus } from '@chunlv/shared';
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  [OrderStatus.PENDING]: [OrderStatus.GRABBED, OrderStatus.CANCELLED],
+  [OrderStatus.GRABBED]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.DONE, OrderStatus.CANCELLED],
+};
 
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
+
+  private validateTransition(order: { id: string; status: string }, targetStatus: string) {
+    const allowed = VALID_TRANSITIONS[order.status];
+    if (!allowed || !allowed.includes(targetStatus)) {
+      throw new ForbiddenException(
+        `不允许从 ${order.status} 转换到 ${targetStatus}`,
+      );
+    }
+  }
 
   async create(dto: {
     type: string;
@@ -63,8 +79,8 @@ export class OrdersService {
   async grab(orderId: string, companionId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('订单不存在');
+    this.validateTransition(order, OrderStatus.GRABBED);
     if (
-      order.status !== 'PENDING' ||
       order.dispatchType !== 'POOL' ||
       order.companionId !== null
     ) {
@@ -72,7 +88,7 @@ export class OrdersService {
     }
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: 'GRABBED', companionId },
+      data: { status: OrderStatus.GRABBED, companionId },
     });
   }
 
@@ -86,24 +102,31 @@ export class OrdersService {
   async confirm(orderId: string, companionId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('订单不存在');
+    this.validateTransition(order, OrderStatus.CONFIRMED);
     if (order.companionId !== companionId) throw new ForbiddenException('无权确认此订单');
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: 'CONFIRMED' },
+      data: { status: OrderStatus.CONFIRMED },
     });
   }
 
   async complete(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    this.validateTransition(order, OrderStatus.DONE);
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: 'DONE' },
+      data: { status: OrderStatus.DONE },
     });
   }
 
   async cancel(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    this.validateTransition(order, OrderStatus.CANCELLED);
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: 'CANCELLED' },
+      data: { status: OrderStatus.CANCELLED },
     });
   }
 }

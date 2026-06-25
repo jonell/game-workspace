@@ -7,6 +7,33 @@ Auto-generated from [Conventional Commits](https://www.conventionalcommits.org/)
 
 ---
 
+## [Unreleased] — 2026-06-25
+
+### Added
+- feat: add billing API (transactions, daily/monthly revenue, profit/loss)
+- feat: add companions API (list, ranking, status, revenue)
+- feat: add customer CRUD API with role-based data isolation
+- feat: add docker-compose for PostgreSQL 16 + Redis 7
+- feat: add JWT auth with login, refresh, second-password, RBAC guard
+- feat: add login page, role-based layout, and routing shell
+- feat: add order dispatch API (create/pool/grab/assign/confirm/complete)
+- feat(orders): add DTO validation and state machine (CreateOrderDto, VALID_TRANSITIONS)
+- feat: add Prisma schema with 11 models and seed data
+- feat: add studio & employee management API
+- feat: add WebSocket gateway with real-time status, heartbeat, and order push
+- feat: Go Agent + React business pages
+- feat: init monorepo with React + Nest.js + shared types
+
+### Fixed
+- fix: add .js extensions to shared package imports for CJS resolution
+- fix: address code review - add tool dirs to gitignore, fix shared types and composite, move docs
+- fix: build shared package to dist/ and point main to compiled output
+- fix: go mod tidy, add go.sum, ignore .exe binaries
+
+### Changed
+- docs: add README, CHANGELOG, CLAUDE.md with auto-update scripts
+
+
 ## [0.1.0] — 2026-06-21
 
 ### Added

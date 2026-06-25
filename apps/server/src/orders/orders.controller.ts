@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { OrdersService } from './orders.service';
+import { CreateOrderDto } from './dto/create-order.dto';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
@@ -21,7 +22,7 @@ export class OrdersController {
   @Post('orders')
   @Roles(UserRole.CS, UserRole.ADMIN)
   async create(
-    @Body() dto: any,
+    @Body() dto: CreateOrderDto,
     @Req() req: any,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.create({
