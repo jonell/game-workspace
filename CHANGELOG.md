@@ -27,6 +27,7 @@ Auto-generated from [Conventional Commits](https://www.conventionalcommits.org/)
 - feat(web): add admin companions management page with time log expansion
 - feat(web): add admin customer management page
 - feat(web): add admin billing review page
+- feat(web): add admin revenue flow page with daily/monthly views
 - feat: init monorepo with React + Nest.js + shared types
 
 ### Fixed

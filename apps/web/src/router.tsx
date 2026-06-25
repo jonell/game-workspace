@@ -9,6 +9,7 @@ import DispatchPage from './pages/cs/DispatchPage';
 import CompanionsStatusPage from './pages/cs/CompanionsStatusPage';
 import OrdersPage from './pages/cs/OrdersPage';
 import AdminBillingPage from './pages/admin/BillingPage';
+import AdminRevenuePage from './pages/admin/RevenuePage';
 
 const PlaceholderPage = ({ title }: { title: string }) => (
   <div style={{ padding: 24 }}>
@@ -66,7 +67,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'admin/revenue',
-        element: <PlaceholderPage title="收入流水" />,
+        element: <AdminRevenuePage />,
       },
       {
         path: 'admin/pc-control',
