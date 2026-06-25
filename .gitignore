@@ -52,3 +52,4 @@ uploads/
 tmp/
 temp/
 *.exe
+apps/agent/agent

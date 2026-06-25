@@ -10,6 +10,7 @@ Auto-generated from [Conventional Commits](https://www.conventionalcommits.org/)
 ## [Unreleased] — 2026-06-25
 
 ### Added
+- feat(agent): add order notification to WebUI with slide-in animation and 3s polling
 - feat: add billing API (transactions, daily/monthly revenue, profit/loss)
 - feat: add companions API (list, ranking, status, revenue)
 - feat: add customer CRUD API with role-based data isolation
