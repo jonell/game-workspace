@@ -97,7 +97,7 @@ func NewClient(serverURL, token string, tracker *engine.TimeTracker) *Client {
 
 func (c *Client) Connect() {
 	for {
-		url := c.serverURL + "/socket.io/?EIO=4&transport=websocket"
+		url := c.serverURL + "/socket.io/?EIO=4&transport=websocket&token=" + c.token
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			log.Printf("WebSocket connection failed: %v, retrying in 5s...", err)
@@ -106,10 +106,6 @@ func (c *Client) Connect() {
 		}
 		c.conn = conn
 		log.Println("WebSocket connected")
-
-		// Send auth
-		authMsg := `40{"token":"` + c.token + `"}`
-		conn.WriteMessage(websocket.TextMessage, []byte(authMsg))
 
 		go c.heartbeatLoop()
 		c.readLoop()

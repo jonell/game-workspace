@@ -36,7 +36,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: Socket): Promise<void> {
     try {
-      const token = client.handshake.auth?.token as string | undefined;
+      const token = (client.handshake.auth?.token || client.handshake.query?.token) as string | undefined;
       if (!token) {
         client.disconnect(true);
         return;
