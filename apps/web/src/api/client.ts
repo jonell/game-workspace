@@ -122,6 +122,9 @@ export const authApi = {
       { password },
     );
   },
+  authorizeUser(userId: string) {
+    return http.put<ApiResponse<null>>(`/auth/users/${userId}/authorize`);
+  },
 };
 
 export default http;

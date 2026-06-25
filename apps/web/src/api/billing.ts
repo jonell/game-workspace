@@ -9,4 +9,8 @@ export const billingApi = {
     http.get('/revenue/daily', { params: { date } }),
   monthlyRevenue: (month: string) =>
     http.get('/revenue/monthly', { params: { month } }),
+  profitLoss: (secondToken: string) =>
+    http.get('/revenue/stats', {
+      headers: { 'x-second-token': secondToken },
+    }),
 };

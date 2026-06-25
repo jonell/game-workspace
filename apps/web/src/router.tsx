@@ -13,6 +13,7 @@ import AdminRevenuePage from './pages/admin/RevenuePage';
 import AdminPcControlPage from './pages/admin/PcControlPage';
 import EmployeesPage from './pages/owner/EmployeesPage';
 import StudiosPage from './pages/owner/StudiosPage';
+import AuthorizationsPage from './pages/owner/AuthorizationsPage';
 
 const PlaceholderPage = ({ title }: { title: string }) => (
   <div style={{ padding: 24 }}>
@@ -49,7 +50,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'owner/authorizations',
-        element: <PlaceholderPage title="客户端授权" />,
+        element: <AuthorizationsPage />,
       },
       // Admin routes
       {

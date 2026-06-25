@@ -1,7 +1,13 @@
 import http from './client';
 
 export const employeesApi = {
-  list: (studioId: string) => http.get('/employees', { params: { studioId } }),
+  list: (studioIdOrParams?: string | { studioId?: string }) => {
+    const params =
+      typeof studioIdOrParams === 'string'
+        ? { studioId: studioIdOrParams }
+        : studioIdOrParams;
+    return http.get('/employees', { params });
+  },
   create: (data: { username: string; password: string; role: string; studioId: string }) =>
     http.post('/employees', data),
   resetPassword: (id: string, password: string) =>

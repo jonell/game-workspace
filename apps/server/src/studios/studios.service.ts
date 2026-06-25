@@ -20,10 +20,14 @@ export class StudiosService {
     return this.prisma.studio.update({ where: { id }, data: { name } });
   }
 
-  async getEmployees(studioId: string) {
+  async getEmployees(studioId?: string) {
     return this.prisma.user.findMany({
-      where: { studioId, role: { not: 'OWNER' } },
+      where: {
+        ...(studioId ? { studioId } : {}),
+        role: { not: 'OWNER' },
+      },
       include: {
+        studio: { select: { id: true, name: true } },
         companion: { select: { id: true, status: true, monthlyRevenue: true, games: true } },
       },
       orderBy: { createdAt: 'desc' },

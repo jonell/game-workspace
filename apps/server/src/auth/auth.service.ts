@@ -113,6 +113,13 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  async authorizeUser(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isAuthorized: true },
+    });
+  }
+
   async verifySecondPassword(
     userId: string,
     password: string,

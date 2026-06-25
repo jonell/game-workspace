@@ -1,8 +1,9 @@
-import { Controller, Post, Get, Body, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Param, Body, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard, Roles } from './roles.guard';
 import { AuthService } from './auth.service';
 import { LoginDto, RefreshDto, VerifySecondDto } from './dto/login.dto';
-import type { ApiResponse, LoginResponse, UserInfo } from '@chunlv/shared';
+import { UserRole, type ApiResponse, type LoginResponse, type UserInfo } from '@chunlv/shared';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +34,14 @@ export class AuthController {
       dto.password,
     );
     return { code: 200, message: 'ok', data };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.OWNER)
+  @Put('users/:id/authorize')
+  async authorizeUser(@Param('id') id: string): Promise<ApiResponse<null>> {
+    await this.authService.authorizeUser(id);
+    return { code: 200, message: '审核通过', data: null };
   }
 
   @UseGuards(AuthGuard('jwt'))
