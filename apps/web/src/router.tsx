@@ -14,13 +14,7 @@ import AdminPcControlPage from './pages/admin/PcControlPage';
 import EmployeesPage from './pages/owner/EmployeesPage';
 import StudiosPage from './pages/owner/StudiosPage';
 import AuthorizationsPage from './pages/owner/AuthorizationsPage';
-
-const PlaceholderPage = ({ title }: { title: string }) => (
-  <div style={{ padding: 24 }}>
-    <h2>{title}</h2>
-    <p>此页面将在后续阶段实现</p>
-  </div>
-);
+import OwnerRevenuePage from './pages/owner/RevenuePage';
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +28,7 @@ export const router = createBrowserRouter([
       // Owner routes
       {
         path: 'owner/revenue',
-        element: <PlaceholderPage title="盈亏统计" />,
+        element: <OwnerRevenuePage />,
       },
       {
         path: 'owner/customers',
