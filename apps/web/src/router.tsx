@@ -17,11 +17,16 @@ import AuthorizationsPage from './pages/owner/AuthorizationsPage';
 import OwnerRevenuePage from './pages/owner/RevenuePage';
 import ReviewPage from './pages/admin/ReviewPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import ProfileSetupPage from './pages/ProfileSetupPage';
 
 export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/profile-setup',
+    element: <ProfileSetupPage />,
   },
   {
     path: '/',
