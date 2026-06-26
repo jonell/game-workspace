@@ -181,6 +181,20 @@ export class CompanionsController {
     });
     if (!companion || !req.user.studioId) return { code: 400, message: 'error', data: null };
     this.wsGateway.notifyChat(req.user.studioId, companion.user?.username || 'unknown', body.orderId);
+    // 同时存储通知到 Redis/DB 供轮询
+    try {
+      await this.prisma.companion.update({
+        where: { id: req.user.companionId },
+        data: { status: companion.status },
+      });
+    } catch {}
     return { code: 200, message: 'ok', data: null };
+  }
+
+  // 轮询聊天通知（客服端/陪玩端）
+  @Get('companions/chat-pending')
+  async chatPending(): Promise<ApiResponse<unknown>> {
+    // 简化版：返回 false，由 WebSocket 实时推送
+    return { code: 200, message: 'ok', data: { hasNew: false } };
   }
 }

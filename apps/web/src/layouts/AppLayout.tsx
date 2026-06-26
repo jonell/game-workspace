@@ -92,15 +92,31 @@ const AppLayout: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!user && isAuthenticated) {
-      fetchUser();
-    }
+    if (!user && isAuthenticated) { fetchUser(); }
   }, []);
 
+  // 轮询聊天通知（客服端/陪玩端监听）
+  const { setChatActive } = useAuthStore;
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login', { replace: true });
-    }
+    if (!user?.studioId) return;
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/companions/chat-pending', {
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` },
+        });
+        if (res.ok) {
+          const { data } = await res.json();
+          if (data?.hasNew) setChatActive(true, data.companionName);
+        }
+      } catch {}
+    };
+    poll();
+    const t = setInterval(poll, 5000);
+    return () => clearInterval(t);
+  }, [user?.studioId]);
+
+  useEffect(() => {
+    if (!isAuthenticated) { navigate('/login', { replace: true }); }
   }, [isAuthenticated, navigate]);
 
   const menuItems = useMemo(() => {
