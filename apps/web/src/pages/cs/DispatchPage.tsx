@@ -26,7 +26,6 @@ import {
 import { CompanionStatus, OrderType, DispatchType } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
 import { ordersApi } from '../../api/orders';
-import { customersApi } from '../../api/customers';
 import http from '../../api/client';
 
 const { Text } = Typography;
@@ -73,8 +72,6 @@ const DispatchPage: React.FC = () => {
   const [loadingPool, setLoadingPool] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [customers, setCustomers] = useState<{ id: string; wechatId: string }[]>([]);
-  const [customerSearch, setCustomerSearch] = useState('');
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [companionSearch, setCompanionSearch] = useState('');
   const [assignModalOpen, setAssignModalOpen] = useState(false);
@@ -107,26 +104,15 @@ const DispatchPage: React.FC = () => {
     }
   }, []);
 
-  const fetchCustomers = useCallback(async (search: string) => {
-    try {
-      const { data } = await customersApi.list({ wechatId: search, pageSize: 20 });
-      const items = data.data?.items ?? data.data ?? [];
-      setCustomers(items);
-    } catch {
-      // silent
-    }
-  }, []);
-
   // Initial load
   useEffect(() => {
     fetchCompanions();
     fetchPool();
-    fetchCustomers('');
     http.get('/settings').then(({ data }) => {
       const games = (data.data?.games ?? []);
       setGameOptions(['三角洲行动', ...games.filter((g: string) => g !== '三角洲行动')]);
     }).catch(() => {});
-  }, [fetchCompanions, fetchPool, fetchCustomers]);
+  }, [fetchCompanions, fetchPool]);
 
   // Auto-refresh pool every 10 seconds
   useEffect(() => {
@@ -178,11 +164,6 @@ const DispatchPage: React.FC = () => {
     setSelectedOrderId(orderId);
     setCompanionSearch('');
     setAssignModalOpen(true);
-  };
-
-  const handleCustomerSearch = (val: string) => {
-    setCustomerSearch(val);
-    fetchCustomers(val);
   };
 
   // Stats
