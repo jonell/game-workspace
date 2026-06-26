@@ -214,8 +214,66 @@ const DispatchPage: React.FC = () => {
       </div>
 
       <Row gutter={12}>
-        {/* Center: Order Pool */}
-        <Col span={21}>
+        {/* Left */}
+        <Col span={3}>
+          <Card
+            title="陪玩管理"
+            size="small"
+            style={{ marginBottom: 16 }}
+          >
+            {loadingCompanions && companions.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>
+            ) : companions.length === 0 ? (
+              <Text type="secondary">暂无陪玩</Text>
+            ) : (
+              <List size="small" dataSource={sortedCompanions}
+                renderItem={(c) => (
+                  <List.Item style={{ padding: '8px 0', display: 'block', cursor: 'pointer' }}
+                    onClick={() => setSelectedCompanion(c)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Space size="small">
+                        <span style={{
+                          width: 10, height: 10, borderRadius: '50%', display: 'inline-block',
+                          background:
+                            c.status === CompanionStatus.BUSY ? '#FF4757' :
+                            c.status === CompanionStatus.IDLE ? '#00E676' :
+                            c.status === CompanionStatus.ONLINE ? '#FFD600' : '#94A3B8',
+                          boxShadow: c.status !== CompanionStatus.OFFLINE
+                            ? `0 0 8px ${c.status === CompanionStatus.BUSY ? '#FF4757' : c.status === CompanionStatus.IDLE ? '#00E676' : '#FFD600'}`
+                            : 'none',
+                          animation: c.status !== CompanionStatus.OFFLINE ? 'pulse-glow 2s ease-in-out infinite' : 'none',
+                        }} />
+                        <Text strong>{c.user?.username ?? c.id}</Text>
+                      </Space>
+                      <Tag color={
+                        c.status === CompanionStatus.BUSY ? 'red' :
+                        c.status === CompanionStatus.IDLE ? 'green' :
+                        c.status === CompanionStatus.ONLINE ? 'gold' : 'default'
+                      }>
+                        {c.status === CompanionStatus.BUSY ? '接单中' :
+                         c.status === CompanionStatus.IDLE ? '空闲' :
+                         c.status === CompanionStatus.ONLINE ? '娱乐中' : '离线'}
+                      </Tag>
+                    </div>
+                    {/* 游戏资料 */}
+                    {c.games && c.games.length > 0 && typeof c.games[0] === 'object' && (
+                      <div style={{ marginTop: 4, marginLeft: 22, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {c.games.map((g: any, i: number) => (
+                          <Tag key={i} style={{ fontSize: 11, padding: '1px 6px', lineHeight: '18px', opacity: 0.85 }}>
+                            {g.game} <span style={{ color: '#7B61FF' }}>{g.rank||'?'}</span>
+                          </Tag>
+                        ))}
+                      </div>
+                    )}
+                  </List.Item>
+                )}
+              />
+            )}
+          </Card>
+        </Col>
+
+        {/* Center: Order Pool (17/24) */}
+        <Col span={18}>
           <div style={{ position: 'relative', marginBottom: 16 }}>
             {/* Water wave header */}
             <div style={{
