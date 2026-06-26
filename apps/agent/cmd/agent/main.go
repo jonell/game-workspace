@@ -21,7 +21,6 @@ func main() {
 	wsClient := wsclient.NewClient(cfg.ServerURL, cfg.Token, tracker)
 
 	// onReconfig is called when the user saves new config via the settings page.
-	// It disconnects the old WS connection and creates a new one with updated credentials.
 	onReconfig := func(newCfg config.AgentConfig) {
 		log.Printf("Config changed, reconnecting to %s", newCfg.ServerURL)
 		wsClient.Disconnect()
@@ -29,11 +28,10 @@ func main() {
 		go wsClient.Connect()
 	}
 
-	// Wrap httplocal.StartAsync to match the function signature expected by tray.Start.
 	httpStart := func(addr string, tracker *engine.TimeTracker, wsClient *wsclient.Client, onReconfig func(config.AgentConfig)) {
 		httplocal.StartAsync(addr, tracker, wsClient, onReconfig)
 	}
 
-	// Start the system tray — this blocks until the user quits.
-	tray.Start(":9876", tracker, wsClient, httpStart, onReconfig)
+	// Native Win32 tray — blocks until user quits.
+	tray.Run(":9876", tracker, wsClient, httpStart, onReconfig)
 }

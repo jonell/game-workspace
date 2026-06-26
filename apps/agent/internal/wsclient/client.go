@@ -96,8 +96,13 @@ func NewClient(serverURL, token string, tracker *engine.TimeTracker) *Client {
 }
 
 func (c *Client) Connect() {
+	// Normalize URL scheme: gorilla/websocket expects ws:// or wss://
+	serverURL := c.serverURL
+	serverURL = strings.Replace(serverURL, "http://", "ws://", 1)
+	serverURL = strings.Replace(serverURL, "https://", "wss://", 1)
+
 	for {
-		url := c.serverURL + "/socket.io/?EIO=4&transport=websocket&token=" + c.token
+		url := serverURL + "/socket.io/?EIO=4&transport=websocket&token=" + c.token
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			log.Printf("WebSocket connection failed: %v, retrying in 5s...", err)
