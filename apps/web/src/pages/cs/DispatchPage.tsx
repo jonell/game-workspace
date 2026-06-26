@@ -289,7 +289,7 @@ const DispatchPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
                 </div>
               ) : (
-                <List grid={{ gutter: [12, 12], column: 2 }} dataSource={poolOrders}
+                <List grid={{ gutter: [12, 12], column: 1 }} dataSource={poolOrders}
                   renderItem={(order) => (
                     <List.Item style={{ marginBottom: 0 }}>
                       <div style={{
