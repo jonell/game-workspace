@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Typography, Button, message, Select } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import http from '../../api/client';
-import { OrderStatus, OrderType } from '@chunlv/shared';
 
 const { Text } = Typography;
 const { Option } = Select;
