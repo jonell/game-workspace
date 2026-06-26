@@ -425,6 +425,7 @@ const DispatchPage: React.FC = () => {
           <Form.Item
             name="type"
             label="订单类型"
+            initialValue="NEW"
             rules={[{ required: true, message: '请选择订单类型' }]}
           >
             <Select placeholder="请选择订单类型">
@@ -450,7 +451,7 @@ const DispatchPage: React.FC = () => {
             {({ getFieldValue }) =>
               getFieldValue('gameName') === '三角洲行动' ? (
                 <>
-                  <Form.Item name="deltaMode" label="三角洲模式" rules={[{ required: true, message: '请选择' }]}>
+                  <Form.Item initialValue="护航" name="deltaMode" label="三角洲模式" rules={[{ required: true, message: '请选择' }]}>
                     <Select placeholder="请选择模式">
                       <Option value="护航">护航</Option>
                       <Option value="陪玩">陪玩</Option>
@@ -463,7 +464,7 @@ const DispatchPage: React.FC = () => {
                       <Option value="陪做任务">陪做任务</Option>
                     </Select>
                   </Form.Item>
-                  <Form.Item name="deltaCount" label="陪陪数量">
+                  <Form.Item initialValue="单陪" name="deltaCount" label="陪陪数量">
                     <Select placeholder="请选择">
                       <Option value="单陪">单陪</Option>
                       <Option value="双陪">双陪</Option>
@@ -490,7 +491,7 @@ const DispatchPage: React.FC = () => {
             />
           </Form.Item>
           <Form.Item
-            name="dispatchType"
+            initialValue={DispatchType.POOL} name="dispatchType"
             label="派单方式"
             rules={[{ required: true, message: '请选择派单方式' }]}
           >
