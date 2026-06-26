@@ -61,6 +61,17 @@ const OrdersPage: React.FC = () => {
         columns={[
           { title: '游戏', dataIndex: 'gameName', width: 120 },
           { title: '类型', dataIndex: 'type', width: 80, render: (t: string) => <Tag color={typeConfig[t]?.color}>{typeConfig[t]?.label || t}</Tag> },
+          { title: '接单人', key: 'companion', width: 100,
+            render: (_: any, r: any) => r.companion?.user?.username ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B61FF', color: '#FFF',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+                  {r.companion.user.username[0].toUpperCase()}
+                </span>
+                <Text>{r.companion.user.username}</Text>
+              </span>
+            ) : <Text type="secondary">-</Text>
+          },
           { title: '金额', dataIndex: 'amount', width: 100, render: (v: number) => <span style={{ color: '#FF4757', fontWeight: 600 }}>¥{v?.toFixed(2)}</span> },
           { title: '状态', dataIndex: 'status', width: 90, render: (s: string) => <Tag>{s}</Tag> },
           { title: '客户微信', key: 'wx', width: 140, render: (_: any, r: any) => (r.customFields?.customerWechat || r.customer?.wechatId || '-') },

@@ -102,6 +102,18 @@ const OrdersPage: React.FC = () => {
       },
     },
     {
+      title: '接单人', key: 'companion', width: 100,
+      render: (_: any, r: any) => r.companion?.user?.username ? (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B61FF', color: '#FFF',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+            {r.companion.user.username[0].toUpperCase()}
+          </span>
+          <Text>{r.companion.user.username}</Text>
+        </span>
+      ) : <Text type="secondary">-</Text>
+    },
+    {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
