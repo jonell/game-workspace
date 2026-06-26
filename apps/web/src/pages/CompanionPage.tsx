@@ -104,7 +104,7 @@ const CompanionPage: React.FC = () => {
               isAnimationActive={true}>
               {/* 数字标签在柱上方 */}
               <LabelList dataKey={cfg.key} position="top"
-                formatter={(v: number) => cfg.isMoney ? `¥${v >= 1000 ? (v/1000).toFixed(1)+'k' : v}` : `${Math.round(v)}%`}
+                formatter={(v: any) => cfg.isMoney ? `¥${v >= 1000 ? (v/1000).toFixed(1)+'k' : v}` : `${Math.round(v)}%`}
                 style={{ fontSize: 11, fontWeight: 700, fontFamily: 'monospace' }} />
               {/* 名字标签在数字上方 */}
               <LabelList dataKey="name" position="top"
