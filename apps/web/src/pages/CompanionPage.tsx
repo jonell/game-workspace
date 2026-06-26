@@ -172,18 +172,7 @@ const CompanionPage: React.FC = () => {
                   background: 'linear-gradient(180deg, #404040 0%, #1A1A1A 100%)',
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 }}>蠢驴电竞俱乐部</div>
-                {/* 霓虹光晕层 */}
-                <div style={{
-                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
-                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
-                  fontStyle: 'italic',
-                  color: 'transparent',
-                  WebkitTextStroke: '2px rgba(255,180,40,0.35)',
-                  textShadow: '0 0 6px rgba(255,190,60,0.5), 0 0 14px rgba(255,170,40,0.35), 0 0 30px rgba(255,150,20,0.2), 0 0 50px rgba(255,140,10,0.1)',
-                  position: 'absolute', top: 0, left: 0, right: 0,
-                  animation: 'neon-flicker-v2 7s linear infinite',
-                  pointerEvents: 'none', userSelect: 'none',
-                }}>蠢驴电竞俱乐部</div>
+                
                 {/* 主文字 - 拉丝不锈钢 */}
                 <div style={{
                   fontSize: 64, fontWeight: 900, letterSpacing: 10,
