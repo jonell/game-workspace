@@ -140,8 +140,11 @@ const AppLayout: React.FC = () => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         trigger={null}
-        theme="dark"
         width={220}
+        style={{
+          background: '#fafafa',
+          borderRight: '1px solid #f0f0f5',
+        }}
       >
         <div
           style={{
@@ -149,15 +152,15 @@ const AppLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: '1px solid rgba(0,212,255,0.08)',
+            borderBottom: '1px solid #f0f0f5',
           }}
         >
           <Text
             style={{
-              color: '#00d4ff',
+              color: '#1d1d1f',
               fontSize: collapsed ? 14 : 17,
               fontWeight: 700,
-              letterSpacing: 1,
+              letterSpacing: -0.3,
               whiteSpace: 'nowrap',
             }}
           >
@@ -165,22 +168,22 @@ const AppLayout: React.FC = () => {
           </Text>
         </div>
         <Menu
-          theme="dark"
           mode="inline"
           selectedKeys={selectedKeys}
           items={menuItems as MenuProps['items']}
           onClick={onMenuClick}
+          style={{ border: 'none' }}
         />
       </Sider>
       <Layout>
         <Header
+          className="glass"
           style={{
-            background: '#0d1220',
             padding: '0 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid #1e2a3a',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
             zIndex: 1,
             height: 56,
           }}
@@ -189,13 +192,13 @@ const AppLayout: React.FC = () => {
             type="text"
             icon={collapsed ? IconUnfold : IconFold}
             onClick={() => setCollapsed(!collapsed)}
-            style={{ color: '#6b7c93' }}
+            style={{ color: '#86868b' }}
           />
           <Space size="middle">
             {user && (
               <>
-                <Text style={{ color: '#e8eaed' }}>{user.username}</Text>
-                <Text style={{ color: '#00d4ff', fontSize: 12, fontWeight: 600 }}>
+                <Text style={{ color: '#1d1d1f', fontWeight: 500 }}>{user.username}</Text>
+                <Text style={{ color: '#007AFF', fontSize: 12, fontWeight: 600 }}>
                   {roleLabels[user.role]}
                 </Text>
               </>
@@ -204,7 +207,7 @@ const AppLayout: React.FC = () => {
               type="text"
               icon={IconLogout}
               onClick={handleLogout}
-              style={{ color: '#6b7c93' }}
+              style={{ color: '#86868b' }}
             >
               退出
             </Button>
@@ -213,11 +216,11 @@ const AppLayout: React.FC = () => {
         <Content
           style={{
             margin: 20,
-            padding: 24,
-            background: '#131820',
-            borderRadius: 12,
+            padding: 28,
+            background: '#ffffff',
+            borderRadius: 16,
             minHeight: 280,
-            border: '1px solid #1e2a3a',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         >
           <Outlet />

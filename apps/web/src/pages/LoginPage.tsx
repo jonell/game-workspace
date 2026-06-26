@@ -46,10 +46,11 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-wrapper">
       <div className="login-card">
+        <span className="brand-icon">🎮</span>
         <h1>蠢驴电竞</h1>
         <div className="subtitle">CHUNLV ESPORTS · 陪玩派单管理系统</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Input
             size="large"
             placeholder="用户名"
@@ -73,10 +74,10 @@ const LoginPage: React.FC = () => {
             loading={loading}
             onClick={handleLogin}
             style={{
-              height: 44,
+              height: 46,
               fontSize: 16,
               fontWeight: 600,
-              letterSpacing: 1,
+              borderRadius: 12,
               marginTop: 4,
             }}
           >
@@ -84,8 +85,8 @@ const LoginPage: React.FC = () => {
           </Button>
         </div>
 
-        <div style={{ marginTop: 24, textAlign: 'center' }}>
-          <Text style={{ color: '#4a5568', fontSize: 12 }}>
+        <div style={{ marginTop: 28, textAlign: 'center' }}>
+          <Text style={{ color: '#aeaeb2', fontSize: 12 }}>
             v2.0 · 面向电竞陪玩工作室
           </Text>
         </div>

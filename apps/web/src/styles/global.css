@@ -1,138 +1,136 @@
-/* 蠢驴电竞 — 全局样式 */
+/* 蠢驴电竞 — Apple 科技风全局样式 */
 
-/* 页面背景 */
 body {
-  background: #0b0f19;
-  color: #e8eaed;
+  background: #f5f5f7;
+  color: #1d1d1f;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 滚动条 — 电竞暗色 */
+/* 滚动条 — 极简 */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1220; }
-::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2a3a50; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #aeaeb2; }
 
-/* ── 实时状态脉冲 ── */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 4px rgba(0,212,255,0.3); }
-  50% { box-shadow: 0 0 14px rgba(0,212,255,0.6); }
-}
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 4px rgba(0,230,118,0.3); }
-  50% { box-shadow: 0 0 14px rgba(0,230,118,0.6); }
-}
-@keyframes fade-slide-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── 毛玻璃效果 ── */
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-.pulse-dot {
+/* ── 状态指示点 ── */
+.status-dot {
   display: inline-block;
   width: 8px; height: 8px;
   border-radius: 50%;
   margin-right: 6px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.04);
 }
-.pulse-dot.online { background: #00e676; animation: pulse-green 2s infinite; }
-.pulse-dot.offline { background: #4a5568; }
-.pulse-dot.busy { background: #ffc048; }
-
-/* ── 顶部状态条 ── */
-.stats-bar {
-  display: flex; gap: 32px; padding: 10px 24px;
-  background: linear-gradient(180deg, #0d1220 0%, #0b0f19 100%);
-  border-bottom: 1px solid #1e2a3a;
-}
-.stats-bar .stat-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: #8b9cb3;
-}
-.stats-bar .stat-value {
-  font-size: 18px; font-weight: 700; font-family: 'SF Mono', 'Cascadia Code', monospace;
-}
-.stats-bar .stat-value.cyan { color: #00d4ff; }
-.stats-bar .stat-value.green { color: #00e676; }
-.stats-bar .stat-value.gold { color: #ffc048; }
-
-/* ── 卡片增强 ── */
-.chunlv-card {
-  background: #131820;
-  border: 1px solid #1e2a3a;
-  border-radius: 12px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.chunlv-card:hover {
-  border-color: rgba(0,212,255,0.2);
-  box-shadow: 0 0 20px rgba(0,212,255,0.05);
-}
+.status-dot.online { background: #34C759; }
+.status-dot.offline { background: #aeaeb2; }
+.status-dot.busy { background: #FF9500; }
 
 /* ── 页面标题 ── */
 .page-title {
-  font-size: 20px; font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #e8eaed;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #1d1d1f;
   margin-bottom: 4px;
 }
 .page-subtitle {
-  font-size: 13px; color: #6b7c93;
-  margin-bottom: 20px;
+  font-size: 14px; color: #86868b;
+  margin-bottom: 24px;
 }
 
-/* ── 电竞表头 ── */
-.ant-table-thead > tr > th {
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.8px;
-  font-weight: 700 !important;
+/* ── 统计卡片增强 ── */
+.stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
 }
+.stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+.stat-card .stat-label {
+  font-size: 12px; font-weight: 600;
+  color: #86868b; text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.stat-card .stat-value {
+  font-size: 32px; font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1d1d1f;
+}
+.stat-card .stat-value.blue { color: #007AFF; }
+.stat-card .stat-value.green { color: #34C759; }
+.stat-card .stat-value.orange { color: #FF9500; }
+.stat-card .stat-value.red { color: #FF3B30; }
 
-/* ── 订单类型标签 ── */
-.tag-glow-new { background: rgba(0,212,255,0.12); color: #00d4ff; border-color: rgba(0,212,255,0.2); }
-.tag-glow-renew { background: rgba(0,230,118,0.12); color: #00e676; border-color: rgba(0,230,118,0.15); }
-.tag-glow-repurchase { background: rgba(191,90,255,0.12); color: #bf5aff; border-color: rgba(191,90,255,0.15); }
-.tag-glow-tip { background: rgba(255,192,72,0.12); color: #ffc048; border-color: rgba(255,192,72,0.15); }
+/* ── 圆角卡片 ── */
+.apple-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
 
 /* ── 登录页 ── */
 .login-wrapper {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at 50% 30%, #0d2235 0%, #0b0f19 70%);
-  position: relative;
-  overflow: hidden;
-}
-.login-wrapper::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background:
-    linear-gradient(0deg, transparent 48%, rgba(0,212,255,0.03) 50%, transparent 52%),
-    linear-gradient(90deg, transparent 48%, rgba(0,212,255,0.03) 50%, transparent 52%);
-  background-size: 60px 60px;
-  pointer-events: none;
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 50%, #f0f0f5 100%);
 }
 .login-card {
-  position: relative;
-  background: rgba(19,24,32,0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid #1e2a3a;
-  border-radius: 16px;
-  padding: 40px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: saturate(180%) blur(30px);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 24px;
+  padding: 48px 40px;
   width: 400px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.05);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
 }
 .login-card h1 {
   text-align: center;
-  font-size: 24px; font-weight: 800; letter-spacing: 1px;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.5px;
   margin-bottom: 4px;
-  background: linear-gradient(135deg, #00d4ff 0%, #00e676 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  color: #1d1d1f;
 }
 .login-card .subtitle {
-  text-align: center; font-size: 13px; color: #6b7c93;
-  margin-bottom: 32px;
+  text-align: center; font-size: 13px; color: #aeaeb2;
+  margin-bottom: 36px;
+  letter-spacing: 0.3px;
+}
+.login-card .brand-icon {
+  display: block; text-align: center; font-size: 40px;
+  margin-bottom: 12px;
+}
+
+/* ── 表头风格化 ── */
+.ant-table-thead > tr > th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 /* ── 过渡动画 ── */
-.fade-in { animation: fade-slide-in 0.3s ease; }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fade-in 0.25s ease-out; }
 
-/* 响应式隐藏滚动条（保持功能） */
-.hide-scrollbar::-webkit-scrollbar { width: 0; background: transparent; }
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.scale-in { animation: scale-in 0.2s ease-out; }
