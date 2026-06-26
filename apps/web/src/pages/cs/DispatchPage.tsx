@@ -70,6 +70,8 @@ const DispatchPage: React.FC = () => {
   const [grabbingId, setGrabbingId] = useState<string | null>(null);
   const [chatOrder, setChatOrder] = useState<PoolOrder | null>(null);
   const [chatMessages, setChatMessages] = useState<{ text: string; time: string; from: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatRef = useRef<HTMLDivElement>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
   const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
@@ -160,6 +162,18 @@ const DispatchPage: React.FC = () => {
     } finally {
       setGrabbingId(null);
     }
+  };
+
+  const handleChatSend = () => {
+    const val = chatInput.trim();
+    if (!val) return;
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    setChatMessages(prev => [...prev, { text: val, time, from: 'me' }]);
+    setChatInput('');
+    setTimeout(() => {
+      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }, 50);
   };
 
   // Stats
@@ -506,7 +520,7 @@ const DispatchPage: React.FC = () => {
       </Modal>
 
       {/* 微信风格聊天弹窗 */}
-      <Modal title={null} open={!!chatOrder} onCancel={() => { setChatOrder(null); setChatMessages([]); }} footer={null}
+      <Modal title={null} open={!!chatOrder} onCancel={() => { setChatOrder(null); setChatMessages([]); setChatInput(''); }} footer={null}
         width={440} style={{ top: 20 }} bodyStyle={{ padding: 0 }}>
         {chatOrder && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', maxHeight: 600 }}>
@@ -519,7 +533,7 @@ const DispatchPage: React.FC = () => {
               </div>
             </div>
             {/* 聊天记录区 */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#EDEDED' }}>
+            <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#EDEDED' }}>
               {chatMessages.length === 0 ? (
                 <div style={{ textAlign: 'center', color: '#8E8E93', fontSize: 13, marginTop: 60 }}>
                   暂无消息，发送消息开始对话
@@ -569,27 +583,12 @@ const DispatchPage: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
               background: '#F7F7F7', borderTop: '1px solid #D9D9D9' }}>
               <Input style={{ flex: 1, borderRadius: 6, background: '#FFF', border: '1px solid #E5E5E5' }}
-                placeholder="输入消息..."
-                id="chatInput"
-                onPressEnter={(e: any) => {
-                  const val = e.target.value?.trim();
-                  if (!val) return;
-                  const now = new Date();
-                  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                  setChatMessages(prev => [...prev, { text: val, time, from: 'me' }]);
-                  e.target.value = '';
-                }}
+                placeholder="输入消息..." value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onPressEnter={() => handleChatSend()}
               />
               <Button type="primary" size="small" style={{ borderRadius: 6, background: '#07C160', borderColor: '#07C160' }}
-                onClick={() => {
-                  const input = document.getElementById('chatInput') as HTMLInputElement;
-                  const val = input?.value?.trim();
-                  if (!val) return;
-                  const now = new Date();
-                  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                  setChatMessages(prev => [...prev, { text: val, time, from: 'me' }]);
-                  input.value = '';
-                }}>
+                onClick={handleChatSend}>
                 发送
               </Button>
             </div>
