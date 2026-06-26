@@ -324,12 +324,6 @@ const DispatchPage: React.FC = () => {
                             <span style={{ fontSize: 13, color: '#1E293B' }}>
                               ¥{Number(order.amount).toFixed(2)}
                             </span>
-                            {order.csUser?.username && (
-                              <span onClick={() => setChatOrder(order)}
-                                style={{ fontSize: 12, color: '#00D4FF', cursor: 'pointer', fontWeight: 600, borderBottom: '1px dashed #00D4FF' }}>
-                                💬 {order.csUser.username}
-                              </span>
-                            )}
                             {order.customFields?.deltaNote && (
                               <span style={{ fontSize: 14, fontWeight: 700, color: '#FF4757', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
                                 📝 {order.customFields.deltaNote}
@@ -346,6 +340,12 @@ const DispatchPage: React.FC = () => {
                               </span>
                             )}
                           </div>
+                          {order.csUser?.username && (
+                            <span onClick={() => setChatOrder(order)}
+                              style={{ fontSize: 12, color: '#00D4FF', cursor: 'pointer', fontWeight: 600, borderBottom: '1px dashed #00D4FF', whiteSpace: 'nowrap' }}>
+                              💬 {order.csUser.username}
+                            </span>
+                          )}
                           <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap', flexShrink: 0, minWidth: 80, textAlign: 'right' }}>
                             {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
                           </span>
