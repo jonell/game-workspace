@@ -103,105 +103,115 @@ const CompanionPage: React.FC = () => {
 
         {/* 内容 */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* 居中标题 */}
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: '#00FF88', fontFamily: 'monospace', letterSpacing: 6, marginBottom: 8, opacity: 0.7 }}>
-              ◆ TACTICAL COMMAND CENTER ◆
-            </div>
-            {/* 主标题 - 拉丝不锈钢 + 暖黄霓虹背光 + 3D立体 */}
-            <style>{`
-              @keyframes neon-flicker {
-                0%,100% { opacity: 1; }
-                2% { opacity: 0.95; }
-                4% { opacity: 1; }
-                50% { opacity: 0.98; }
-                52% { opacity: 0.92; }
-                54% { opacity: 1; }
-              }
-              @keyframes neon-breathe {
-                0%,100% { filter: drop-shadow(0 0 8px rgba(255,200,50,0.6)) drop-shadow(0 0 20px rgba(255,180,30,0.4)) drop-shadow(0 0 40px rgba(255,160,20,0.2)); }
-                50% { filter: drop-shadow(0 0 14px rgba(255,200,50,0.9)) drop-shadow(0 0 35px rgba(255,180,30,0.6)) drop-shadow(0 0 60px rgba(255,160,20,0.4)); }
-              }
-            `}</style>
-            <div style={{
-              fontSize: 72, fontWeight: 900, letterSpacing: 16, fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
-              fontStyle: 'italic',
-              lineHeight: 1.05, marginBottom: 2, position: 'relative', display: 'inline-block',
-              transform: 'skewX(-5deg) perspective(400px) rotateX(3deg)',
-            }}>
-              {/* 最外层柔光光晕 */}
-              <div style={{
-                position: 'absolute', inset: '-30px -40px',
-                background: 'radial-gradient(ellipse at center, rgba(255,180,30,0.15) 0%, rgba(255,140,20,0.05) 40%, transparent 70%)',
-                filter: 'blur(20px)', zIndex: 0, pointerEvents: 'none',
-                animation: 'neon-breathe 3s ease-in-out infinite',
+          {/* 居中标题 - 商业写实招牌 */}
+          <div style={{
+            position: 'relative',
+            background: '#3A3530',
+            borderRadius: 20,
+            padding: '50px 40px 40px',
+            marginBottom: 20,
+            overflow: 'hidden',
+            boxShadow: 'inset 0 0 120px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3)',
+          }}>
+            {/* 清水混凝土墙面纹理 */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+              background: '#3A3530', opacity: 1 }}>
+              {/* 混凝土噪点纹理 */}
+              <div style={{ position: 'absolute', inset: 0, opacity: 0.3,
+                backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(0,0,0,0.15) 1px, transparent 1px), radial-gradient(circle at 60% 50%, rgba(0,0,0,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 1px, transparent 1px), radial-gradient(circle at 30% 70%, rgba(0,0,0,0.12) 1px, transparent 1px), radial-gradient(circle at 70% 80%, rgba(255,255,255,0.04) 1px, transparent 1px)',
+                backgroundSize: '40px 40px, 60px 60px, 50px 50px, 70px 70px, 45px 45px',
               }} />
-              {/* 暖黄霓虹背光 */}
-              <div style={{
-                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
-                fontFamily: 'inherit', fontStyle: 'inherit',
-                color: 'transparent',
-                background: 'linear-gradient(180deg, #E8E8E8 0%, #C0C0C0 25%, #A0A0A0 50%, #C0C0C0 75%, #E0E0E0 100%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                WebkitTextStroke: '1px rgba(255,180,30,0.25)',
-                textShadow: '0 0 4px rgba(255,180,30,0.5), 0 0 10px rgba(255,160,20,0.3), 0 0 25px rgba(255,140,10,0.2)',
-                position: 'absolute', top: 0, left: 0, right: 0,
-                animation: 'neon-flicker 6s linear infinite',
-                pointerEvents: 'none', userSelect: 'none',
-              }}>蠢驴电竞</div>
-              {/* 3D立体阴影层 */}
-              <div style={{
-                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
-                fontFamily: 'inherit', fontStyle: 'inherit',
-                color: 'transparent',
-                background: 'linear-gradient(180deg, #707888 0%, #505868 100%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                position: 'absolute', top: 4, left: 4, right: 0, zIndex: -1,
-                pointerEvents: 'none', userSelect: 'none', opacity: 0.4,
-              }}>蠢驴电竞</div>
-              <div style={{
-                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
-                fontFamily: 'inherit', fontStyle: 'inherit',
-                color: 'transparent',
-                background: 'linear-gradient(180deg, #9098A8 0%, #707888 100%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                position: 'absolute', top: 2, left: 2, right: 0, zIndex: -1,
-                pointerEvents: 'none', userSelect: 'none', opacity: 0.5,
-              }}>蠢驴电竞</div>
-              {/* 主文字层 - 拉丝不锈钢纹理 */}
-              <div style={{
-                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
-                fontFamily: 'inherit', fontStyle: 'inherit',
-                color: 'transparent',
-                background: 'linear-gradient(180deg, #FFFFFF 0%, #E8E8EC 8%, #C8CCD4 20%, #D0D4DC 30%, #A8ACB4 45%, #C0C4CC 55%, #B0B4BC 68%, #D8DCE0 82%, #FFFFFF 95%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.6)) drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
-                position: 'relative', zIndex: 1,
-              }}>
-                蠢驴电竞
-              </div>
-            </div>{/* 副标题 */}
-            <div style={{
-              fontSize: 16, fontWeight: 700, letterSpacing: 10, fontFamily: "monospace",
-              background: 'linear-gradient(90deg, #C8D0D8 0%, #FFFFFF 30%, #FFD700 60%, #FFFFFF 100%)',
-              backgroundSize: '200% 100%',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              marginBottom: 2,
-            }}>
-              {cfg.label} · RANKING
+              {/* 圆形凹孔工装肌理 */}
+              {[[15,20,18],[55,30,22],[80,15,16],[25,60,20],[60,65,24],[85,75,18],[40,85,22],[70,45,20]].map(([x,y,s],i) => (
+                <div key={i} style={{
+                  position: 'absolute', left: `${x}%`, top: `${y}%`,
+                  width: s, height: s, borderRadius: '50%',
+                  background: 'radial-gradient(circle at 40% 40%, rgba(0,0,0,0.3), rgba(0,0,0,0.05))',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05)',
+                  transform: 'translate(-50%,-50%)',
+                }} />
+              ))}
+              {/* 昏暗环境遮罩 */}
+              <div style={{ position: 'absolute', inset: 0,
+                background: 'radial-gradient(ellipse at 30% 40%, transparent 30%, rgba(0,0,0,0.4) 100%)' }} />
+              {/* 单侧柔光 - 左上角打亮 */}
+              <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '60%', height: '80%',
+                background: 'radial-gradient(ellipse at 30% 40%, rgba(255,240,220,0.08) 0%, transparent 70%)',
+                transform: 'rotate(-15deg)' }} />
             </div>
-            <div style={{ fontSize: 11, color: '#4A6B5A', fontFamily: 'monospace', letterSpacing: 3, marginTop: 4 }}>
-              CHUNLV ESPORTS · DELTA FORCE · {dateStr}
-            </div>
-            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', gap: 24, fontSize: 11, color: '#5A7B6A', fontFamily: 'monospace' }}>
-              <span>FAIL_LINE: {cfg.isMoney?'¥':''}{cfg.threshold}{cfg.unit}</span>
-              <span style={{ color: '#FF4757' }}>⚠ FAIL: {failCount}</span>
-              <span style={{ color: '#00FF88' }}>RANK: #{myRank}/{sorted.length}</span>
-              <span>REFRESH: 30s</span>
-            </div>
-          </div>
 
-          {/* 指标切换 */}
+            {/* 文字招牌 */}
+            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+              <style>{`
+                @keyframes neon-flicker-v2 {
+                  0%,100% { opacity: 1; }
+                  3% { opacity: 0.93; }
+                  5% { opacity: 1; }
+                  51% { opacity: 0.97; }
+                  53% { opacity: 0.9; }
+                  55% { opacity: 1; }
+                }
+                @keyframes neon-glow-v2 {
+                  0%,100% { filter: drop-shadow(0 0 10px rgba(255,190,60,0.5)) drop-shadow(0 0 25px rgba(255,170,40,0.3)) drop-shadow(0 0 50px rgba(255,150,20,0.15)); }
+                  50% { filter: drop-shadow(0 0 18px rgba(255,190,60,0.8)) drop-shadow(0 0 40px rgba(255,170,40,0.5)) drop-shadow(0 0 70px rgba(255,150,20,0.3)); }
+                }
+              `}</style>
+              <div style={{ display: 'inline-block', position: 'relative', transform: 'skewX(-3deg)' }}>
+                {/* 招牌背板 */}
+                <div style={{
+                  position: 'absolute', inset: '-24px -36px',
+                  background: 'linear-gradient(180deg, rgba(30,28,26,0.9), rgba(20,18,16,0.95))',
+                  borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
+                }} />
+                {/* 立体投影 */}
+                <div style={{
+                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
+                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  background: 'linear-gradient(180deg, #404040 0%, #1A1A1A 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                }}>蠢驴电竞俱乐部</div>
+                {/* 霓虹光晕层 */}
+                <div style={{
+                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
+                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  WebkitTextStroke: '2px rgba(255,180,40,0.35)',
+                  textShadow: '0 0 6px rgba(255,190,60,0.5), 0 0 14px rgba(255,170,40,0.35), 0 0 30px rgba(255,150,20,0.2), 0 0 50px rgba(255,140,10,0.1)',
+                  position: 'absolute', top: 0, left: 0, right: 0,
+                  animation: 'neon-flicker-v2 7s linear infinite',
+                  pointerEvents: 'none', userSelect: 'none',
+                }}>蠢驴电竞俱乐部</div>
+                {/* 主文字 - 拉丝不锈钢 */}
+                <div style={{
+                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
+                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  background: 'linear-gradient(180deg, #F0F0F2 0%, #D8D8DC 15%, #C0C0C8 30%, #D0D0D8 45%, #B0B0B8 55%, #C8C8D0 70%, #B8B8C0 85%, #E8E8EC 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.6)) drop-shadow(0 6px 12px rgba(0,0,0,0.3))',
+                  position: 'relative', zIndex: 1,
+                  animation: 'neon-glow-v2 4s ease-in-out infinite',
+                }}>
+                  蠢驴电竞俱乐部
+                </div>
+              </div>
+              {/* 排名副标题 */}
+              <div style={{ marginTop: 20, position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  fontSize: 14, fontWeight: 700, letterSpacing: 8, fontFamily: "monospace",
+                  color: '#A0A090',
+                  textShadow: '0 0 10px rgba(255,180,40,0.3)',
+                }}>
+                  {cfg.label} · RANKING
+                </div>
+              </div>
+            </div>
+          </div>{/* 指标切换 */}
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <Segmented value={metric} onChange={(v) => setMetric(v as Metric)}
               options={[
