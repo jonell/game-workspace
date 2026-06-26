@@ -63,46 +63,12 @@ const OrdersPage: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: '订单ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 160,
-      ellipsis: true,
-    },
-    {
-      title: '游戏',
-      dataIndex: 'gameName',
-      key: 'gameName',
-      width: 120,
-    },
-    {
-      title: '客户微信号',
-      key: 'wechatId',
-      width: 160,
-      render: (_: unknown, record: Order) => (
-        <Text>{record.customer?.wechatId ?? '-'}</Text>
-      ),
-    },
-    {
-      title: '金额',
-      dataIndex: 'amount',
-      key: 'amount',
-      width: 100,
-      render: (val: number) => `¥${val.toFixed(2)}`,
-    },
-    {
-      title: '类型',
-      dataIndex: 'orderType',
-      key: 'orderType',
-      width: 80,
-      render: (type: OrderType) => {
-        const cfg = orderTypeConfig[type];
-        return <Tag color={cfg?.color}>{cfg?.label ?? type}</Tag>;
-      },
-    },
-    {
-      title: '接单人', key: 'companion', width: 100,
+    { title: '订单ID', dataIndex: 'id', width: 90, render: (v: string) => v?.slice(0, 8) },
+    { title: '游戏', dataIndex: 'gameName', width: 100 },
+    { title: '客户', key: 'wx', width: 120, render: (_: any, r: any) => r.customFields?.customerWechat || r.customer?.wechatId || '-' },
+    { title: '金额', dataIndex: 'amount', width: 100, render: (v: number) => <span style={{ color: '#FF4757', fontWeight: 600 }}>¥{v?.toFixed(2)}</span> },
+    { title: '类型', dataIndex: 'type', width: 70, render: (t: string) => <Tag color={typeConfig[t]?.color}>{typeConfig[t]?.label || t}</Tag> },
+    { title: '接单人', key: 'companion', width: 100,
       render: (_: any, r: any) => r.companion?.user?.username ? (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B61FF', color: '#FFF',
@@ -113,32 +79,8 @@ const OrdersPage: React.FC = () => {
         </span>
       ) : <Text type="secondary">-</Text>
     },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 90,
-      render: (status: OrderStatus) => {
-        const cfg = statusConfig[status];
-        return <Tag color={cfg?.color}>{cfg?.label ?? status}</Tag>;
-      },
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      width: 170,
-      render: (val: string) => {
-        if (!val) return '-';
-        return new Date(val).toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      },
-    },
+    { title: '状态', dataIndex: 'status', width: 80, render: (s: string) => <Tag color={statusConfig[s]?.color}>{statusConfig[s]?.label||s}</Tag> },
+    { title: '创建时间', dataIndex: 'createdAt', width: 130, render: (v: string) => v ? new Date(v).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-' },
   ];
 
   return (
