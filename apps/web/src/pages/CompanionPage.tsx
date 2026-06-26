@@ -20,10 +20,7 @@ const CompanionPage: React.FC = () => {
   const fetch = useCallback(async () => {
     setLoading(true);
     try {
-      const [rankRes, compRes] = await Promise.all([
-        http.get('/companions/ranking'),
-        user?.companionId ? http.get(`/companions/${user.companionId}`) : Promise.resolve(null),
-      ]);
+      const rankRes = await http.get('/companions/ranking');
       const list = rankRes.data.data ?? [];
       setRanking(list);
       const idx = list.findIndex((c: any) => c.user?.username === user?.username);
