@@ -199,16 +199,6 @@ const CompanionPage: React.FC = () => {
                   蠢驴电竞俱乐部
                 </div>
               </div>
-              {/* 排名副标题 */}
-              <div style={{ marginTop: 20, position: 'relative', zIndex: 1 }}>
-                <div style={{
-                  fontSize: 14, fontWeight: 700, letterSpacing: 8, fontFamily: "monospace",
-                  color: '#A0A090',
-                  textShadow: '0 0 10px rgba(255,180,40,0.3)',
-                }}>
-                  {cfg.label} · RANKING
-                </div>
-              </div>
             </div>
           </div>{/* 指标切换 */}
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
