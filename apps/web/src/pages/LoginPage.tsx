@@ -89,7 +89,22 @@ const LoginPage: React.FC = () => {
           </Button>
         </div>
 
-        <div style={{ marginTop: 28, textAlign: 'center' }}>
+        <div style={{ marginTop: 20, textAlign: 'center' }}>
+          <a
+            href="/api/download/agent"
+            download
+            style={{
+              color: '#00D4FF',
+              fontSize: 13,
+              textDecoration: 'none',
+              fontWeight: 500,
+            }}
+          >
+            📥 下载 Windows 客户端
+          </a>
+        </div>
+
+        <div style={{ marginTop: 12, textAlign: 'center' }}>
           <Text style={{ color: '#94A3B8', fontSize: 12 }}>
             v2.1 · 面向电竞陪玩工作室
           </Text>
