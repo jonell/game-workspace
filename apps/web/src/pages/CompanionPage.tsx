@@ -108,24 +108,42 @@ const CompanionPage: React.FC = () => {
             <div style={{ fontSize: 11, color: '#00FF88', fontFamily: 'monospace', letterSpacing: 6, marginBottom: 8, opacity: 0.7 }}>
               ◆ TACTICAL COMMAND CENTER ◆
             </div>
-            <div style={{
-              fontSize: 42, fontWeight: 900, letterSpacing: 6, fontFamily: "'Orbitron','SF Pro Display',system-ui,sans-serif",
-              background: 'linear-gradient(135deg, #00FF88 0%, #00E5FF 25%, #7B61FF 50%, #FFD700 75%, #00FF88 100%)',
-              backgroundSize: '300% 300%',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 0 30px rgba(0,255,136,0.4)) drop-shadow(0 0 60px rgba(0,212,255,0.2))',
-              lineHeight: 1.2,
-              marginBottom: 4,
-            }}>
-              蠢驴电竞
+            {/* 主标题 - 双层叠加实现金属立体 */}
+            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
+              {/* 底层 - 发光底座 */}
+              <div style={{
+                fontSize: 64, fontWeight: 900, letterSpacing: 12, fontFamily: "system-ui, 'PingFang SC', sans-serif",
+                color: 'transparent',
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #E0E0E0 20%, #808080 50%, #C0C0C0 70%, #FFFFFF 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                position: 'absolute', top: 3, left: 3, right: 0,
+                filter: 'blur(2px)',
+                opacity: 0.5,
+                userSelect: 'none',
+              }}>
+                蠢驴电竞
+              </div>
+              {/* 主文字层 */}
+              <div style={{
+                fontSize: 64, fontWeight: 900, letterSpacing: 12, fontFamily: "system-ui, 'PingFang SC', sans-serif",
+                background: 'linear-gradient(180deg, #FFFDE7 0%, #FFD700 15%, #FFA000 35%, #FFD700 55%, #FFECB3 75%, #FFFFFF 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                filter: 'drop-shadow(0 2px 6px rgba(255,215,0,0.5)) drop-shadow(0 0 24px rgba(255,215,0,0.3)) drop-shadow(0 6px 12px rgba(0,0,0,0.4))',
+                lineHeight: 1.1,
+                position: 'relative',
+                animation: 'title-shine 3s ease-in-out infinite',
+              }}>
+                蠢驴电竞
+              </div>
             </div>
+            {/* 副标题 */}
             <div style={{
-              fontSize: 18, fontWeight: 700, letterSpacing: 8, fontFamily: "monospace",
-              background: 'linear-gradient(90deg, #C0C0C0, #FFFFFF, #C0C0C0)',
+              fontSize: 16, fontWeight: 700, letterSpacing: 10, fontFamily: "monospace",
+              background: 'linear-gradient(90deg, #C0C0C0 0%, #FFFFFF 30%, #FFD700 60%, #FFFFFF 100%)',
               backgroundSize: '200% 100%',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              marginBottom: 8,
+              marginBottom: 2,
             }}>
               {cfg.label} · RANKING
             </div>
