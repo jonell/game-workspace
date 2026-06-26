@@ -110,13 +110,17 @@ const CompanionPage: React.FC = () => {
             </div>
             {/* 主标题 - 流动金属光泽 */}
             <style>{`
-              @keyframes metal-shine {
-                0% { background-position: 0% 50%, 200% 50%; }
-                100% { background-position: 0% 50%, -200% 50%; }
-              }
-              @keyframes metal-pulse {
-                0%,100% { filter: drop-shadow(0 1px 2px rgba(255,255,255,0.9)) drop-shadow(0 0 20px rgba(255,215,0,0.3)) drop-shadow(0 0 40px rgba(192,192,192,0.2)) drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
-                50% { filter: drop-shadow(0 2px 4px rgba(255,255,255,1)) drop-shadow(0 0 35px rgba(255,215,0,0.6)) drop-shadow(0 0 60px rgba(255,255,255,0.4)) drop-shadow(0 6px 14px rgba(0,0,0,0.6)); }
+              @keyframes lightning-bolt {
+                0%   { background-position: 0% 50%, 200% 50%; filter: drop-shadow(0 1px 2px rgba(255,255,255,0.9)) drop-shadow(0 0 20px rgba(255,215,0,0.3)); }
+                8%   { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
+                9%   { background-position: 0% 50%, 200% 50%; }
+                33%  { background-position: 0% 50%, 200% 50%; }
+                42%  { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
+                43%  { background-position: 0% 50%, 200% 50%; }
+                66%  { background-position: 0% 50%, 200% 50%; }
+                75%  { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
+                76%  { background-position: 0% 50%, 200% 50%; }
+                100% { background-position: 0% 50%, 200% 50%; }
               }
             `}</style>
             <div style={{
@@ -131,7 +135,7 @@ const CompanionPage: React.FC = () => {
               WebkitBackgroundClip: 'text, text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
-              animation: 'metal-shine 2.5s linear infinite, metal-pulse 2s ease-in-out infinite',
+              animation: 'lightning-bolt 4s ease-in-out infinite',
               lineHeight: 1.1,
               marginBottom: 6,
               display: 'inline-block',
