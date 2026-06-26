@@ -205,7 +205,7 @@ const CompanionPage: React.FC = () => {
 
           {/* 图表 */}
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0,
+            flex: 1, display: 'flex', flexDirection: 'column', minHeight: 300,
             background: 'linear-gradient(180deg, rgba(0,20,10,0.6), rgba(0,10,5,0.8))',
             borderRadius: 14, padding: '16px 20px 10px',
             border: '1px solid rgba(0,255,136,0.06)',
