@@ -60,7 +60,7 @@ const CompanionPage: React.FC = () => {
       `}</style>
 
       <div style={{
-        background: 'linear-gradient(180deg, #0A0F0A 0%, #0D1410 30%, #0B100C 60%, #080C08 100%)',
+        background: '#1A1D24',
         flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
         borderRadius: 0, padding: '20px 24px 16px',
         border: '1px solid rgba(0,255,136,0.08)',
@@ -206,7 +206,7 @@ const CompanionPage: React.FC = () => {
           {/* 图表 */}
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column', minHeight: 300,
-            background: 'linear-gradient(180deg, rgba(0,20,10,0.6), rgba(0,10,5,0.8))',
+            background: '#222630',
             borderRadius: 14, padding: '16px 20px 10px',
             border: '1px solid rgba(0,255,136,0.06)',
             position: 'relative', overflow: 'hidden',
