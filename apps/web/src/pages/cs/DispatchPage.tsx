@@ -163,7 +163,10 @@ const DispatchPage: React.FC = () => {
     }
   };
 
-  const openAssignModal = (orderId: string) => {
+  const openAssignModal = (orderId: string, e: React.MouseEvent) => {
+    // 轨迹动画：给卡片加 grabbing class
+    const card = (e.currentTarget as HTMLElement).closest('.pool-card') as HTMLElement;
+    if (card) { card.classList.add('grabbing'); setTimeout(() => card.classList.remove('grabbing'), 600); }
     setSelectedOrderId(orderId);
     setCompanionSearch('');
     setAssignModalOpen(true);
@@ -320,7 +323,7 @@ const DispatchPage: React.FC = () => {
                         border: '1px solid #E8ECF1', transition: 'all 0.2s',
                         animation: 'fade-slide-in 0.3s ease',
                       }} className="pool-card">
-                        {/* Row 1: Game + Type + Amount */}
+                        {/* Row 1: Game + Type */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                           <Space size={8}>
                             <Text strong style={{ fontSize: 16 }}>{order.gameName}</Text>
@@ -331,12 +334,10 @@ const DispatchPage: React.FC = () => {
                               {order.dispatchType === 'DIRECT' ? '指定' : '抢单'}
                             </Tag>
                           </Space>
-                          <Text strong style={{ fontSize: 20, color: '#FF4757' }}>
-                            ¥{Number(order.amount).toFixed(2)}
-                          </Text>
                         </div>
                         {/* Row 2: All order details */}
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: 12, color: '#475569', marginBottom: 8, lineHeight: '22px' }}>
+                          <span>💰 <b>¥{Number(order.amount).toFixed(2)}</b></span>
                           <span>💬 微信: <b>{order.customFields?.customerWechat || order.customer?.wechatId || '-'}</b></span>
                           <span>🏠 房间码: <b>{order.customFields?.customerRoomCode || '-'}</b></span>
                           <span>💳 {order.customFields?.billingMode === 'round'
@@ -362,9 +363,11 @@ const DispatchPage: React.FC = () => {
                             {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''}
                           </Text>
                           <Button type="primary" size="small" loading={assigningId === order.id}
-                            onClick={() => openAssignModal(order.id)}
-                            style={{ borderRadius: 6, fontWeight: 600 }}>
-                            🎯 指定陪玩
+                            onClick={(e) => openAssignModal(order.id, e)}
+                            style={{ borderRadius: 6, fontWeight: 600, position: 'relative', overflow: 'hidden' }}
+                            className="grab-btn">
+                            接单
+                            <span className="grab-ripple" />
                           </Button>
                         </div>
                       </div>
