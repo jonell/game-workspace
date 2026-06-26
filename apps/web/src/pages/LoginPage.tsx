@@ -16,7 +16,7 @@ const roleRouteMap: Record<UserRole, string> = {
   [UserRole.OWNER]: '/owner/revenue',
   [UserRole.ADMIN]: '/admin/dispatch',
   [UserRole.CS]: '/cs/dispatch',
-  [UserRole.COMPANION]: '/cs/dispatch',
+  [UserRole.COMPANION]: '/companion',
 };
 
 const LoginPage: React.FC = () => {

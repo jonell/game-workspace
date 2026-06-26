@@ -49,7 +49,7 @@ const ProfileSetupPage: React.FC = () => {
     try {
       await http.put(`/companions/${user!.companionId}/profile`, { gameProfiles: list });
       message.success('资料已保存');
-      window.location.href = '/';
+      window.location.href = '/companion';
     } catch (err: any) {
       message.error(err?.response?.data?.message || '保存失败');
     } finally { setSaving(false); }

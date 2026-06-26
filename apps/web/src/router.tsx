@@ -18,6 +18,7 @@ import OwnerRevenuePage from './pages/owner/RevenuePage';
 import ReviewPage from './pages/admin/ReviewPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
+import CompanionPage from './pages/CompanionPage';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,11 @@ export const router = createBrowserRouter([
   {
     path: '/profile-setup',
     element: <ProfileSetupPage />,
+  },
+  {
+    path: '/companion',
+    element: <AppLayout />,
+    children: [{ path: '', element: <CompanionPage /> }],
   },
   {
     path: '/',
