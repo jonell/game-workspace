@@ -23,7 +23,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Serve uploaded files
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), '../../uploads'), {
     prefix: '/uploads',
   });
 
