@@ -16,6 +16,7 @@ import {
   RedoOutlined,
   ThunderboltOutlined,
   StopOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { CompanionStatus } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
@@ -57,6 +58,7 @@ const commandLabels: Record<string, { label: string; color: string }> = {
   restart: { label: '重启', color: 'orange' },
   throttle: { label: '限速', color: 'blue' },
   unthrottle: { label: '解除限速', color: 'green' },
+  kick: { label: '踢出', color: 'red' },
 };
 
 function formatHeartbeat(heartbeat: string | null | undefined): string {
@@ -103,18 +105,24 @@ const PcControlPage: React.FC = () => {
     async (companionId: string, command: string) => {
       setSendingCommands((prev) => ({ ...prev, [companionId]: true }));
       try {
-        const params = command === 'throttle' ? { limitKB: 500 } : undefined;
-        await companionsApi.sendCommand(companionId, command, params);
-        message.success(`指令「${commandLabels[command]?.label ?? command}」已发送`);
+        if (command === 'kick') {
+          await companionsApi.kick(companionId);
+          message.success('已踢出陪玩');
+        } else {
+          const params = command === 'throttle' ? { limitKB: 500 } : undefined;
+          await companionsApi.sendCommand(companionId, command, params);
+          message.success(`指令「${commandLabels[command]?.label ?? command}」已发送`);
+        }
       } catch (err: any) {
         const msg =
           err?.response?.data?.message || err?.message || '指令发送失败';
         message.error(msg);
       } finally {
         setSendingCommands((prev) => ({ ...prev, [companionId]: false }));
+        fetchCompanions();
       }
     },
-    [],
+    [fetchCompanions],
   );
 
   const columns = [
@@ -270,6 +278,26 @@ const PcControlPage: React.FC = () => {
                   disabled={!pcOnline || busy}
                 >
                   解除限速
+                </Button>
+              </Tooltip>
+            </Popconfirm>
+
+            <Popconfirm
+              title="确定要踢出该陪玩？Agent 将被强制下线"
+              onConfirm={() => handleCommand(record.id, 'kick')}
+              okText="确定踢出"
+              cancelText="取消"
+              disabled={!pcOnline}
+            >
+              <Tooltip title={pcOnline ? '强制踢出陪玩' : 'PC 离线'}>
+                <Button
+                  size="small"
+                  danger
+                  icon={React.createElement(LogoutOutlined)}
+                  disabled={!pcOnline || busy}
+                  loading={busy}
+                >
+                  踢出
                 </Button>
               </Tooltip>
             </Popconfirm>

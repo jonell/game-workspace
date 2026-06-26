@@ -125,4 +125,32 @@ export class CompanionsController {
 
     return { code: 200, message: 'ok', data: { companionId, status: 'ONLINE' } };
   }
+
+  // 踢出陪玩：强制下线
+  @Post('companions/:id/kick')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async kickCompanion(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ApiResponse<unknown>> {
+    // 1. 发送踢出指令给 Agent
+    this.wsGateway.sendCommand(id, 'kick', { reason: '管理员强制下线' });
+
+    // 2. 更新数据库状态为离线
+    await this.prisma.companion.update({
+      where: { id },
+      data: { status: 'OFFLINE' },
+    });
+
+    // 3. 通知 Studio
+    if (req.user.studioId) {
+      this.wsGateway.broadcastToStudio(req.user.studioId, 'status:broadcast', {
+        companionId: id,
+        status: 'OFFLINE',
+        reason: 'kicked',
+      });
+    }
+
+    return { code: 200, message: '已踢出陪玩', data: { companionId: id, status: 'OFFLINE' } };
+  }
 }

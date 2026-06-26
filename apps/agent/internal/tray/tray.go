@@ -446,6 +446,11 @@ func commandLoop(wsClient *wsclient.Client) {
 				err = netctrl.SetThrottle(cmd.Params.LimitKB)
 			case "unthrottle":
 				err = netctrl.RemoveThrottle()
+			case "kick":
+				log.Println("Kicked by admin — shutting down")
+				wsClient.Disconnect()
+				procPostQuitMessage.Call(0)
+				return
 			default:
 				log.Printf("Unknown command: %s", cmd.Command)
 			}
