@@ -1,0 +1,138 @@
+/* 蠢驴电竞 — 全局样式 */
+
+/* 页面背景 */
+body {
+  background: #0b0f19;
+  color: #e8eaed;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 滚动条 — 电竞暗色 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1220; }
+::-webkit-scrollbar-thumb { background: #1e2a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a3a50; }
+
+/* ── 实时状态脉冲 ── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(0,212,255,0.3); }
+  50% { box-shadow: 0 0 14px rgba(0,212,255,0.6); }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 4px rgba(0,230,118,0.3); }
+  50% { box-shadow: 0 0 14px rgba(0,230,118,0.6); }
+}
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.pulse-dot.online { background: #00e676; animation: pulse-green 2s infinite; }
+.pulse-dot.offline { background: #4a5568; }
+.pulse-dot.busy { background: #ffc048; }
+
+/* ── 顶部状态条 ── */
+.stats-bar {
+  display: flex; gap: 32px; padding: 10px 24px;
+  background: linear-gradient(180deg, #0d1220 0%, #0b0f19 100%);
+  border-bottom: 1px solid #1e2a3a;
+}
+.stats-bar .stat-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: #8b9cb3;
+}
+.stats-bar .stat-value {
+  font-size: 18px; font-weight: 700; font-family: 'SF Mono', 'Cascadia Code', monospace;
+}
+.stats-bar .stat-value.cyan { color: #00d4ff; }
+.stats-bar .stat-value.green { color: #00e676; }
+.stats-bar .stat-value.gold { color: #ffc048; }
+
+/* ── 卡片增强 ── */
+.chunlv-card {
+  background: #131820;
+  border: 1px solid #1e2a3a;
+  border-radius: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.chunlv-card:hover {
+  border-color: rgba(0,212,255,0.2);
+  box-shadow: 0 0 20px rgba(0,212,255,0.05);
+}
+
+/* ── 页面标题 ── */
+.page-title {
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #e8eaed;
+  margin-bottom: 4px;
+}
+.page-subtitle {
+  font-size: 13px; color: #6b7c93;
+  margin-bottom: 20px;
+}
+
+/* ── 电竞表头 ── */
+.ant-table-thead > tr > th {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  font-weight: 700 !important;
+}
+
+/* ── 订单类型标签 ── */
+.tag-glow-new { background: rgba(0,212,255,0.12); color: #00d4ff; border-color: rgba(0,212,255,0.2); }
+.tag-glow-renew { background: rgba(0,230,118,0.12); color: #00e676; border-color: rgba(0,230,118,0.15); }
+.tag-glow-repurchase { background: rgba(191,90,255,0.12); color: #bf5aff; border-color: rgba(191,90,255,0.15); }
+.tag-glow-tip { background: rgba(255,192,72,0.12); color: #ffc048; border-color: rgba(255,192,72,0.15); }
+
+/* ── 登录页 ── */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 30%, #0d2235 0%, #0b0f19 70%);
+  position: relative;
+  overflow: hidden;
+}
+.login-wrapper::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    linear-gradient(0deg, transparent 48%, rgba(0,212,255,0.03) 50%, transparent 52%),
+    linear-gradient(90deg, transparent 48%, rgba(0,212,255,0.03) 50%, transparent 52%);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.login-card {
+  position: relative;
+  background: rgba(19,24,32,0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid #1e2a3a;
+  border-radius: 16px;
+  padding: 40px;
+  width: 400px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.05);
+}
+.login-card h1 {
+  text-align: center;
+  font-size: 24px; font-weight: 800; letter-spacing: 1px;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, #00d4ff 0%, #00e676 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.login-card .subtitle {
+  text-align: center; font-size: 13px; color: #6b7c93;
+  margin-bottom: 32px;
+}
+
+/* ── 过渡动画 ── */
+.fade-in { animation: fade-slide-in 0.3s ease; }
+
+/* 响应式隐藏滚动条（保持功能） */
+.hide-scrollbar::-webkit-scrollbar { width: 0; background: transparent; }

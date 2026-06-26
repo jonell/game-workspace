@@ -149,18 +149,19 @@ const AppLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            borderBottom: '1px solid rgba(0,212,255,0.08)',
           }}
         >
           <Text
             style={{
-              color: '#fff',
-              fontSize: collapsed ? 14 : 18,
+              color: '#00d4ff',
+              fontSize: collapsed ? 14 : 17,
               fontWeight: 700,
+              letterSpacing: 1,
               whiteSpace: 'nowrap',
             }}
           >
-            {collapsed ? '🐴' : '蠢驴电竞'}
+            {collapsed ? '⚡' : '蠢驴电竞'}
           </Text>
         </div>
         <Menu
@@ -174,32 +175,36 @@ const AppLayout: React.FC = () => {
       <Layout>
         <Header
           style={{
-            background: '#fff',
+            background: '#0d1220',
             padding: '0 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+            borderBottom: '1px solid #1e2a3a',
             zIndex: 1,
+            height: 56,
           }}
         >
           <Button
             type="text"
             icon={collapsed ? IconUnfold : IconFold}
             onClick={() => setCollapsed(!collapsed)}
+            style={{ color: '#6b7c93' }}
           />
           <Space size="middle">
             {user && (
               <>
-                <Text>{user.username}</Text>
-                <Text type="secondary">{roleLabels[user.role]}</Text>
+                <Text style={{ color: '#e8eaed' }}>{user.username}</Text>
+                <Text style={{ color: '#00d4ff', fontSize: 12, fontWeight: 600 }}>
+                  {roleLabels[user.role]}
+                </Text>
               </>
             )}
             <Button
               type="text"
               icon={IconLogout}
               onClick={handleLogout}
-              danger
+              style={{ color: '#6b7c93' }}
             >
               退出
             </Button>
@@ -207,11 +212,12 @@ const AppLayout: React.FC = () => {
         </Header>
         <Content
           style={{
-            margin: 24,
+            margin: 20,
             padding: 24,
-            background: '#fff',
-            borderRadius: 8,
+            background: '#131820',
+            borderRadius: 12,
             minHeight: 280,
+            border: '1px solid #1e2a3a',
           }}
         >
           <Outlet />
