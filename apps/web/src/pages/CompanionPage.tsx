@@ -61,7 +61,7 @@ const CompanionPage: React.FC = () => {
 
       <div style={{
         background: 'linear-gradient(180deg, #0A0F0A 0%, #0D1410 30%, #0B100C 60%, #080C08 100%)',
-        minHeight: '100vh', borderRadius: 0, padding: '32px 28px 24px',
+        minHeight: '100vh', borderRadius: 0, padding: '20px 24px 16px',
         border: '1px solid rgba(0,255,136,0.08)',
         boxShadow: '0 0 80px rgba(0,255,136,0.03), inset 0 0 120px rgba(0,0,0,0.4)',
         position: 'relative', overflow: 'hidden',
@@ -107,7 +107,7 @@ const CompanionPage: React.FC = () => {
             position: 'relative',
             background: '#3A3530',
             borderRadius: 20,
-            padding: '50px 40px 40px',
+            padding: '32px 40px 28px',
             marginBottom: 20,
             overflow: 'hidden',
             boxShadow: 'inset 0 0 120px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3)',
