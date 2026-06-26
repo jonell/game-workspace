@@ -65,7 +65,7 @@ const CompanionPage: React.FC = () => {
         borderRadius: 0, padding: '20px 24px 16px',
         border: '1px solid rgba(0,255,136,0.08)',
         boxShadow: '0 0 80px rgba(0,255,136,0.03), inset 0 0 120px rgba(0,0,0,0.4)',
-        position: 'relative', overflow: 'hidden',
+        position: 'relative',
       }}>
         {/* 三角洲动态背景 */}
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
