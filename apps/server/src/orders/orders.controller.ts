@@ -44,8 +44,9 @@ export class OrdersController {
   async findAll(
     @Req() req: any,
     @Query('status') status?: string,
+    @Query('all') all?: string,
   ): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.findAll(req.user, status);
+    const data = await this.ordersService.findAll(req.user, status, all === 'true');
     return { code: 200, message: 'ok', data };
   }
 

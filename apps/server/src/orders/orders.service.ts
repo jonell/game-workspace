@@ -104,12 +104,14 @@ export class OrdersService {
     });
   }
 
-  async findAll(user: any, status?: string) {
+  async findAll(user: any, status?: string, showAll?: boolean) {
     const where: any = {};
     if (status) where.status = status;
-    if (user.role === 'COMPANION') where.companionId = user.companionId;
-    else if (user.role === 'CS') where.csUserId = user.id;
-    else if (user.role === 'ADMIN') where.studioId = user.studioId;
+    if (!showAll) {
+      if (user.role === 'COMPANION') where.companionId = user.companionId;
+      else if (user.role === 'CS') where.csUserId = user.id;
+      else if (user.role === 'ADMIN') where.studioId = user.studioId;
+    }
     // OWNER: 不添加过滤条件，可以看到所有订单
     return this.prisma.order.findMany({
       where,
