@@ -7,6 +7,9 @@ import { WsGateway } from '../ws/ws.gateway';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
+// 内存聊天通知存储 (studioId -> { companionName, timestamp })
+const chatNotifications = new Map<string, { companionName: string; timestamp: number }>();
+
 @Controller()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class CompanionsController {
@@ -173,28 +176,27 @@ export class CompanionsController {
 
   // 聊天通知：陪玩端发送消息时通知客服
   @Post('companions/chat-notify')
-  @Roles(UserRole.COMPANION)
+  @Roles(UserRole.COMPANION, UserRole.CS, UserRole.ADMIN, UserRole.OWNER)
   async chatNotify(@Req() req: any, @Body() body: { orderId: string }): Promise<ApiResponse<unknown>> {
-    const companion = await this.prisma.companion.findUnique({
-      where: { id: req.user.companionId },
-      include: { user: { select: { username: true } } },
-    });
-    if (!companion || !req.user.studioId) return { code: 400, message: 'error', data: null };
-    this.wsGateway.notifyChat(req.user.studioId, companion.user?.username || 'unknown', body.orderId);
-    // 同时存储通知到 Redis/DB 供轮询
-    try {
-      await this.prisma.companion.update({
-        where: { id: req.user.companionId },
-        data: { status: companion.status },
-      });
-    } catch {}
+    const username = req.user.username || 'unknown';
+    const studioId = req.user.studioId;
+    if (!studioId) return { code: 400, message: 'error', data: null };
+    // 存储通知到内存
+    chatNotifications.set(studioId, { companionName: username, timestamp: Date.now() });
+    // 通过 WebSocket 广播
+    this.wsGateway.notifyChat(studioId, username, body.orderId);
     return { code: 200, message: 'ok', data: null };
   }
 
   // 轮询聊天通知（客服端/陪玩端）
   @Get('companions/chat-pending')
-  async chatPending(): Promise<ApiResponse<unknown>> {
-    // 简化版：返回 false，由 WebSocket 实时推送
+  async chatPending(@Req() req: any): Promise<ApiResponse<unknown>> {
+    const studioId = req.user?.studioId;
+    if (!studioId) return { code: 200, message: 'ok', data: { hasNew: false } };
+    const notif = chatNotifications.get(studioId);
+    if (notif && notif.companionName !== req.user.username && (Date.now() - notif.timestamp < 15000)) {
+      return { code: 200, message: 'ok', data: { hasNew: true, companionName: notif.companionName } };
+    }
     return { code: 200, message: 'ok', data: { hasNew: false } };
   }
 }

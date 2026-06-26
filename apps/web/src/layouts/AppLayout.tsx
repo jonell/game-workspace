@@ -87,7 +87,7 @@ const roleLabels: Record<UserRole, string> = {
 
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = React.useState(false);
-  const { user, isAuthenticated, fetchUser, logout, chatActive, chatPartner } = useAuthStore();
+  const { user, isAuthenticated, fetchUser, logout, chatActive } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -95,8 +95,7 @@ const AppLayout: React.FC = () => {
     if (!user && isAuthenticated) { fetchUser(); }
   }, []);
 
-  // 轮询聊天通知（客服端/陪玩端监听）
-  const { setChatActive } = useAuthStore;
+  // 轮询聊天通知
   useEffect(() => {
     if (!user?.studioId) return;
     const poll = async () => {
@@ -106,7 +105,7 @@ const AppLayout: React.FC = () => {
         });
         if (res.ok) {
           const { data } = await res.json();
-          if (data?.hasNew) setChatActive(true, data.companionName);
+          if (data?.hasNew) useAuthStore.getState().setChatActive(true, data.companionName);
         }
       } catch {}
     };
