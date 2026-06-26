@@ -178,3 +178,25 @@ body::before {
   to { opacity: 1; transform: scale(1); }
 }
 .scale-in { animation: scale-in 0.2s ease-out; }
+
+/* ── 水波动画 ── */
+.wave-container { overflow: hidden; }
+.wave {
+  position: absolute; bottom: 0; left: -50%;
+  width: 200%; height: 100%;
+  background: rgba(255,255,255,0.15);
+  border-radius: 40%;
+}
+.wave1 { animation: drift 4s linear infinite; }
+.wave2 { animation: drift 6s linear infinite reverse; opacity: 0.6; }
+@keyframes drift {
+  from { transform: translateX(0) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+/* ── 订单池卡片悬浮 ── */
+.pool-card:hover {
+  border-color: #00D4FF !important;
+  box-shadow: 0 2px 12px rgba(0,212,255,0.1) !important;
+  transform: translateY(-1px);
+}

@@ -59,10 +59,13 @@ interface PoolOrder {
   id: string;
   gameName: string;
   amount: number;
-  orderType: OrderType;
-  customer?: {
-    wechatId: string;
-  };
+  type: OrderType;
+  dispatchType: string;
+  duration?: number;
+  status: string;
+  createdAt: string;
+  customFields?: any;
+  customer?: { wechatId: string; customerCode?: string };
 }
 
 const DispatchPage: React.FC = () => {
@@ -205,9 +208,9 @@ const DispatchPage: React.FC = () => {
         </Button>
       </div>
 
-      <Row gutter={16}>
-        {/* Left: Companion Status Panel (6/24) */}
-        <Col span={6}>
+      <Row gutter={12}>
+        {/* Left: Companion Status Panel (4/24) */}
+        <Col span={4}>
           <Card
             title="陪玩状态"
             size="small"
@@ -272,88 +275,103 @@ const DispatchPage: React.FC = () => {
           </Card>
         </Col>
 
-        {/* Center: Order Pool (12/24) */}
-        <Col span={12}>
-          <Card
-            title="订单池"
-            size="small"
-            extra={
-              <Space>
-                <Text type="secondary">{poolCount} 单待派</Text>
-                <Button
-                  type="text"
-                  size="small"
-                  onClick={fetchPool}
-                  loading={loadingPool}
-                >
-                  刷新
-                </Button>
+        {/* Center: Order Pool (16/24) */}
+        <Col span={16}>
+          <div style={{ position: 'relative', marginBottom: 16 }}>
+            {/* Water wave header */}
+            <div style={{
+              background: 'linear-gradient(180deg, #00D4FF 0%, #7B61FF 100%)',
+              borderRadius: '16px 16px 0 0', padding: '20px 24px', position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div className="wave-container" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40 }}>
+                <div className="wave wave1" />
+                <div className="wave wave2" />
+              </div>
+              <Space style={{ position: 'relative', zIndex: 1 }}>
+                <span style={{ fontSize: 24 }}>🌊</span>
+                <Text strong style={{ color: '#FFF', fontSize: 18 }}>订单池</Text>
+                <Tag color="white" style={{ color: '#7B61FF', fontWeight: 700, borderRadius: 10, padding: '2px 12px', border: 'none' }}>
+                  {poolCount} 单待派
+                </Tag>
               </Space>
-            }
-          >
-            {loadingPool && poolOrders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 24 }}>
-                <Spin />
-              </div>
-            ) : poolOrders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 24 }}>
-                <Text type="secondary">暂无待派订单</Text>
-              </div>
-            ) : (
-              <List
-                grid={{ gutter: 12, column: 1 }}
-                dataSource={poolOrders}
-                renderItem={(order) => (
-                  <List.Item style={{ marginBottom: 0 }}>
-                    <Card
-                      size="small"
-                      hoverable
-                      style={{ marginBottom: 8 }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <div>
-                          <Space size="small" style={{ marginBottom: 4 }}>
-                            <Text strong>{order.gameName}</Text>
-                            <Tag color={orderTypeConfig[order.orderType]?.color}>
-                              {orderTypeConfig[order.orderType]?.label ?? order.orderType}
+              <Button type="text" size="small" onClick={fetchPool} loading={loadingPool}
+                style={{ position: 'absolute', right: 24, top: 20, zIndex: 1, color: '#FFF' }}>
+                🔄 刷新
+              </Button>
+            </div>
+            {/* Pool body */}
+            <div style={{ background: '#FFF', borderRadius: '0 0 16px 16px', padding: '16px 20px',
+              minHeight: 400, border: '1px solid #E2E8F0', borderTop: 'none',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+              {loadingPool && poolOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>
+              ) : poolOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 48, color: '#94A3B8' }}>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>🏊</div>
+                  <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
+                </div>
+              ) : (
+                <List grid={{ gutter: [12, 12], column: 1 }} dataSource={poolOrders}
+                  renderItem={(order) => (
+                    <List.Item style={{ marginBottom: 0 }}>
+                      <div style={{
+                        background: '#FAFBFC', borderRadius: 12, padding: '14px 18px',
+                        border: '1px solid #E8ECF1', transition: 'all 0.2s',
+                        animation: 'fade-slide-in 0.3s ease',
+                      }} className="pool-card">
+                        {/* Row 1: Game + Type + Amount */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                          <Space size={8}>
+                            <Text strong style={{ fontSize: 16 }}>{order.gameName}</Text>
+                            <Tag color={orderTypeConfig[order.type]?.color}>
+                              {orderTypeConfig[order.type]?.label ?? order.type}
+                            </Tag>
+                            <Tag color={order.dispatchType === 'DIRECT' ? 'orange' : 'cyan'}>
+                              {order.dispatchType === 'DIRECT' ? '指定' : '抢单'}
                             </Tag>
                           </Space>
-                          <div>
-                            <Space size="middle">
-                              <Text type="secondary">
-                                {React.createElement(UserOutlined)} {order.customer?.wechatId ?? '未知客户'}
-                              </Text>
-                              <Text type="danger">
-                                {React.createElement(DollarOutlined)} ¥{order.amount}
-                              </Text>
-                            </Space>
-                          </div>
+                          <Text strong style={{ fontSize: 20, color: '#FF4757' }}>
+                            ¥{Number(order.amount).toFixed(2)}
+                          </Text>
                         </div>
-                        <Button
-                          type="primary"
-                          size="small"
-                          loading={assigningId === order.id}
-                          onClick={() => openAssignModal(order.id)}
-                        >
-                          指定陪玩
-                        </Button>
+                        {/* Row 2: Details */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 12, color: '#64748B', marginBottom: 10 }}>
+                          <span>⏱ {order.duration ? `${order.duration}h` : '-'}</span>
+                          <span>💬 {order.customer?.wechatId || order.customFields?.customerWechat || '-'}</span>
+                          <span>🏠 {order.customFields?.customerRoomCode || '-'}</span>
+                          {order.customFields?.deltaMode && (
+                            <span>🎯 {order.customFields.deltaMode}
+                              {order.customFields.deltaMission ? `·${order.customFields.deltaMission}` : ''}
+                              {order.customFields.deltaCount ? `·${order.customFields.deltaCount}` : ''}
+                            </span>
+                          )}
+                          {order.customFields?.billingMode && (
+                            <span>💳 {order.customFields.billingMode === 'round' ? '按局' : '按小时'}</span>
+                          )}
+                        </div>
+                        {/* Row 3: Time + Action */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 11, color: '#94A3B8' }}>
+                            {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </Text>
+                          <Button type="primary" size="small" loading={assigningId === order.id}
+                            onClick={() => openAssignModal(order.id)}
+                            style={{ borderRadius: 6, fontWeight: 600 }}>
+                            🎯 指定陪玩
+                          </Button>
+                        </div>
                       </div>
-                    </Card>
-                  </List.Item>
+                    </List.Item>
                 )}
               />
             )}
-          </Card>
+            </div>
+          </div>
         </Col>
 
-        {/* Right: Quick Stats (6/24) */}
-        <Col span={6}>
+        {/* Right: Quick Stats (4/24) */}
+        <Col span={4}>
           <Card title="快捷统计" size="small" style={{ marginBottom: 16 }}>
             <Row gutter={[0, 16]}>
               <Col span={24}>
