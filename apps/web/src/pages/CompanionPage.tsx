@@ -112,7 +112,7 @@ const CompanionPage: React.FC = () => {
             <div style={{
               fontSize: 68, fontWeight: 900, letterSpacing: 14, fontFamily: "system-ui, 'PingFang SC', sans-serif",
               fontStyle: 'italic',
-              background: 'linear-gradient(180deg, #FFFFFF 0%, #E8E8E0 8%, #C0C0B0 20%, #FFD700 30%, #FFF8DC 38%, #C0C0C0 48%, #E8E8D0 58%, #FFD700 65%, #D0D0C8 78%, #F5F5F0 90%, #FFFFFF 100%)',
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #E8E8E8 12%, #C8C8C8 25%, #D4C898 35%, #C0C0C0 48%, #D8D0B0 58%, #C0C0C0 70%, #D4C898 80%, #E0E0E0 90%, #FFFFFF 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               filter: 'drop-shadow(0 1px 2px rgba(255,255,255,0.9)) drop-shadow(0 0 20px rgba(255,215,0,0.35)) drop-shadow(0 0 40px rgba(192,192,192,0.25)) drop-shadow(0 5px 10px rgba(0,0,0,0.5))',
