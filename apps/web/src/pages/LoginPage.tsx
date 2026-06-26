@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <span className="brand-icon">🎮</span>
+        <span className="brand-icon">⚡</span>
         <h1>蠢驴电竞</h1>
         <div className="subtitle">CHUNLV ESPORTS · 陪玩派单管理系统</div>
 
@@ -77,8 +77,12 @@ const LoginPage: React.FC = () => {
               height: 46,
               fontSize: 16,
               fontWeight: 600,
-              borderRadius: 12,
+              borderRadius: 10,
               marginTop: 4,
+              background: 'linear-gradient(135deg, #7B61FF, #00D4FF)',
+              border: 'none',
+              color: '#FFFFFF',
+              boxShadow: '0 2px 8px rgba(123,97,255,0.3)',
             }}
           >
             登 录
@@ -86,8 +90,8 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div style={{ marginTop: 28, textAlign: 'center' }}>
-          <Text style={{ color: '#aeaeb2', fontSize: 12 }}>
-            v2.0 · 面向电竞陪玩工作室
+          <Text style={{ color: '#94A3B8', fontSize: 12 }}>
+            v2.1 · 面向电竞陪玩工作室
           </Text>
         </div>
       </div>

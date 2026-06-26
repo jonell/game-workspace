@@ -135,6 +135,7 @@ const AppLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* ── 深色侧边栏 ── */}
       <Sider
         collapsible
         collapsed={collapsed}
@@ -142,63 +143,100 @@ const AppLayout: React.FC = () => {
         trigger={null}
         width={220}
         style={{
-          background: '#fafafa',
-          borderRight: '1px solid #f0f0f5',
+          background: '#0F172A',
+          borderRight: 'none',
         }}
       >
+        {/* Logo 区域 */}
         <div
           style={{
             height: 64,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: '1px solid #f0f0f5',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}
         >
           <Text
             style={{
-              color: '#1d1d1f',
-              fontSize: collapsed ? 14 : 17,
+              fontSize: collapsed ? 14 : 18,
               fontWeight: 700,
               letterSpacing: -0.3,
               whiteSpace: 'nowrap',
+              background: 'linear-gradient(135deg, #7B61FF, #00D4FF)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}
           >
             {collapsed ? '⚡' : '蠢驴电竞'}
           </Text>
         </div>
+
+        {/* 导航菜单 */}
         <Menu
           mode="inline"
+          theme="dark"
           selectedKeys={selectedKeys}
           items={menuItems as MenuProps['items']}
           onClick={onMenuClick}
-          style={{ border: 'none' }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            marginTop: 8,
+          }}
         />
+
+        {/* 底部系统状态栏 */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '12px 16px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255,255,255,0.02)',
+          }}
+        >
+          <Text
+            style={{
+              color: '#64748B',
+              fontSize: 11,
+              display: 'block',
+              textAlign: 'center',
+            }}
+          >
+            {collapsed ? '' : 'CHUNLV ESports · v2.1'}
+          </Text>
+        </div>
       </Sider>
+
       <Layout>
+        {/* 顶栏 — 白色底 */}
         <Header
-          className="glass"
           style={{
             padding: '0 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            borderBottom: '1px solid #E2E8F0',
             zIndex: 1,
             height: 56,
+            background: '#FFFFFF',
           }}
         >
           <Button
             type="text"
             icon={collapsed ? IconUnfold : IconFold}
             onClick={() => setCollapsed(!collapsed)}
-            style={{ color: '#86868b' }}
+            style={{ color: '#64748B' }}
           />
           <Space size="middle">
             {user && (
               <>
-                <Text style={{ color: '#1d1d1f', fontWeight: 500 }}>{user.username}</Text>
-                <Text style={{ color: '#007AFF', fontSize: 12, fontWeight: 600 }}>
+                <Text style={{ color: '#1E293B', fontWeight: 500 }}>{user.username}</Text>
+                <Text style={{ color: '#00D4FF', fontSize: 12, fontWeight: 600 }}>
                   {roleLabels[user.role]}
                 </Text>
               </>
@@ -207,20 +245,22 @@ const AppLayout: React.FC = () => {
               type="text"
               icon={IconLogout}
               onClick={handleLogout}
-              style={{ color: '#86868b' }}
+              style={{ color: '#64748B' }}
             >
               退出
             </Button>
           </Space>
         </Header>
+
+        {/* 内容区 — 白色圆角容器 */}
         <Content
           style={{
             margin: 20,
-            padding: 28,
-            background: '#ffffff',
-            borderRadius: 16,
+            padding: 24,
+            background: '#FFFFFF',
+            borderRadius: 12,
             minHeight: 280,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)',
           }}
         >
           <Outlet />

@@ -1,26 +1,39 @@
-/* 蠢驴电竞 — Apple 科技风全局样式 */
+/* 蠢驴电竞 — 电竞赛博光感风全局样式 */
 
+/* ── 页面底色 + 网格纹理 ── */
 body {
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #F8FAFC;
+  color: #1E293B;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
 }
 
-/* 滚动条 — 极简 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* 滚动条 — 赛博青 */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #aeaeb2; }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.5); }
 
-/* ── 毛玻璃效果 ── */
-.glass {
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+/* ── 状态指示点 + 呼吸动画 ── */
+@keyframes pulse-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(0,212,255,0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(0,212,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
 }
 
-/* ── 状态指示点 ── */
 .status-dot {
   display: inline-block;
   width: 8px; height: 8px;
@@ -28,67 +41,83 @@ body {
   margin-right: 6px;
   box-shadow: 0 0 0 2px rgba(0,0,0,0.04);
 }
-.status-dot.online { background: #34C759; }
-.status-dot.offline { background: #aeaeb2; }
-.status-dot.busy { background: #FF9500; }
+.status-dot.online {
+  background: #00E676;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.status-dot.offline { background: #94A3B8; }
+.status-dot.busy  { background: #FF9100; }
 
 /* ── 页面标题 ── */
 .page-title {
   font-size: 28px; font-weight: 700;
-  letter-spacing: -0.3px;
-  color: #1d1d1f;
+  letter-spacing: -0.5px;
+  color: #1E293B;
   margin-bottom: 4px;
 }
 .page-subtitle {
-  font-size: 14px; color: #86868b;
+  font-size: 14px; color: #64748B;
   margin-bottom: 24px;
 }
 
 /* ── 统计卡片增强 ── */
 .stat-card {
-  background: #ffffff;
-  border-radius: 16px;
+  background: #FFFFFF;
+  border-radius: 12px;
   padding: 20px 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
+  border-left: 3px solid;
+  border-image: linear-gradient(180deg, #7B61FF, #00D4FF) 1;
+  transition: box-shadow 0.25s, transform 0.25s;
 }
 .stat-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,212,255,0.12), 0 0 0 1px rgba(0,212,255,0.2);
+  transform: translateY(-2px);
 }
 .stat-card .stat-label {
   font-size: 12px; font-weight: 600;
-  color: #86868b; text-transform: uppercase;
+  color: #64748B; text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
 .stat-card .stat-value {
   font-size: 32px; font-weight: 700;
   letter-spacing: -0.5px;
-  color: #1d1d1f;
+  color: #1E293B;
 }
-.stat-card .stat-value.blue { color: #007AFF; }
-.stat-card .stat-value.green { color: #34C759; }
-.stat-card .stat-value.orange { color: #FF9500; }
-.stat-card .stat-value.red { color: #FF3B30; }
+.stat-card .stat-value.blue   { color: #00D4FF; }
+.stat-card .stat-value.green  { color: #00E676; }
+.stat-card .stat-value.orange { color: #FF9100; }
+.stat-card .stat-value.red    { color: #FF4757; }
 
 /* ── 圆角卡片 ── */
 .apple-card {
-  background: #ffffff;
-  border-radius: 16px;
+  background: #FFFFFF;
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
 }
 
 /* ── 登录页 ── */
 .login-wrapper {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 50%, #f0f0f5 100%);
+  background: #F8FAFC;
+  position: relative;
 }
+
+.login-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
 .login-card {
-  background: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.88);
   backdrop-filter: saturate(180%) blur(30px);
   -webkit-backdrop-filter: saturate(180%) blur(30px);
   border: 1px solid rgba(0,0,0,0.06);
@@ -96,16 +125,31 @@ body {
   padding: 48px 40px;
   width: 400px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, #7B61FF, #00D4FF);
+}
+
 .login-card h1 {
   text-align: center;
   font-size: 28px; font-weight: 700;
   letter-spacing: -0.5px;
   margin-bottom: 4px;
-  color: #1d1d1f;
+  background: linear-gradient(135deg, #7B61FF, #00D4FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .login-card .subtitle {
-  text-align: center; font-size: 13px; color: #aeaeb2;
+  text-align: center; font-size: 13px; color: #94A3B8;
   margin-bottom: 36px;
   letter-spacing: 0.3px;
 }
