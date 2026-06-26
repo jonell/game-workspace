@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Typography, message, Select, Upload, Form } from 'antd';
+import { Input, Button, Typography, message, Select, Upload } from 'antd';
 import { UserOutlined, LockOutlined, UploadOutlined } from '@ant-design/icons';
 import { UserRole } from '@chunlv/shared';
 import { useAuthStore } from '../stores/authStore';
@@ -35,9 +35,18 @@ const LoginPage: React.FC = () => {
   const [idCardBack, setIdCardBack] = useState<File | null>(null);
   const [studios, setStudios] = useState<{ id: string; name: string }[]>([]);
   const [registerStudioId, setRegisterStudioId] = useState('');
+  const [gameOptions, setGameOptions] = useState<string[]>([]);
+  const [rankOptions, setRankOptions] = useState<string[]>([]);
+  const [selectedGames, setSelectedGames] = useState<string[]>([]);
+  const [rank, setRank] = useState('');
+  const [hasAccount, setHasAccount] = useState('');
 
   useEffect(() => {
     http.get('/studios').then(({ data }) => setStudios(data.data ?? [])).catch(() => {});
+    http.get('/settings').then(({ data }) => {
+      setGameOptions(data.data?.games ?? []);
+      setRankOptions(data.data?.ranks ?? []);
+    }).catch(() => {});
   }, []);
 
   const handleLogin = async () => {
@@ -72,6 +81,9 @@ const LoginPage: React.FC = () => {
       formData.append('studioId', registerStudioId);
       formData.append('idCardFront', idCardFront);
       formData.append('idCardBack', idCardBack);
+      formData.append('games', JSON.stringify(selectedGames));
+      formData.append('rank', rank);
+      formData.append('hasAccount', hasAccount || 'false');
 
       await http.post('/auth/register', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -85,7 +97,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-wrapper">
-      <div className="login-card" style={{ width: mode === 'register' ? 440 : 400 }}>
+      <div className="login-card" style={{ width: mode === 'register' ? 480 : 400 }}>
         <span className="brand-icon">⚡</span>
         <h1>蠢驴电竞</h1>
         <div className="subtitle">CHUNLV ESPORTS · 陪玩派单管理系统</div>
@@ -120,6 +132,16 @@ const LoginPage: React.FC = () => {
               <Input size="large" placeholder="手机号 *" value={phone} onChange={(e) => setPhone(e.target.value)} />
               <Select size="large" placeholder="选择工作室 *" value={registerStudioId || undefined} onChange={(v) => setRegisterStudioId(v)}>
                 {studios.map((s) => <Option key={s.id} value={s.id}>{s.name}</Option>)}
+              </Select>
+              <Select mode="multiple" size="large" placeholder="可接单游戏" value={selectedGames} onChange={(v) => setSelectedGames(v)}>
+                {gameOptions.map((g) => <Option key={g} value={g}>{g}</Option>)}
+              </Select>
+              <Select size="large" placeholder="最高段位" value={rank || undefined} onChange={(v) => setRank(v)} allowClear>
+                {rankOptions.map((r) => <Option key={r} value={r}>{r}</Option>)}
+              </Select>
+              <Select size="large" placeholder="有无游戏账号" value={hasAccount || undefined} onChange={(v) => setHasAccount(v)}>
+                <Option value="true">有账号</Option>
+                <Option value="false">无账号</Option>
               </Select>
               <div style={{ display: 'flex', gap: 12 }}>
                 <Upload beforeUpload={(f) => { setIdCardFront(f); return false; }} maxCount={1} accept="image/*">

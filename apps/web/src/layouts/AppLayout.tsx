@@ -63,6 +63,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/admin/revenue', icon: IconRevenue, label: '收入流水' },
     { key: '/admin/pc-control', icon: IconPc, label: '远程控制' },
     { key: '/admin/review', icon: IconAuth, label: '实名审核' },
+    { key: '/admin/settings', icon: IconAuth, label: '系统设置' },
   ],
   [UserRole.CS]: [
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },

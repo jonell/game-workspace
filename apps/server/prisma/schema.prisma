@@ -52,6 +52,8 @@ model Companion {
   reviewedById   String?
   reviewedAt     DateTime?
   reviewNote     String?
+  rank           String?
+  hasAccount     Boolean?
   createdAt      DateTime @default(now())
 
   user      User            @relation(fields: [userId], references: [id])
@@ -185,4 +187,10 @@ model PCOperationLog {
   createdAt  DateTime @default(now())
 
   pc CompanionPC @relation(fields: [pcId], references: [id])
+}
+
+model SystemConfig {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
 }

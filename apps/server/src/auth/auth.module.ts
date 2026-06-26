@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { RegisterController } from './register.controller';
+import { SettingsController } from './settings.controller';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { RegisterController } from './register.controller';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  controllers: [AuthController, RegisterController],
+  controllers: [AuthController, RegisterController, SettingsController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })

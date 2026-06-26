@@ -16,6 +16,7 @@ import StudiosPage from './pages/owner/StudiosPage';
 import AuthorizationsPage from './pages/owner/AuthorizationsPage';
 import OwnerRevenuePage from './pages/owner/RevenuePage';
 import ReviewPage from './pages/admin/ReviewPage';
+import SettingsPage from './pages/admin/SettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
       {
         path: 'admin/review',
         element: <ReviewPage />,
+      },
+      {
+        path: 'admin/settings',
+        element: <SettingsPage />,
       },
       // CS routes
       {
