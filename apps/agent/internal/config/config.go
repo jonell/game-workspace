@@ -8,6 +8,8 @@ import (
 
 type AgentConfig struct {
 	ServerURL string `json:"serverUrl"`
+	Username  string `json:"username"`
+	Password  string `json:"password,omitempty"`
 	Token     string `json:"token,omitempty"`
 }
 
@@ -21,17 +23,17 @@ func Load() AgentConfig {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	// 1. Try config file
 	if data, err := os.ReadFile(path); err == nil {
 		var c AgentConfig
-		if json.Unmarshal(data, &c) == nil && c.ServerURL != "" {
+		if json.Unmarshal(data, &c) == nil && c.ServerURL != "" && c.Username != "" {
 			return c
 		}
 	}
 
-	// 2. Fallback to env var
 	return AgentConfig{
 		ServerURL: getEnv("AGENT_SERVER_URL", "http://localhost:3001"),
+		Username:  getEnv("AGENT_USERNAME", ""),
+		Password:  getEnv("AGENT_PASSWORD", ""),
 	}
 }
 

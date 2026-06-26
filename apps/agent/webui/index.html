@@ -264,6 +264,14 @@
         <span class="label">类型</span>
         <span id="orderTypeTag">--</span>
       </div>
+      <div class="row" id="rowWechat" style="display:none">
+        <span class="label">微信</span>
+        <span class="val" style="letter-spacing:2px;color:#94A3B8;">✳️✳️✳️</span>
+      </div>
+      <div class="row" id="rowRoom" style="display:none">
+        <span class="label">房间码</span>
+        <span class="val" style="letter-spacing:2px;color:#94A3B8;">✳️✳️✳️</span>
+      </div>
       <div class="order-actions">
         <button class="btn-confirm" onclick="confirmOrder()" id="btnConfirm">✅ 确认接单</button>
         <button class="btn-complete" onclick="completeOrder()" id="btnComplete">✔️ 完成</button>
@@ -420,6 +428,12 @@ async function fetchLatestOrder() {
     const orderType = order.type || order.orderType || '';
     const label = ORDER_TYPE_LABELS[orderType] || orderType;
     const tag = document.getElementById('orderTypeTag'); tag.textContent = label; tag.className = 'order-type-tag tag-' + orderType;
+    // 客户信息 — 陪玩端加密显示
+    const cf = order.customFields || {};
+    const rowWx = document.getElementById('rowWechat');
+    const rowRm = document.getElementById('rowRoom');
+    if (cf.customerWechat) { rowWx.style.display = 'flex'; } else { rowWx.style.display = 'none'; }
+    if (cf.customerRoomCode) { rowRm.style.display = 'flex'; } else { rowRm.style.display = 'none'; }
     const btnConfirm = document.getElementById('btnConfirm'); btnConfirm.disabled = false; btnConfirm.textContent = '✅ 确认接单';
     const btnComplete = document.getElementById('btnComplete'); btnComplete.disabled = false; btnComplete.textContent = '✔️ 完成';
     const el = document.getElementById('orderNotify');
