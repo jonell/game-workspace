@@ -108,7 +108,7 @@ const DispatchPage: React.FC = () => {
     intervalRef.current = setInterval(() => {
       fetchPool();
       fetchCompanions();
-    }, 10000);
+    }, 60000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -193,16 +193,6 @@ const DispatchPage: React.FC = () => {
             title="陪玩状态"
             size="small"
             style={{ marginBottom: 16 }}
-            extra={
-              <Button
-                type="text"
-                size="small"
-                onClick={fetchCompanions}
-                loading={loadingCompanions}
-              >
-                刷新
-              </Button>
-            }
           >
             {loadingCompanions && companions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>
