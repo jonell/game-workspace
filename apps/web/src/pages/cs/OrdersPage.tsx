@@ -6,7 +6,7 @@ import { ordersApi } from '../../api/orders';
 const { Text } = Typography;
 const { Option } = Select;
 
-const statusConfig: Record<OrderStatus, { color: string; label: string }> = {
+const statusConfig: Record<string, { color: string; label: string }> = {
   [OrderStatus.PENDING]: { color: 'processing', label: '待派单' },
   [OrderStatus.GRABBED]: { color: 'cyan', label: '已接单' },
   [OrderStatus.CONFIRMED]: { color: 'blue', label: '已确认' },
@@ -14,7 +14,7 @@ const statusConfig: Record<OrderStatus, { color: string; label: string }> = {
   [OrderStatus.CANCELLED]: { color: 'default', label: '已取消' },
 };
 
-const orderTypeConfig: Record<OrderType, { color: string; label: string }> = {
+const orderTypeConfig: Record<string, { color: string; label: string }> = {
   [OrderType.NEW]: { color: 'blue', label: '新单' },
   [OrderType.RENEW]: { color: 'cyan', label: '续费' },
   [OrderType.REPURCHASE]: { color: 'purple', label: '复购' },
