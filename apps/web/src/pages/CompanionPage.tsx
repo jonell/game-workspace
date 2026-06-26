@@ -103,94 +103,14 @@ const CompanionPage: React.FC = () => {
 
         {/* 内容 */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* 居中标题 - 商业写实招牌 */}
-          <div style={{
-            position: 'relative',
-            background: '#3A3530',
-            borderRadius: 20,
-            padding: '32px 40px 28px',
-            marginBottom: 20,
-            overflow: 'hidden',
-            boxShadow: 'inset 0 0 120px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.3)',
-          }}>
-            {/* 清水混凝土墙面纹理 */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-              background: '#3A3530', opacity: 1 }}>
-              {/* 混凝土噪点纹理 */}
-              <div style={{ position: 'absolute', inset: 0, opacity: 0.3,
-                backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(0,0,0,0.15) 1px, transparent 1px), radial-gradient(circle at 60% 50%, rgba(0,0,0,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 1px, transparent 1px), radial-gradient(circle at 30% 70%, rgba(0,0,0,0.12) 1px, transparent 1px), radial-gradient(circle at 70% 80%, rgba(255,255,255,0.04) 1px, transparent 1px)',
-                backgroundSize: '40px 40px, 60px 60px, 50px 50px, 70px 70px, 45px 45px',
-              }} />
-              {/* 圆形凹孔工装肌理 */}
-              {[[15,20,18],[55,30,22],[80,15,16],[25,60,20],[60,65,24],[85,75,18],[40,85,22],[70,45,20]].map(([x,y,s],i) => (
-                <div key={i} style={{
-                  position: 'absolute', left: `${x}%`, top: `${y}%`,
-                  width: s, height: s, borderRadius: '50%',
-                  background: 'radial-gradient(circle at 40% 40%, rgba(0,0,0,0.3), rgba(0,0,0,0.05))',
-                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05)',
-                  transform: 'translate(-50%,-50%)',
-                }} />
-              ))}
-              {/* 昏暗环境遮罩 */}
-              <div style={{ position: 'absolute', inset: 0,
-                background: 'radial-gradient(ellipse at 30% 40%, transparent 30%, rgba(0,0,0,0.4) 100%)' }} />
-              {/* 单侧柔光 - 左上角打亮 */}
-              <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '60%', height: '80%',
-                background: 'radial-gradient(ellipse at 30% 40%, rgba(255,240,220,0.08) 0%, transparent 70%)',
-                transform: 'rotate(-15deg)' }} />
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: 8, fontFamily: "system-ui, 'PingFang SC', sans-serif", fontStyle: 'italic',
+              background: 'linear-gradient(180deg, #FFFFFF 0%, #D0D0D0 30%, #A0A0A0 55%, #D0D0D0 75%, #FFFFFF 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              蠢驴电竞俱乐部
             </div>
-
-            {/* 文字招牌 */}
-            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-              <style>{`
-                @keyframes neon-flicker-v2 {
-                  0%,100% { opacity: 1; }
-                  3% { opacity: 0.93; }
-                  5% { opacity: 1; }
-                  51% { opacity: 0.97; }
-                  53% { opacity: 0.9; }
-                  55% { opacity: 1; }
-                }
-                @keyframes neon-glow-v2 {
-                  0%,100% { filter: drop-shadow(0 0 10px rgba(255,190,60,0.5)) drop-shadow(0 0 25px rgba(255,170,40,0.3)) drop-shadow(0 0 50px rgba(255,150,20,0.15)); }
-                  50% { filter: drop-shadow(0 0 18px rgba(255,190,60,0.8)) drop-shadow(0 0 40px rgba(255,170,40,0.5)) drop-shadow(0 0 70px rgba(255,150,20,0.3)); }
-                }
-              `}</style>
-              <div style={{ display: 'inline-block', position: 'relative', transform: 'skewX(-3deg)' }}>
-                {/* 招牌背板 */}
-                <div style={{
-                  position: 'absolute', inset: '-24px -36px',
-                  background: 'linear-gradient(180deg, rgba(30,28,26,0.9), rgba(20,18,16,0.95))',
-                  borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)',
-                }} />
-                {/* 立体投影 */}
-                <div style={{
-                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
-                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
-                  fontStyle: 'italic',
-                  color: 'transparent',
-                  background: 'linear-gradient(180deg, #404040 0%, #1A1A1A 100%)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                }}>蠢驴电竞俱乐部</div>
-                
-                {/* 主文字 - 拉丝不锈钢 */}
-                <div style={{
-                  fontSize: 64, fontWeight: 900, letterSpacing: 10,
-                  fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
-                  fontStyle: 'italic',
-                  color: 'transparent',
-                  background: 'linear-gradient(180deg, #F0F0F2 0%, #D8D8DC 15%, #C0C0C8 30%, #D0D0D8 45%, #B0B0B8 55%, #C8C8D0 70%, #B8B8C0 85%, #E8E8EC 100%)',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.5)) drop-shadow(0 3px 6px rgba(0,0,0,0.6)) drop-shadow(0 6px 12px rgba(0,0,0,0.3))',
-                  position: 'relative', zIndex: 1,
-                  animation: 'neon-glow-v2 4s ease-in-out infinite',
-                }}>
-                  蠢驴电竞俱乐部
-                </div>
-              </div>
-            </div>
-          </div>{/* 指标切换 */}
+          </div>
+          {/* 指标切换 */}
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <Segmented value={metric} onChange={(v) => setMetric(v as Metric)}
               options={[
@@ -205,12 +125,10 @@ const CompanionPage: React.FC = () => {
 
           {/* 图表 */}
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column', minHeight: 300,
+            height: 'calc(100vh - 280px)', minHeight: 400,
             background: '#222630',
             borderRadius: 14, padding: '16px 20px 10px',
-            border: '1px solid rgba(0,255,136,0.06)',
             position: 'relative', overflow: 'hidden',
-            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.3)',
           }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={sorted} margin={{ top: 40, right: 30, left: 10, bottom: 30 }}
