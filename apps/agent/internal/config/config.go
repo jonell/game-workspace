@@ -8,9 +8,7 @@ import (
 
 type AgentConfig struct {
 	ServerURL string `json:"serverUrl"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	Token     string `json:"token,omitempty"` // auto-login 后缓存
+	Token     string `json:"token,omitempty"`
 }
 
 var (
@@ -26,16 +24,14 @@ func Load() AgentConfig {
 	// 1. Try config file
 	if data, err := os.ReadFile(path); err == nil {
 		var c AgentConfig
-		if json.Unmarshal(data, &c) == nil && c.ServerURL != "" && c.Username != "" {
+		if json.Unmarshal(data, &c) == nil && c.ServerURL != "" {
 			return c
 		}
 	}
 
-	// 2. Fallback to env vars
+	// 2. Fallback to env var
 	return AgentConfig{
 		ServerURL: getEnv("AGENT_SERVER_URL", "http://localhost:3001"),
-		Username:  getEnv("AGENT_USERNAME", ""),
-		Password:  getEnv("AGENT_PASSWORD", ""),
 	}
 }
 
@@ -43,8 +39,6 @@ func Save(c AgentConfig) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// 不持久化明文密码，仅保留 Token 用于自动登录
-	c.Password = ""
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return err

@@ -103,9 +103,10 @@ var (
 // ── Window class / instance ──
 
 var (
-	appTracker    *engine.TimeTracker
-	appWsClient   *wsclient.Client
+	appTracker     *engine.TimeTracker
+	appWsClient    *wsclient.Client
 	appCurrentMode engine.Mode
+	trayHwnd       uintptr // hidden window handle for Shell_NotifyIcon
 )
 
 // Run starts the native Win32 system tray and blocks until exit.
@@ -121,19 +122,15 @@ func Run(
 	// Create the floating popup window (hidden by default).
 	// Must happen before the message loop so it can receive messages.
 	cfg := config.Get()
-	popupWindow = NewPopup(tracker, wsClient, cfg.Username, cfg.ServerURL)
+	popupWindow = NewPopup(tracker, wsClient, "", cfg.ServerURL)
 
 	// Start background services.
-	// Strategy:
-	// - Token exists → ConnectAuthenticated (skip login, use cached token)
-	// - Username+Password exist → Connect (auto-login, get fresh token)
-	// - Neither → Wait for user login via popup
+	// If we have a cached token, try to connect — token may be expired,
+	// but ConnectAuthenticated handles failure gracefully.
 	if cfg.Token != "" {
 		go wsClient.ConnectAuthenticated()
-	} else if cfg.Username != "" && cfg.Password != "" {
-		go wsClient.Connect()
 	}
-	// else: user must log in via popup first
+	// Always show popup — user can login or use cached token.
 	go commandLoop(wsClient)
 
 	// Run the Windows message loop (blocking).
@@ -201,6 +198,7 @@ func runMessageLoop() {
 	if hwnd == 0 {
 		log.Fatal("Failed to create tray window")
 	}
+	trayHwnd = hwnd
 
 	// ── Add tray icon ──
 	addTrayIcon(hwnd)
@@ -296,6 +294,29 @@ func addTrayIcon(hwnd uintptr) {
 func removeTrayIcon(hwnd uintptr) {
 	nid := makeNOTIFYICONDATA(hwnd, NIM_DELETE)
 	procShellNotifyIcon.Call(NIM_DELETE, uintptr(unsafe.Pointer(&nid[0])))
+}
+
+// UpdateTrayTooltip updates the tray icon tooltip text via NIM_MODIFY.
+// Safe to call from any goroutine.
+func UpdateTrayTooltip(text string) {
+	if trayHwnd == 0 {
+		return
+	}
+	nid := make([]byte, NOTIFYICONDATA_V3_SIZE)
+	*(*uint32)(unsafe.Pointer(&nid[0])) = uint32(NOTIFYICONDATA_V3_SIZE)
+	*(*uintptr)(unsafe.Pointer(&nid[8])) = trayHwnd
+	*(*uint32)(unsafe.Pointer(&nid[16])) = 1
+	*(*uint32)(unsafe.Pointer(&nid[20])) = NIF_TIP
+	tip, _ := syscall.UTF16FromString(text)
+	tipOffset := 40
+	for i, c := range tip {
+		if tipOffset+i*2 >= len(nid)-2 {
+			break
+		}
+		nid[tipOffset+i*2] = byte(c)
+		nid[tipOffset+i*2+1] = byte(c >> 8)
+	}
+	procShellNotifyIcon.Call(NIM_MODIFY, uintptr(unsafe.Pointer(&nid[0])))
 }
 
 func makeNOTIFYICONDATA(hwnd uintptr, msg uint32) []byte {

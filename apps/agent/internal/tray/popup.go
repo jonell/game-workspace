@@ -252,17 +252,11 @@ func NewPopup(tracker *engine.TimeTracker, wsClient *wsclient.Client, username s
 	}
 
 	// If we already have a valid token, start in status view.
-	// If we have username+password but no token, also start in status —
-	// wsClient.Connect() will auto-login in the background.
-	// Only show login view when there are no credentials at all.
 	cfg := config.Get()
 	if cfg.Token != "" {
 		p.token = cfg.Token
 		p.viewState = viewStatus
 		wsClient.SetToken(cfg.Token)
-	} else if cfg.Username != "" && cfg.Password != "" {
-		// Auto-login credentials available — start in status view.
-		p.viewState = viewStatus
 	}
 
 	// Register a dedicated window class for the popup.
@@ -519,7 +513,6 @@ func (p *PopupWindow) doLogin() {
 
 		// Persist username + serverURL (NOT password)
 		cfg := config.Get()
-		cfg.Username = username
 		cfg.ServerURL = p.serverURL
 		if err := config.Save(cfg); err != nil {
 			log.Printf("Config save error: %v", err)
