@@ -213,7 +213,10 @@ const DispatchPage: React.FC = () => {
           type="primary"
           icon={React.createElement(PlusOutlined)}
           onClick={() => {
-            form.resetFields();
+            form.setFieldsValue({
+              type: 'NEW', gameName: '三角洲行动', dispatchType: DispatchType.POOL,
+              billingMode: 'hour', duration: 1, deltaMode: '陪玩', deltaCount: '单陪',
+            });
             setModalOpen(true);
           }}
         >
@@ -451,7 +454,7 @@ const DispatchPage: React.FC = () => {
             {({ getFieldValue }) =>
               getFieldValue('gameName') === '三角洲行动' ? (
                 <>
-                  <Form.Item initialValue="护航" name="deltaMode" label="三角洲模式" rules={[{ required: true, message: '请选择' }]}>
+                  <Form.Item initialValue="陪玩" name="deltaMode" label="模式" rules={[{ required: true, message: '请选择' }]}>
                     <Select placeholder="请选择模式">
                       <Option value="护航">护航</Option>
                       <Option value="陪玩">陪玩</Option>
@@ -531,7 +534,7 @@ const DispatchPage: React.FC = () => {
                   <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="请输入局数" />
                 </Form.Item>
               ) : (
-                <Form.Item name="duration" label="时长（小时）">
+                <Form.Item name="duration" label="时长（小时）" initialValue={1}>
                   <InputNumber min={0.5} step={0.5} style={{ width: '100%' }} placeholder="请输入时长" />
                 </Form.Item>
               )
