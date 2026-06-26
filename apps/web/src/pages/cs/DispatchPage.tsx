@@ -27,6 +27,7 @@ import { CompanionStatus, OrderType, DispatchType } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
 import { ordersApi } from '../../api/orders';
 import { customersApi } from '../../api/customers';
+import http from '../../api/client';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -78,6 +79,7 @@ const DispatchPage: React.FC = () => {
   const [companionSearch, setCompanionSearch] = useState('');
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -120,6 +122,10 @@ const DispatchPage: React.FC = () => {
     fetchCompanions();
     fetchPool();
     fetchCustomers('');
+    http.get('/settings').then(({ data }) => {
+      const games = (data.data?.games ?? []);
+      setGameOptions(['三角洲行动', ...games.filter((g: string) => g !== '三角洲行动')]);
+    }).catch(() => {});
   }, [fetchCompanions, fetchPool, fetchCustomers]);
 
   // Auto-refresh pool every 10 seconds
@@ -432,9 +438,37 @@ const DispatchPage: React.FC = () => {
           <Form.Item
             name="gameName"
             label="游戏名称"
-            rules={[{ required: true, message: '请输入游戏名称' }]}
+            rules={[{ required: true, message: '请选择游戏' }]}
           >
-            <Input placeholder="请输入游戏名称" />
+            <Select placeholder="请选择游戏" showSearch>
+              {gameOptions.map((g) => (
+                <Option key={g} value={g}>{g}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.gameName !== cur.gameName}>
+            {({ getFieldValue }) =>
+              getFieldValue('gameName') === '三角洲行动' ? (
+                <>
+                  <Form.Item name="deltaMode" label="三角洲模式" rules={[{ required: true, message: '请选择' }]}>
+                    <Select placeholder="请选择模式">
+                      <Option value="护航">护航</Option>
+                      <Option value="陪玩">陪玩</Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="deltaMission" label="任务类型">
+                    <Select placeholder="请选择任务（可选）" allowClear>
+                      <Option value="机密">机密</Option>
+                      <Option value="绝密">绝密</Option>
+                      <Option value="陪做任务">陪做任务</Option>
+                    </Select>
+                  </Form.Item>
+                  <Form.Item name="deltaNote" label="备注">
+                    <Input.TextArea rows={2} placeholder="补充说明（可选）" />
+                  </Form.Item>
+                </>
+              ) : null
+            }
           </Form.Item>
           <Form.Item
             name="amount"
