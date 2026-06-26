@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
-  @Get('api/health')
+  @Get('health')
   async check() {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
