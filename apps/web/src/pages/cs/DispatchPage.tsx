@@ -331,10 +331,10 @@ const DispatchPage: React.FC = () => {
                             {order.customFields?.customerRoomCode && (
                               <span style={{ fontSize: 12, color: '#CBD5E1', letterSpacing: 1 }}>🏠 ✳️✳️✳️</span>
                             )}
-                            <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap' }}>
-                              {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
-                            </span>
                           </div>
+                          <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap', flexShrink: 0, minWidth: 80, textAlign: 'right' }}>
+                            {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
+                          </span>
                           <Button type="primary" size="middle" loading={grabbingId === order.id}
                             onClick={(e) => handleGrab(order.id, e)}
                             style={{ borderRadius: 8, fontWeight: 600, fontSize: 14, height: 36, paddingInline: 20, flexShrink: 0 }}
