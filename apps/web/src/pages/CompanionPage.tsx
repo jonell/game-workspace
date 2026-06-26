@@ -114,25 +114,24 @@ const CompanionPage: React.FC = () => {
               <div style={{
                 fontSize: 64, fontWeight: 900, letterSpacing: 12, fontFamily: "system-ui, 'PingFang SC', sans-serif",
                 color: 'transparent',
-                background: 'linear-gradient(180deg, #FFFFFF 0%, #E0E0E0 20%, #808080 50%, #C0C0C0 70%, #FFFFFF 100%)',
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 30%, #606060 60%, #A0A0A0 80%, #FFFFFF 100%)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 position: 'absolute', top: 3, left: 3, right: 0,
-                filter: 'blur(2px)',
-                opacity: 0.5,
+                filter: 'blur(3px)',
+                opacity: 0.6,
                 userSelect: 'none',
               }}>
                 蠢驴电竞
               </div>
-              {/* 主文字层 */}
+              {/* 主文字层 - 铬金属 */}
               <div style={{
                 fontSize: 64, fontWeight: 900, letterSpacing: 12, fontFamily: "system-ui, 'PingFang SC', sans-serif",
-                background: 'linear-gradient(180deg, #FFFDE7 0%, #FFD700 15%, #FFA000 35%, #FFD700 55%, #FFECB3 75%, #FFFFFF 100%)',
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #E8E8E8 10%, #C0C0C0 25%, #F5F5F5 35%, #808080 50%, #D0D0D0 60%, #A0A0A0 75%, #E0E0E0 90%, #FFFFFF 100%)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                filter: 'drop-shadow(0 2px 6px rgba(255,215,0,0.5)) drop-shadow(0 0 24px rgba(255,215,0,0.3)) drop-shadow(0 6px 12px rgba(0,0,0,0.4))',
+                filter: 'drop-shadow(0 1px 2px rgba(255,255,255,0.8)) drop-shadow(0 0 16px rgba(192,192,192,0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
                 lineHeight: 1.1,
                 position: 'relative',
-                animation: 'title-shine 3s ease-in-out infinite',
               }}>
                 蠢驴电竞
               </div>
