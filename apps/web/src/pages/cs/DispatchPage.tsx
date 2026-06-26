@@ -280,11 +280,11 @@ const DispatchPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
                 </div>
               ) : (
-                <List grid={{ gutter: [12, 12], column: 1 }} dataSource={poolOrders}
+                <List grid={{ gutter: [8, 8], column: 2 }} dataSource={poolOrders}
                   renderItem={(order) => (
                     <List.Item style={{ marginBottom: 0 }}>
                       <div style={{
-                        background: '#FFF', borderRadius: 14, padding: '12px 20px',
+                        background: '#FFF', borderRadius: 10, padding: '8px 14px',
                         border: '1px solid #E8ECF1', transition: 'all 0.2s',
                         animation: 'fade-slide-in 0.3s ease',
                       }} className="pool-card">
