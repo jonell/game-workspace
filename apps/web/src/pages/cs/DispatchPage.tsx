@@ -184,10 +184,10 @@ const DispatchPage: React.FC = () => {
     [...companions].sort((a, b) => (STATUS_SORT[a.status] ?? 9) - (STATUS_SORT[b.status] ?? 9)),
     [companions]);
 
-  const onlineCount = companions.filter(
-    (c) => c.status === CompanionStatus.ONLINE || c.status === CompanionStatus.IDLE
-  ).length;
+  const idleCount = companions.filter((c) => c.status === CompanionStatus.IDLE).length;
   const busyCount = companions.filter((c) => c.status === CompanionStatus.BUSY).length;
+  const entertainCount = companions.filter((c) => c.status === CompanionStatus.ONLINE).length;
+  const offlineCount = companions.filter((c) => c.status === CompanionStatus.OFFLINE).length;
   const poolCount = poolOrders.length;
 
   return (
@@ -368,19 +368,25 @@ const DispatchPage: React.FC = () => {
             <Row gutter={[0, 16]}>
               <Col span={24}>
                 <Statistic
-                  title="可接单陪玩"
-                  value={onlineCount}
+                  title="🟢 空闲"
+                  value={idleCount}
                   prefix={React.createElement(UserOutlined)}
-                  valueStyle={{ color: '#52c41a' }}
+                  valueStyle={{ color: '#00E676' }}
                 />
               </Col>
               <Col span={24}>
                 <Statistic
-                  title="忙碌中"
+                  title="🔴 接单中"
                   value={busyCount}
                   prefix={React.createElement(ClockCircleOutlined)}
-                  valueStyle={{ color: '#faad14' }}
+                  valueStyle={{ color: '#FF4757' }}
                 />
+              </Col>
+              <Col span={24}>
+                <Statistic title="🟡 娱乐中" value={entertainCount} valueStyle={{ color: '#FFD600', fontSize: 22 }} />
+              </Col>
+              <Col span={24}>
+                <Statistic title="⚪ 离线" value={offlineCount} valueStyle={{ color: '#94A3B8', fontSize: 22 }} />
               </Col>
               <Col span={24}>
                 <Statistic
