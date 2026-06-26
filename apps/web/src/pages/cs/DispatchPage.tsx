@@ -171,6 +171,10 @@ const DispatchPage: React.FC = () => {
     const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     setChatMessages(prev => [...prev, { text: val, time, from: 'me' }]);
     setChatInput('');
+    // 通知客服端
+    if (chatOrder?.id && user?.role === 'COMPANION') {
+      http.post('/companions/chat-notify', { orderId: chatOrder.id }).catch(() => {});
+    }
     setTimeout(() => {
       if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }, 50);

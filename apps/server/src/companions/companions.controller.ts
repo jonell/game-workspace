@@ -170,4 +170,17 @@ export class CompanionsController {
 
     return { code: 200, message: '已踢出陪玩', data: { companionId: id, status: 'OFFLINE' } };
   }
+
+  // 聊天通知：陪玩端发送消息时通知客服
+  @Post('companions/chat-notify')
+  @Roles(UserRole.COMPANION)
+  async chatNotify(@Req() req: any, @Body() body: { orderId: string }): Promise<ApiResponse<unknown>> {
+    const companion = await this.prisma.companion.findUnique({
+      where: { id: req.user.companionId },
+      include: { user: { select: { username: true } } },
+    });
+    if (!companion || !req.user.studioId) return { code: 400, message: 'error', data: null };
+    this.wsGateway.notifyChat(req.user.studioId, companion.user?.username || 'unknown', body.orderId);
+    return { code: 200, message: 'ok', data: null };
+  }
 }

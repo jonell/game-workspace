@@ -238,4 +238,11 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   broadcastToStudio(studioId: string, event: string, data: unknown): void {
     this.server.to(`studio:${studioId}`).emit(event, data);
   }
+
+  /** Notify CS users about a new chat message from a companion. */
+  notifyChat(studioId: string, companionName: string, orderId: string): void {
+    this.server.to(`studio:${studioId}`).emit('chat:notify', {
+      companionName, orderId, timestamp: new Date().toISOString(),
+    });
+  }
 }
