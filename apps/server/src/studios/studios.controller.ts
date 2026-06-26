@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Query, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { StudiosService } from './studios.service';
@@ -58,5 +58,12 @@ export class StudiosController {
   ): Promise<ApiResponse<unknown>> {
     await this.studiosService.resetPassword(id, password);
     return { code: 200, message: 'ok', data: null };
+  }
+
+  @Delete('employees/:id')
+  @Roles(UserRole.OWNER)
+  async deleteEmployee(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+    await this.studiosService.deleteEmployee(id);
+    return { code: 200, message: '员工已删除', data: null };
   }
 }

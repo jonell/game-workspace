@@ -54,4 +54,11 @@ export class StudiosService {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     return this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
   }
+
+  async deleteEmployee(userId: string) {
+    // Delete companion first if exists (cascade), then user
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+    await this.prisma.user.delete({ where: { id: userId } });
+  }
 }

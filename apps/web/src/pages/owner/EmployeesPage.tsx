@@ -17,9 +17,11 @@ import {
   ReloadOutlined,
   DeleteOutlined,
   KeyOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { employeesApi } from '../../api/employees';
 import { studiosApi } from '../../api/studios';
+import { companionsApi } from '../../api/companions';
 import { useAuthStore } from '../../stores/authStore';
 import { UserRole } from '@chunlv/shared';
 
@@ -84,10 +86,6 @@ const EmployeesPage: React.FC = () => {
   }, []);
 
   const fetchEmployees = useCallback(async () => {
-    if (!selectedStudioId) {
-      setEmployees([]);
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
@@ -167,6 +165,24 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
+  // --- Kick companion ---
+  const [kickingId, setKickingId] = useState<string | null>(null);
+
+  const handleKick = async (record: Employee) => {
+    if (!record.companion?.id) return;
+    setKickingId(record.id);
+    try {
+      await companionsApi.kick(record.companion.id);
+      message.success(`已踢出 ${record.username}`);
+      fetchEmployees();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '踢出失败';
+      message.error(msg);
+    } finally {
+      setKickingId(null);
+    }
+  };
+
   // --- Delete employee ---
   const handleDelete = async (id: string) => {
     try {
@@ -236,6 +252,24 @@ const EmployeesPage: React.FC = () => {
           >
             重置密码
           </Button>
+          {record.role === UserRole.COMPANION && record.companion && (
+            <Popconfirm
+              title="确定踢出该陪玩？Agent 将被强制下线"
+              onConfirm={() => handleKick(record)}
+              okText="踢出"
+              cancelText="取消"
+            >
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={React.createElement(LogoutOutlined)}
+                loading={kickingId === record.id}
+              >
+                踢出
+              </Button>
+            </Popconfirm>
+          )}
           <Popconfirm
             title="确定删除该员工？"
             onConfirm={() => handleDelete(record.id)}
@@ -295,7 +329,6 @@ const EmployeesPage: React.FC = () => {
             type="primary"
             icon={React.createElement(PlusOutlined)}
             onClick={openCreateModal}
-            disabled={!selectedStudioId}
           >
             新建员工
           </Button>
