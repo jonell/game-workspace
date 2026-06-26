@@ -335,19 +335,25 @@ const DispatchPage: React.FC = () => {
                             ¥{Number(order.amount).toFixed(2)}
                           </Text>
                         </div>
-                        {/* Row 2: Details */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 12, color: '#64748B', marginBottom: 10 }}>
-                          <span>⏱ {order.duration ? `${order.duration}h` : '-'}</span>
-                          <span>💬 {order.customer?.wechatId || order.customFields?.customerWechat || '-'}</span>
-                          <span>🏠 {order.customFields?.customerRoomCode || '-'}</span>
+                        {/* Row 2: All order details */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: 12, color: '#475569', marginBottom: 8, lineHeight: '22px' }}>
+                          <span>💬 微信: <b>{order.customFields?.customerWechat || order.customer?.wechatId || '-'}</b></span>
+                          <span>🏠 房间码: <b>{order.customFields?.customerRoomCode || '-'}</b></span>
+                          <span>💳 {order.customFields?.billingMode === 'round'
+                            ? <><b>按局数</b> · {order.duration}局</>
+                            : <><b>按小时</b> · {order.duration}h</>}
+                          </span>
                           {order.customFields?.deltaMode && (
-                            <span>🎯 {order.customFields.deltaMode}
-                              {order.customFields.deltaMission ? `·${order.customFields.deltaMission}` : ''}
-                              {order.customFields.deltaCount ? `·${order.customFields.deltaCount}` : ''}
-                            </span>
+                            <span>🎯 模式: <b>{order.customFields.deltaMode}</b></span>
                           )}
-                          {order.customFields?.billingMode && (
-                            <span>💳 {order.customFields.billingMode === 'round' ? '按局' : '按小时'}</span>
+                          {order.customFields?.deltaMission && (
+                            <span>📋 任务: <b>{order.customFields.deltaMission}</b></span>
+                          )}
+                          {order.customFields?.deltaCount && (
+                            <span>👥 <b>{order.customFields.deltaCount}</b></span>
+                          )}
+                          {order.customFields?.deltaNote && (
+                            <span style={{ flexBasis: '100%', color: '#64748B' }}>📝 备注: {order.customFields.deltaNote}</span>
                           )}
                         </div>
                         {/* Row 3: Time + Action */}
