@@ -308,11 +308,11 @@ const DispatchPage: React.FC = () => {
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F1F5F9', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#475569', fontWeight: 500 }}>
                               ⏱ {order.duration || '-'}{order.customFields?.billingMode === 'round' ? '局' : 'h'}
                             </span>
-                            <span style={{ fontSize: 17, fontWeight: 700, color: '#FF4757' }}>
+                            <span style={{ fontSize: 13, color: '#1E293B' }}>
                               ¥{Number(order.amount).toFixed(2)}
                             </span>
                             {order.customFields?.deltaNote && (
-                              <span style={{ fontSize: 13, color: '#94A3B8', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
+                              <span style={{ fontSize: 13, color: '#FF4757', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
                                 📝 {order.customFields.deltaNote}
                               </span>
                             )}
