@@ -69,6 +69,7 @@ const DispatchPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [grabbingId, setGrabbingId] = useState<string | null>(null);
   const [chatOrder, setChatOrder] = useState<PoolOrder | null>(null);
+  const [chatMessages, setChatMessages] = useState<{ text: string; time: string; from: string }[]>([]);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
   const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
@@ -505,7 +506,7 @@ const DispatchPage: React.FC = () => {
       </Modal>
 
       {/* 派单人聊天弹窗 */}
-      <Modal title={null} open={!!chatOrder} onCancel={() => setChatOrder(null)} footer={null} width={500} style={{ top: 40 }}>
+      <Modal title={null} open={!!chatOrder} onCancel={() => { setChatOrder(null); setChatMessages([]); }} footer={null} width={500} style={{ top: 40 }}>
         {chatOrder && (
           <div>
             <div style={{ background: 'linear-gradient(135deg, #7B61FF, #00D4FF)', borderRadius: 12, padding: 16, color: '#FFF', marginBottom: 16 }}>
@@ -522,11 +523,41 @@ const DispatchPage: React.FC = () => {
                 {chatOrder.customFields?.deltaNote && <span>📝{chatOrder.customFields.deltaNote}</span>}
               </div>
             </div>
-            <div style={{ background: '#F8FAFC', borderRadius: 10, padding: 16, minHeight: 180, maxHeight: 260, overflowY: 'auto', marginBottom: 10, textAlign: 'center', color: '#94A3B8' }}>
-              💬 发送消息给 <b>{chatOrder.csUser?.username}</b>
+            {/* 聊天记录 */}
+            <div style={{ background: '#F8FAFC', borderRadius: 10, padding: 12, minHeight: 200, maxHeight: 280, overflowY: 'auto', marginBottom: 10 }}>
+              {chatMessages.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: 13, padding: 30 }}>
+                  💬 发送消息给 <b>{chatOrder.csUser?.username}</b>
+                </div>
+              ) : (
+                chatMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: msg.from === 'me' ? 'flex-end' : 'flex-start',
+                    marginBottom: 8,
+                  }}>
+                    <div style={{
+                      maxWidth: '80%', padding: '8px 14px', borderRadius: msg.from === 'me' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                      background: msg.from === 'me' ? 'linear-gradient(135deg, #7B61FF, #00D4FF)' : '#FFF',
+                      color: msg.from === 'me' ? '#FFF' : '#1E293B',
+                      fontSize: 14, border: msg.from === 'me' ? 'none' : '1px solid #E2E8F0',
+                    }}>
+                      {msg.text}
+                    </div>
+                    <span style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>
+                      {msg.from === 'me' ? user?.username : chatOrder.csUser?.username} · {msg.time}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
             <Input.Search placeholder={`发送消息给 ${chatOrder.csUser?.username}...`} enterButton="发送" size="large"
-              onSearch={(val) => { if(val.trim()) message.info('已发送'); }} />
+              onSearch={(val) => {
+                if (!val.trim()) return;
+                const now = new Date();
+                const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                setChatMessages(prev => [...prev, { text: val.trim(), time, from: 'me' }]);
+              }} />
           </div>
         )}
       </Modal>
