@@ -263,10 +263,6 @@ const DispatchPage: React.FC = () => {
                   {poolCount} 单待派
                 </Tag>
               </Space>
-              <Button type="text" size="small" onClick={fetchPool} loading={loadingPool}
-                style={{ position: 'absolute', right: 24, top: 20, zIndex: 1, color: '#FFF' }}>
-                🔄 刷新
-              </Button>
             </div>
             {/* Pool body */}
             <div style={{ background: '#FFF', borderRadius: '0 0 16px 16px', padding: '16px 20px',
