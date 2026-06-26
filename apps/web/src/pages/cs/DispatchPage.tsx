@@ -293,30 +293,53 @@ const DispatchPage: React.FC = () => {
                   renderItem={(order) => (
                     <List.Item style={{ marginBottom: 0 }}>
                       <div style={{
-                        background: '#FAFBFC', borderRadius: 12, padding: '14px 18px',
+                        background: '#FFF', borderRadius: 14, padding: '12px 20px',
                         border: '1px solid #E8ECF1', transition: 'all 0.2s',
                         animation: 'fade-slide-in 0.3s ease',
                       }} className="pool-card">
-                        {/* All info in one row */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                          <Text strong style={{ fontSize: 14, minWidth: 80 }}>{order.gameName}</Text>
-                          <Tag color={orderTypeConfig[order.type]?.color} style={{ margin: 0 }}>{orderTypeConfig[order.type]?.label ?? order.type}</Tag>
-                          {order.customFields?.deltaMode && <span style={{ fontSize: 12, color: '#7B61FF' }}>{order.customFields.deltaMode}</span>}
-                          {order.customFields?.deltaMission && <span style={{ fontSize: 12, color: '#475569' }}>·{order.customFields.deltaMission}</span>}
-                          {order.customFields?.deltaCount && <span style={{ fontSize: 12, color: '#475569' }}>·{order.customFields.deltaCount}</span>}
-                          <span style={{ fontSize: 12, color: '#64748B' }}>⏱{order.duration || '-'}{order.customFields?.billingMode === 'round' ? '局' : 'h'}</span>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#FF4757' }}>¥{Number(order.amount).toFixed(2)}</span>
-                          {order.customFields?.deltaNote && <span style={{ fontSize: 11, color: '#94A3B8', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>📝{order.customFields.deltaNote}</span>}
-                          {order.customFields?.customerWechat && <span style={{ fontSize: 11, color: '#CBD5E1' }}>💬✳️✳️✳️</span>}
-                          {order.customFields?.customerRoomCode && <span style={{ fontSize: 11, color: '#CBD5E1' }}>🏠✳️✳️✳️</span>}
-                          <span style={{ fontSize: 11, color: '#CBD5E1', marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-                            {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
-                          </span>
-                          <Button type="primary" size="small" loading={grabbingId === order.id}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', flex: 1 }}>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: '#1E293B' }}>{order.gameName}</span>
+                            <Tag color={orderTypeConfig[order.type]?.color} style={{ fontSize: 13, padding: '2px 10px', borderRadius: 6 }}>{orderTypeConfig[order.type]?.label ?? order.type}</Tag>
+                            {order.customFields?.deltaMode && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F0F0FF', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#7B61FF', fontWeight: 600 }}>
+                                🎯 {order.customFields.deltaMode}
+                              </span>
+                            )}
+                            {order.customFields?.deltaMission && (
+                              <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>· {order.customFields.deltaMission}</span>
+                            )}
+                            {order.customFields?.deltaCount && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#FFF7ED', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#FF9100', fontWeight: 600 }}>
+                                👥 {order.customFields.deltaCount}
+                              </span>
+                            )}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F1F5F9', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#475569', fontWeight: 500 }}>
+                              ⏱ {order.duration || '-'}{order.customFields?.billingMode === 'round' ? '局' : 'h'}
+                            </span>
+                            <span style={{ fontSize: 17, fontWeight: 700, color: '#FF4757' }}>
+                              ¥{Number(order.amount).toFixed(2)}
+                            </span>
+                            {order.customFields?.deltaNote && (
+                              <span style={{ fontSize: 13, color: '#94A3B8', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
+                                📝 {order.customFields.deltaNote}
+                              </span>
+                            )}
+                            {order.customFields?.customerWechat && (
+                              <span style={{ fontSize: 12, color: '#CBD5E1', letterSpacing: 1 }}>💬 ✳️✳️✳️</span>
+                            )}
+                            {order.customFields?.customerRoomCode && (
+                              <span style={{ fontSize: 12, color: '#CBD5E1', letterSpacing: 1 }}>🏠 ✳️✳️✳️</span>
+                            )}
+                            <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap' }}>
+                              {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
+                            </span>
+                          </div>
+                          <Button type="primary" size="middle" loading={grabbingId === order.id}
                             onClick={(e) => handleGrab(order.id, e)}
-                            style={{ borderRadius: 6, fontWeight: 600, flexShrink: 0 }}
+                            style={{ borderRadius: 8, fontWeight: 600, fontSize: 14, height: 36, paddingInline: 20, flexShrink: 0 }}
                             className="grab-btn">
-                            接单
+                            接 单
                           </Button>
                         </div>
                       </div>
