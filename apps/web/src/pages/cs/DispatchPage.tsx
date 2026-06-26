@@ -525,11 +525,20 @@ const DispatchPage: React.FC = () => {
         {chatOrder && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', maxHeight: 600 }}>
             {/* 顶部订单信息 */}
-            <div style={{ background: '#EDEDED', padding: '10px 16px', borderBottom: '1px solid #D9D9D9', textAlign: 'center' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#1E293B' }}>{chatOrder.csUser?.username}</div>
-              <div style={{ fontSize: 11, color: '#8E8E93', marginTop: 2 }}>
-                {chatOrder.gameName} · ¥{Number(chatOrder.amount).toFixed(2)}
-                {chatOrder.customFields?.deltaMode ? ` · ${chatOrder.customFields.deltaMode}` : ''}
+            <div style={{ background: '#EDEDED', padding: '10px 16px', borderBottom: '1px solid #D9D9D9' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#1E293B', textAlign: 'center' }}>
+                💬 {chatOrder.csUser?.username}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 10px', fontSize: 11, color: '#8E8E93', marginTop: 4, justifyContent: 'center' }}>
+                <span>📋 {chatOrder.gameName}</span>
+                <span>· {orderTypeConfig[chatOrder.type]?.label}</span>
+                <span>· ¥{Number(chatOrder.amount).toFixed(2)}</span>
+                <span>· ⏱{chatOrder.duration||'-'}h</span>
+                {chatOrder.customFields?.billingMode && <span>· {chatOrder.customFields.billingMode === 'round' ? '按局' : '按小时'}</span>}
+                {chatOrder.customFields?.deltaMode && <span>· 🎯{chatOrder.customFields.deltaMode}</span>}
+                {chatOrder.customFields?.deltaMission && <span>· {chatOrder.customFields.deltaMission}</span>}
+                {chatOrder.customFields?.deltaCount && <span>· 👥{chatOrder.customFields.deltaCount}</span>}
+                {chatOrder.customFields?.deltaNote && <span>· 📝{chatOrder.customFields.deltaNote}</span>}
               </div>
             </div>
             {/* 聊天记录区 */}
