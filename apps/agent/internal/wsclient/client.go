@@ -1,8 +1,10 @@
 package wsclient
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -126,6 +128,9 @@ func (c *Client) Connect() {
 }
 
 func (c *Client) heartbeatLoop() {
+	// 首次启动立即通过 REST 注册，让服务端能看到客户端
+	go c.sendRestHeartbeat()
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
@@ -134,6 +139,9 @@ func (c *Client) heartbeatLoop() {
 		case <-c.done:
 			return
 		case <-ticker.C:
+			// REST 心跳（可靠），让服务端感知在线状态
+			go c.sendRestHeartbeat()
+			// WebSocket 心跳（实时数据）
 			mode, workSec, entertainSec, totalSec := c.tracker.GetSnapshot()
 			data := map[string]interface{}{
 				"mode":          mode,
@@ -144,6 +152,33 @@ func (c *Client) heartbeatLoop() {
 			}
 			c.emit("companion:heartbeat", data)
 		}
+	}
+}
+
+// sendRestHeartbeat 通过 REST API 上报心跳，注册 Agent 在线状态
+func (c *Client) sendRestHeartbeat() {
+	mode, workSec, _, _ := c.tracker.GetSnapshot()
+	body, _ := json.Marshal(map[string]interface{}{
+		"agentVersion": "2.0.0",
+		"currentMode":  string(mode),
+		"workSec":      workSec,
+	})
+
+	req, err := http.NewRequest("POST", c.serverURL+"/api/companions/agent-heartbeat", bytes.NewReader(body))
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("REST heartbeat failed: %v", err)
+		return
+	}
+	resp.Body.Close()
+	if resp.StatusCode == 200 {
+		log.Println("REST heartbeat OK — agent registered with server")
 	}
 }
 
