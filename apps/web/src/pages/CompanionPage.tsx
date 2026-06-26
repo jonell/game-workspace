@@ -119,7 +119,7 @@ const CompanionPage: React.FC = () => {
                 { label: '昨日业绩', value: 'yesterday' },
                 { label: '本月业绩', value: 'monthly' },
               ]}
-              style={{ background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.08)' }}
+              style={{ background: '#2A3040', border: '1px solid #3A4050' }}
             />
           </div>
 
@@ -156,7 +156,7 @@ const CompanionPage: React.FC = () => {
                       const me = d.name === user?.username;
                       return (
                         <text x={x+width/2} y={y-26} textAnchor="middle"
-                          fill={fail?'#FF4757':me?'#00FF88':'#80B090'}
+                          fill={fail?'#FF4757':me?'#00FF88':'#D1D5DB'}
                           fontSize={13} fontWeight={fail||me?800:600} fontFamily="system-ui">
                           {d.name}{me?' ★':''}
                         </text>
@@ -205,8 +205,8 @@ const CompanionPage: React.FC = () => {
           </div>
 
           {/* 底部 */}
-          <div style={{ marginTop: 10, textAlign: 'center', fontSize: 10, color: '#3A5A4A', fontFamily: 'monospace', letterSpacing: 1 }}>
-            DELTA_FORCE_LEAGUE_v3.0 ‖ {dateStr} ‖ TOTAL:{sorted.length} ‖ FAILED:{failCount}
+          <div style={{ marginTop: 10, textAlign: 'center', fontSize: 10, color: '#6B7280', fontFamily: 'monospace', letterSpacing: 1 }}>
+            {dateStr} ‖ TOTAL:{sorted.length} ‖ FAILED:{failCount}
           </div>
         </div>
       </div>
