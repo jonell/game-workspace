@@ -187,8 +187,8 @@ const DispatchPage: React.FC = () => {
       </div>
 
       <Row gutter={12}>
-        {/* Left: Companion Status Panel (4/24) */}
-        <Col span={4}>
+        {/* Left */}
+        <Col span={3}>
           <Card
             title="陪玩状态"
             size="small"
@@ -244,7 +244,7 @@ const DispatchPage: React.FC = () => {
         </Col>
 
         {/* Center: Order Pool (17/24) */}
-        <Col span={17}>
+        <Col span={18}>
           <div style={{ position: 'relative', marginBottom: 16 }}>
             {/* Water wave header */}
             <div style={{
@@ -280,7 +280,7 @@ const DispatchPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
                 </div>
               ) : (
-                <List grid={{ gutter: [8, 8], column: 2 }} dataSource={poolOrders}
+                <List grid={{ gutter: [12, 12], column: 2 }} dataSource={poolOrders}
                   renderItem={(order) => (
                     <List.Item style={{ marginBottom: 0 }}>
                       <div style={{
