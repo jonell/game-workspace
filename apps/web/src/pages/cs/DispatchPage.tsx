@@ -200,7 +200,7 @@ const DispatchPage: React.FC = () => {
         {/* Left */}
         <Col span={3}>
           <Card
-            title="陪玩状态"
+            title="陪玩管理"
             size="small"
             style={{ marginBottom: 16 }}
           >
