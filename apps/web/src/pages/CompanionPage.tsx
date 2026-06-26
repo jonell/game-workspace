@@ -108,42 +108,79 @@ const CompanionPage: React.FC = () => {
             <div style={{ fontSize: 11, color: '#00FF88', fontFamily: 'monospace', letterSpacing: 6, marginBottom: 8, opacity: 0.7 }}>
               ◆ TACTICAL COMMAND CENTER ◆
             </div>
-            {/* 主标题 - 流动金属光泽 */}
+            {/* 主标题 - 拉丝不锈钢 + 暖黄霓虹背光 + 3D立体 */}
             <style>{`
-              @keyframes lightning-bolt {
-                0%   { background-position: 0% 50%, 200% 50%; filter: drop-shadow(0 1px 2px rgba(255,255,255,0.9)) drop-shadow(0 0 20px rgba(180,200,220,0.3)); }
-                8%   { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
-                9%   { background-position: 0% 50%, 200% 50%; }
-                33%  { background-position: 0% 50%, 200% 50%; }
-                42%  { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
-                43%  { background-position: 0% 50%, 200% 50%; }
-                66%  { background-position: 0% 50%, 200% 50%; }
-                75%  { background-position: 0% 50%, -100% 50%; filter: drop-shadow(0 4px 8px rgba(255,255,255,1)) drop-shadow(0 0 80px rgba(255,255,255,0.9)); }
-                76%  { background-position: 0% 50%, 200% 50%; }
-                100% { background-position: 0% 50%, 200% 50%; }
+              @keyframes neon-flicker {
+                0%,100% { opacity: 1; }
+                2% { opacity: 0.95; }
+                4% { opacity: 1; }
+                50% { opacity: 0.98; }
+                52% { opacity: 0.92; }
+                54% { opacity: 1; }
+              }
+              @keyframes neon-breathe {
+                0%,100% { filter: drop-shadow(0 0 8px rgba(255,200,50,0.6)) drop-shadow(0 0 20px rgba(255,180,30,0.4)) drop-shadow(0 0 40px rgba(255,160,20,0.2)); }
+                50% { filter: drop-shadow(0 0 14px rgba(255,200,50,0.9)) drop-shadow(0 0 35px rgba(255,180,30,0.6)) drop-shadow(0 0 60px rgba(255,160,20,0.4)); }
               }
             `}</style>
             <div style={{
-              fontSize: 68, fontWeight: 900, letterSpacing: 14, fontFamily: "system-ui, 'PingFang SC', sans-serif",
+              fontSize: 72, fontWeight: 900, letterSpacing: 16, fontFamily: "system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif",
               fontStyle: 'italic',
-              background: `
-                linear-gradient(180deg, #FFFFFF 0%, #E8ECF0 12%, #C8D0D8 25%, #A0B0C0 35%, #C8D0D8 50%, #B0BCC8 60%, #C8D0D8 75%, #A0B0C0 85%, #E8ECF0 95%, #FFFFFF 100%),
-                linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.7) 45%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.7) 55%, rgba(255,255,255,0.15) 70%, transparent 100%)
-              `,
-              backgroundSize: '100% 100%, 200% 100%',
-              backgroundPosition: '0% 50%, 200% 50%',
-              WebkitBackgroundClip: 'text, text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              animation: 'lightning-bolt 4s ease-in-out infinite',
-              lineHeight: 1.1,
-              marginBottom: 6,
-              display: 'inline-block',
-              transform: 'skewX(-4deg)',
+              lineHeight: 1.05, marginBottom: 2, position: 'relative', display: 'inline-block',
+              transform: 'skewX(-5deg) perspective(400px) rotateX(3deg)',
             }}>
-              蠢驴电竞
-            </div>
-            {/* 副标题 */}
+              {/* 最外层柔光光晕 */}
+              <div style={{
+                position: 'absolute', inset: '-30px -40px',
+                background: 'radial-gradient(ellipse at center, rgba(255,180,30,0.15) 0%, rgba(255,140,20,0.05) 40%, transparent 70%)',
+                filter: 'blur(20px)', zIndex: 0, pointerEvents: 'none',
+                animation: 'neon-breathe 3s ease-in-out infinite',
+              }} />
+              {/* 暖黄霓虹背光 */}
+              <div style={{
+                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
+                fontFamily: 'inherit', fontStyle: 'inherit',
+                color: 'transparent',
+                background: 'linear-gradient(180deg, #E8E8E8 0%, #C0C0C0 25%, #A0A0A0 50%, #C0C0C0 75%, #E0E0E0 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                WebkitTextStroke: '1px rgba(255,180,30,0.25)',
+                textShadow: '0 0 4px rgba(255,180,30,0.5), 0 0 10px rgba(255,160,20,0.3), 0 0 25px rgba(255,140,10,0.2)',
+                position: 'absolute', top: 0, left: 0, right: 0,
+                animation: 'neon-flicker 6s linear infinite',
+                pointerEvents: 'none', userSelect: 'none',
+              }}>蠢驴电竞</div>
+              {/* 3D立体阴影层 */}
+              <div style={{
+                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
+                fontFamily: 'inherit', fontStyle: 'inherit',
+                color: 'transparent',
+                background: 'linear-gradient(180deg, #707888 0%, #505868 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                position: 'absolute', top: 4, left: 4, right: 0, zIndex: -1,
+                pointerEvents: 'none', userSelect: 'none', opacity: 0.4,
+              }}>蠢驴电竞</div>
+              <div style={{
+                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
+                fontFamily: 'inherit', fontStyle: 'inherit',
+                color: 'transparent',
+                background: 'linear-gradient(180deg, #9098A8 0%, #707888 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                position: 'absolute', top: 2, left: 2, right: 0, zIndex: -1,
+                pointerEvents: 'none', userSelect: 'none', opacity: 0.5,
+              }}>蠢驴电竞</div>
+              {/* 主文字层 - 拉丝不锈钢纹理 */}
+              <div style={{
+                fontSize: 'inherit', fontWeight: 'inherit', letterSpacing: 'inherit',
+                fontFamily: 'inherit', fontStyle: 'inherit',
+                color: 'transparent',
+                background: 'linear-gradient(180deg, #FFFFFF 0%, #E8E8EC 8%, #C8CCD4 20%, #D0D4DC 30%, #A8ACB4 45%, #C0C4CC 55%, #B0B4BC 68%, #D8DCE0 82%, #FFFFFF 95%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 1px 1px rgba(255,255,255,0.6)) drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+                position: 'relative', zIndex: 1,
+              }}>
+                蠢驴电竞
+              </div>
+            </div>{/* 副标题 */}
             <div style={{
               fontSize: 16, fontWeight: 700, letterSpacing: 10, fontFamily: "monospace",
               background: 'linear-gradient(90deg, #C8D0D8 0%, #FFFFFF 30%, #FFD700 60%, #FFFFFF 100%)',
