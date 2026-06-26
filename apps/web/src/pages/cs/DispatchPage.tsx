@@ -463,6 +463,12 @@ const DispatchPage: React.FC = () => {
                       <Option value="陪做任务">陪做任务</Option>
                     </Select>
                   </Form.Item>
+                  <Form.Item name="deltaCount" label="陪陪数量">
+                    <Select placeholder="请选择">
+                      <Option value="单陪">单陪</Option>
+                      <Option value="双陪">双陪</Option>
+                    </Select>
+                  </Form.Item>
                   <Form.Item name="deltaNote" label="备注">
                     <Input.TextArea rows={2} placeholder="补充说明（可选）" />
                   </Form.Item>
