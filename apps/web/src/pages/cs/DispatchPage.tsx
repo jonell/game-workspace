@@ -308,7 +308,7 @@ const DispatchPage: React.FC = () => {
                               ¥{Number(order.amount).toFixed(2)}
                             </span>
                             {order.customFields?.deltaNote && (
-                              <span style={{ fontSize: 13, color: '#FF4757', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: '#FF4757', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
                                 📝 {order.customFields.deltaNote}
                               </span>
                             )}
