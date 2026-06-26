@@ -26,7 +26,7 @@ import { useAuthStore } from '../../stores/authStore';
 const { Text } = Typography;
 const { Option } = Select;
 
-const STATUS_SORT: Record<string, number> = { IDLE: 0, ONLINE: 1, BUSY: 2, OFFLINE: 3 };
+const STATUS_SORT: Record<string, number> = { IDLE: 0, ONLINE: 1, BUSY: 2, OFFLINE: 9 };
 
 const orderTypeConfig: Record<OrderType, { color: string; label: string }> = {
   [OrderType.NEW]: { color: 'blue', label: '新单' },
