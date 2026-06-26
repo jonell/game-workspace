@@ -69,6 +69,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
   [UserRole.CS]: [
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },
     { key: '/cs/orders', icon: IconOrders, label: '派单记录' },
+    { key: '/cs/companions', icon: IconCompanions, label: '陪玩管理' },
   ],
   [UserRole.COMPANION]: [
     { key: '/companion', icon: IconRevenue, label: '首页' },
@@ -76,6 +77,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/companion/billing', icon: IconBilling, label: '报账系统' },
     { key: '/companion/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/companion/orders', icon: IconOrders, label: '接单记录' },
+    { key: '/companion/companions', icon: IconCompanions, label: '陪玩管理' },
   ],
 };
 

@@ -19,6 +19,7 @@ import ReviewPage from './pages/admin/ReviewPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import CompanionPage from './pages/CompanionPage';
+import CompanionListPage from './pages/CompanionListPage';
 import CompanionPoolPage from './pages/companion/PoolPage';
 import CompanionBillingPage from './pages/companion/BillingPage';
 import CompanionCustomersPage from './pages/companion/CustomersPage';
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: 'billing', element: <CompanionBillingPage /> },
       { path: 'customers', element: <CompanionCustomersPage /> },
       { path: 'orders', element: <CompanionOrdersPage /> },
+      { path: 'companions', element: <CompanionListPage /> },
     ],
   },
   {
@@ -121,7 +123,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'cs/companions',
-        element: <CompanionsStatusPage />,
+        element: <CompanionListPage />,
       },
       {
         path: '',
