@@ -2,21 +2,14 @@ package tray
 
 import "encoding/binary"
 
-// ── Color palette ──
+// ── Cyberpunk color palette ──
 
 type rgb struct{ r, g, b byte }
 
 var (
-	bgColor       = rgb{42, 45, 53}  // dark charcoal
-	bodyColor     = rgb{55, 65, 81}  // dark blue-gray body
-	bodyLight     = rgb{75, 85, 105} // lighter body edge
-	dpadColor     = rgb{160, 170, 185} // silver dpad
-	dpadCenter    = rgb{200, 205, 215} // dpad center highlight
-	btnGreen      = rgb{76, 175, 80}   // A button
-	btnRed        = rgb{244, 67, 54}   // B button
-	btnBlue       = rgb{33, 150, 243}  // X button
-	btnYellow     = rgb{255, 235, 59}  // Y button
-	gripColor     = rgb{45, 55, 72}   // grip darker shade
+	bgDark  = rgb{0x0F, 0x17, 0x2A} // deep slate #0F172A (rounded square background)
+	cyan    = rgb{0x00, 0xD4, 0xFF} // cyberpunk cyan #00D4FF (play triangle)
+	bgEdge  = rgb{0x1E, 0x29, 0x3B} // subtle lighter edge for depth
 )
 
 // ── ICO generation ──
@@ -31,111 +24,121 @@ func generateICO() []byte {
 	buf := make([]byte, 6+16+imageSize)
 	pos := 0
 
-	// ICO Header
-	binary.LittleEndian.PutUint16(buf[pos:], 0); pos += 2
-	binary.LittleEndian.PutUint16(buf[pos:], 1); pos += 2
-	binary.LittleEndian.PutUint16(buf[pos:], 1); pos += 2
+	// ── ICO Header (6 bytes) ──
+	binary.LittleEndian.PutUint16(buf[pos:], 0)
+	pos += 2 // reserved
+	binary.LittleEndian.PutUint16(buf[pos:], 1)
+	pos += 2 // ICO type
+	binary.LittleEndian.PutUint16(buf[pos:], 1)
+	pos += 2 // image count
 
-	// Directory Entry
-	buf[pos] = size; pos++
-	buf[pos] = size; pos++
-	buf[pos] = 0; pos++
-	buf[pos] = 0; pos++
-	binary.LittleEndian.PutUint16(buf[pos:], 1); pos += 2
-	binary.LittleEndian.PutUint16(buf[pos:], bpp); pos += 2
-	binary.LittleEndian.PutUint32(buf[pos:], uint32(imageSize)); pos += 4
-	binary.LittleEndian.PutUint32(buf[pos:], 6+16); pos += 4
+	// ── Directory Entry (16 bytes) ──
+	buf[pos] = size
+	pos++                   // width
+	buf[pos] = size
+	pos++                   // height
+	buf[pos] = 0
+	pos++                   // color palette (0)
+	buf[pos] = 0
+	pos++                   // reserved
+	binary.LittleEndian.PutUint16(buf[pos:], 1)
+	pos += 2 // color planes
+	binary.LittleEndian.PutUint16(buf[pos:], bpp)
+	pos += 2 // bits per pixel
+	binary.LittleEndian.PutUint32(buf[pos:], uint32(imageSize))
+	pos += 4 // image size
+	binary.LittleEndian.PutUint32(buf[pos:], 6+16)
+	pos += 4 // offset to image data
 
-	// BITMAPINFOHEADER
-	binary.LittleEndian.PutUint32(buf[pos:], 40); pos += 4
-	binary.LittleEndian.PutUint32(buf[pos:], size); pos += 4
-	binary.LittleEndian.PutUint32(buf[pos:], size*2); pos += 4
-	binary.LittleEndian.PutUint16(buf[pos:], 1); pos += 2
-	binary.LittleEndian.PutUint16(buf[pos:], bpp); pos += 2
-	binary.LittleEndian.PutUint32(buf[pos:], 0); pos += 4
-	binary.LittleEndian.PutUint32(buf[pos:], 0); pos += 4
-	pos += 16
+	// ── BITMAPINFOHEADER (40 bytes) ──
+	binary.LittleEndian.PutUint32(buf[pos:], 40)
+	pos += 4 // biSize
+	binary.LittleEndian.PutUint32(buf[pos:], size)
+	pos += 4 // biWidth
+	binary.LittleEndian.PutUint32(buf[pos:], size*2)
+	pos += 4 // biHeight (×2 for ICO: AND mask below XOR mask)
+	binary.LittleEndian.PutUint16(buf[pos:], 1)
+	pos += 2 // biPlanes
+	binary.LittleEndian.PutUint16(buf[pos:], bpp)
+	pos += 2 // biBitCount
+	binary.LittleEndian.PutUint32(buf[pos:], 0)
+	pos += 4 // biCompression (BI_RGB)
+	binary.LittleEndian.PutUint32(buf[pos:], 0)
+	pos += 4 // biSizeImage (0 = calculated)
+	pos += 16 // biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant (all 0)
 
-	// Pixel data
-	drawGamepad(buf[pos:pos+pixelBytes], size)
+	// ── Pixel data ──
+	drawPlayIcon(buf[pos:pos+pixelBytes], size)
 
 	return buf
 }
 
-// drawGamepad renders a game controller icon into the BGRA pixel buffer.
-func drawGamepad(pix []byte, size int) {
-	cx, cy := size/2, size/2
-
-	// Build a 32x32 pixel map in memory, then write to BGRA buffer.
-	// We use a [32][32]rgb array for easy pixel-level drawing.
+// drawPlayIcon renders a cyberpunk-themed play-button icon into the BGRA pixel buffer.
+//
+// Design: deep rounded square background (#0F172A) with a bold cyan (#00D4FF)
+// right-pointing play triangle "▶" centered in the frame. Clean, high-contrast,
+// and recognizable at small sizes.
+func drawPlayIcon(pix []byte, size int) {
 	var img [32][32]rgb
 
-	// ── Background fill ──
+	// ── Step 1: Fill entire canvas transparent ──
 	for y := 0; y < size; y++ {
 		for x := 0; x < size; x++ {
-			img[y][x] = bgColor
+			img[y][x] = rgb{0, 0, 0} // transparent (A=0 in BGRA means the AND mask shows through)
 		}
 	}
 
-	// ── Draw gamepad body (rounded rectangle) ──
-	// Body occupies roughly x=3..28, y=5..26
-	drawRoundedRect(&img, 3, 5, 26, 27, 4, bodyColor)
+	// ── Step 2: Draw the rounded-square background ──
+	// Bounds: x=1..30, y=1..30, corner radius=6
+	fillRoundedRect(&img, 1, 30, 1, 30, 6, bgDark)
 
-	// Body inner highlight
-	drawRoundedRect(&img, 4, 6, 25, 21, 3, bodyLight)
-	drawRoundedRect(&img, 5, 7, 24, 20, 2, bodyColor)
+	// Subtle 1px inner highlight on top-left for depth
+	drawHLine(&img, 2, 28, 2, bgEdge)
+	drawVLine(&img, 2, 2, 28, bgEdge)
 
-	// ── Draw grips (two smaller rounded rects at bottom) ──
-	drawRoundedRect(&img, 6, 22, 12, 27, 3, gripColor)
-	drawRoundedRect(&img, 19, 22, 26, 27, 3, gripColor)
+	// ── Step 3: Draw the play triangle "▶" ──
+	// A right-pointing triangle: flat left edge, pointed right tip.
+	// Bounding box: y=[9,23], left x=11, right tip x=23
+	//
+	//     (11,9)
+	//        *──────────────────▶ (23,16)  tip
+	//        *──────────────────▶
+	//     (11,23)
+	//
+	triTop := 9
+	triMid := 16
+	triBot := 23
+	triLeft := 11
+	triRight := 23
 
-	// ── Draw D-pad (left side, center area) ──
-	// Cross shape centered at (11, 14)
-	dpadX, dpadY := 10, 13
-	// Horizontal bar
-	for y := dpadY - 1; y <= dpadY+1; y++ {
-		for x := dpadX - 3; x <= dpadX+3; x++ {
-			if inBounds(x, y) { img[y][x] = dpadColor }
+	for y := triTop; y <= triBot; y++ {
+		var rightX int
+		if y <= triMid {
+			// Upper half: right edge slopes from left→right tip
+			dy := y - triTop
+			rightX = triLeft + dy*(triRight-triLeft)/(triMid-triTop)
+		} else {
+			// Lower half: right edge slopes from right tip→left
+			dy := y - triMid
+			rightX = triRight - dy*(triRight-triLeft)/(triBot-triMid)
+		}
+		for x := triLeft; x <= rightX; x++ {
+			if inBounds(x, y) {
+				img[y][x] = cyan
+			}
 		}
 	}
-	// Vertical bar
-	for y := dpadY - 3; y <= dpadY+3; y++ {
-		for x := dpadX - 1; x <= dpadX+1; x++ {
-			if inBounds(x, y) { img[y][x] = dpadColor }
-		}
-	}
-	// Center highlight
-	for y := dpadY - 1; y <= dpadY+1; y++ {
-		for x := dpadX - 1; x <= dpadX+1; x++ {
-			if inBounds(x, y) { img[y][x] = dpadCenter }
-		}
-	}
 
-	// ── Draw action buttons (right side) ──
-	// 4 small circles in diamond layout, centered at (21, 14)
-	btnCX, btnCY := 21, 14
-	// Y button (top) - yellow
-	fillCircle(&img, btnCX, btnCY-3, 2, btnYellow)
-	// A button (bottom) - green
-	fillCircle(&img, btnCX, btnCY+3, 2, btnGreen)
-	// X button (left) - blue
-	fillCircle(&img, btnCX-3, btnCY, 2, btnBlue)
-	// B button (right) - red
-	fillCircle(&img, btnCX+3, btnCY, 2, btnRed)
-
-	// ── Draw center guide button ──
-	fillCircle(&img, cx, cy, 1, rgb{180, 190, 200})
-
-	// ── Write pixel map to BGRA buffer (bottom-to-top) ──
+	// ── Step 4: Write to BGRA buffer (bottom-to-top scan order) ──
 	for y := 0; y < size; y++ {
-		row := size - 1 - y // BGRA bottom-up
+		row := size - 1 - y // BMP rows are stored bottom-first
 		for x := 0; x < size; x++ {
 			off := (row*size + x) * 4
 			c := img[y][x]
-			pix[off+0] = c.b // B
-			pix[off+1] = c.g // G
-			pix[off+2] = c.r // R
-			pix[off+3] = 0   // A (ignored)
+			pix[off+0] = c.b // Blue
+			pix[off+1] = c.g // Green
+			pix[off+2] = c.r // Red
+			pix[off+3] = 0   // Alpha (ignored for ICO)
 		}
 	}
 }
@@ -146,11 +149,12 @@ func inBounds(x, y int) bool {
 	return x >= 0 && x < 32 && y >= 0 && y < 32
 }
 
-func drawRoundedRect(img *[32][32]rgb, x1, y1, x2, y2, r int, c rgb) {
+// fillRoundedRect fills a rectangle with rounded corners.
+// x1,y1 is top-left, x2,y2 is bottom-right (inclusive), r is corner radius.
+func fillRoundedRect(img *[32][32]rgb, x1, x2, y1, y2, r int, c rgb) {
 	for y := y1; y <= y2; y++ {
 		for x := x1; x <= x2; x++ {
-			// Skip corners for rounded effect
-			if isCorner(x, y, x1, y1, x2, y2, r) {
+			if isCornerClipped(x, y, x1, y1, x2, y2, r) {
 				continue
 			}
 			if inBounds(x, y) {
@@ -160,39 +164,44 @@ func drawRoundedRect(img *[32][32]rgb, x1, y1, x2, y2, r int, c rgb) {
 	}
 }
 
-func isCorner(x, y, x1, y1, x2, y2, r int) bool {
+// isCornerClipped returns true when (x,y) falls within one of the four
+// clipped corner quadrants and is outside the corner arc (circle test).
+func isCornerClipped(x, y, x1, y1, x2, y2, r int) bool {
+	switch {
 	// Top-left corner
-	if x < x1+r && y < y1+r {
+	case x < x1+r && y < y1+r:
 		dx, dy := x-(x1+r-1), y-(y1+r-1)
 		return dx*dx+dy*dy >= r*r
-	}
 	// Top-right corner
-	if x > x2-r && y < y1+r {
+	case x > x2-r && y < y1+r:
 		dx, dy := x-(x2-r+1), y-(y1+r-1)
 		return dx*dx+dy*dy >= r*r
-	}
 	// Bottom-left corner
-	if x < x1+r && y > y2-r {
+	case x < x1+r && y > y2-r:
 		dx, dy := x-(x1+r-1), y-(y2-r+1)
 		return dx*dx+dy*dy >= r*r
-	}
 	// Bottom-right corner
-	if x > x2-r && y > y2-r {
+	case x > x2-r && y > y2-r:
 		dx, dy := x-(x2-r+1), y-(y2-r+1)
 		return dx*dx+dy*dy >= r*r
 	}
 	return false
 }
 
-func fillCircle(img *[32][32]rgb, cx, cy, radius int, c rgb) {
-	for y := cy - radius; y <= cy+radius; y++ {
-		for x := cx - radius; x <= cx+radius; x++ {
-			dx, dy := x-cx, y-cy
-			if dx*dx+dy*dy <= radius*radius {
-				if inBounds(x, y) {
-					img[y][x] = c
-				}
-			}
+// drawHLine draws a horizontal line from (x1,y) to (x2,y) inclusive.
+func drawHLine(img *[32][32]rgb, x1, x2, y int, c rgb) {
+	for x := x1; x <= x2; x++ {
+		if inBounds(x, y) {
+			img[y][x] = c
+		}
+	}
+}
+
+// drawVLine draws a vertical line from (x,y1) to (x,y2) inclusive.
+func drawVLine(img *[32][32]rgb, x, y1, y2 int, c rgb) {
+	for y := y1; y <= y2; y++ {
+		if inBounds(x, y) {
+			img[y][x] = c
 		}
 	}
 }
