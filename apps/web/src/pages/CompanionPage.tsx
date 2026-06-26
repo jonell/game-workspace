@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Typography, Tag, message, Segmented } from 'antd';
+import { Typography, message, Segmented } from 'antd';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import http from '../api/client';
 import { useAuthStore } from '../stores/authStore';
@@ -45,7 +45,6 @@ const CompanionPage: React.FC = () => {
     .map((c, i) => ({ ...c, rank: i + 1 }));
   const myRank = sorted.findIndex((c: any) => c.name === user?.username) + 1;
   const failCount = sorted.filter((c: any) => cfg.threshold > 0 && (c[cfg.key] || 0) < cfg.threshold).length;
-  const maxVal = sorted[0]?.[cfg.key] || 1;
 
   return (
     <div style={{ maxWidth: 900 }}>
@@ -74,12 +73,12 @@ const CompanionPage: React.FC = () => {
 
       {/* 柱状图 */}
       <div style={{ background: '#FFF', borderRadius: 14, padding: '16px 8px 8px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <ResponsiveContainer width="100%" height={sorted.length * 44 + 20}>
-          <BarChart data={sorted} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
-            barSize={22} barCategoryGap={12}>
-            <XAxis type="number" hide />
-            <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 13, fontWeight: 500, fill: '#475569' }}
-              axisLine={false} tickLine={false} />
+        <ResponsiveContainer width="100%" height={340}>
+          <BarChart data={sorted} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+            barSize={Math.max(18, Math.min(36, 400 / sorted.length))} barCategoryGap="20%">
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false}
+              interval={0} angle={sorted.length > 8 ? -45 : 0} textAnchor={sorted.length > 8 ? 'end' : 'middle'} />
+            <YAxis hide />
             <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }}
               content={({ active, payload }: any) => {
                 if (!active || !payload?.length) return null;
