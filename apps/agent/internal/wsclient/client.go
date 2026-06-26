@@ -88,7 +88,8 @@ type Client struct {
 	tracker   *engine.TimeTracker
 	conn      *websocket.Conn
 	CommandChan chan Command
-	done      chan struct{}
+	done         chan struct{}
+	disconnected bool
 	writeMu   sync.Mutex     // protects conn writes
 	cancel    chan struct{}  // signals heartbeatLoop to exit on reconnect
 }
@@ -381,6 +382,10 @@ func ClearCurrentOrder() {
 }
 
 func (c *Client) Disconnect() {
+	if c.disconnected {
+		return
+	}
+	c.disconnected = true
 	close(c.done)
 	if c.cancel != nil {
 		close(c.cancel)
