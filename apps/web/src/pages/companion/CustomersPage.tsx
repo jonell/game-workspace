@@ -2,12 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Typography, Button, message } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import http from '../../api/client';
-import { useAuthStore } from '../../stores/authStore';
 
 const { Text } = Typography;
 
 const CustomersPage: React.FC = () => {
-
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
