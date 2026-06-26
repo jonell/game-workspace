@@ -640,11 +640,13 @@ The agent exposes a local API on port 9876 for its WebView2 UI:
 
 ## Documents
 
-- [Requirements Document](docs/蠢驴电竞陪玩派单管理系统-需求文档.md)
-- [System Design](docs/superpowers/specs/2026-06-21-系统功能设计.md)
-- [Implementation Plan](docs/superpowers/plans/2026-06-21-系统实施计划.md)
-- [Changelog](CHANGELOG.md)
-- [CLAUDE.md](CLAUDE.md)
+- [架构说明 (Mermaid 图表)](docs/ARCHITECTURE.md)
+- [部署手册](docs/DEPLOYMENT.md)
+- [使用手册](docs/USER_MANUAL.md)
+- [需求文档](docs/蠢驴电竞陪玩派单管理系统-需求文档.md)
+- [系统功能设计](docs/superpowers/specs/2026-06-21-系统功能设计.md)
+- [实施计划](docs/superpowers/plans/2026-06-21-系统实施计划.md)
+- [变更日志](CHANGELOG.md)
 
 ---
 
