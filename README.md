@@ -4,18 +4,20 @@
 
 ---
 
-## Recent Updates (v2.1.0)
+## Recent Updates (v2.2.0)
 
+- **Real-name registration:** companion self-registration with ID card upload + admin review
+- **Game profiles:** per-game rank and account selection with visual tags
+- **WeChat-style chat:** real-time chat between companion and CS with cross-client notifications
+- **Ranking leaderboard:** 4-metric dashboard (续单率/复购率/昨日业绩/本月业绩) with bar charts
+- **Delta Force fields:** 护航/陪玩, 机密/绝密/陪做任务, 单陪/双陪 on order creation
+- **Companion dashboard:** sidebar with 首页/抢单中心/报账/客户管理/接单记录/派单记录
+- **Order pool real-time stats:** today new/grabbed/remaining with 60s auto-refresh
+- **Companion sidebar:** dual role support — can grab orders AND create orders
 - **Simplified auth:** username/password login in Agent (no manual JWT copying)
 - **Auto-authorization:** companions created by OWNER are immediately authorized
-- **Kick companion feature:** admin/owner can force companion offline
-- **Apple-inspired UI theme** with glass-morphism
-- **REST heartbeat** for reliable agent registration
 - **54 unit tests** covering all backend services
-- **Recharts revenue charts**
-- **CSV export** for daily/monthly revenue
-- **Batch billing** operations
-- **Screenshot upload** endpoint
+- **Recharts revenue charts + CSV export + Batch billing**
 - **Linux + Windows** dual-platform Go Agent
 
 ---

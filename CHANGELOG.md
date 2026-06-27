@@ -7,10 +7,28 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased] — 2026-06-26
+## [Unreleased] — 2026-06-27
 
 ### Added
 
+- feat: companion self-registration with real-name ID verification (realName/idNumber/phone/ID card upload)
+- feat: per-game rank and account profiles with visual display
+- feat: WeChat-style chat dialog between companion and CS with real-time notifications
+- feat: pulsing sidebar avatar indicator for incoming chat messages
+- feat: cross-client chat notification via WebSocket broadcast + REST polling
+- feat: companion sidebar menu — 首页/抢单中心/报账/客户管理/接单记录/派单记录
+- feat: companion dashboard with 4-tab ranking leaderboard (续单率/复购率/昨日业绩/本月业绩)
+- feat: Delta Force sub-fields on order creation (护航/陪玩, 机密/绝密/陪做任务, 单陪/双陪, 备注)
+- feat: billing mode selector (hour/round) on create order form
+- feat: game dropdown selector with dynamic options from system settings
+- feat: customer info as 微信+房间码 text inputs on order form
+- feat: today new/grabbed/remaining stats in order pool header
+- feat: dispatcher name on each order card with clickable chat
+- feat: companion details modal with pulsing status dot
+- feat: order pool water wave animation header
+- feat: companion list page with full info table (CS + companion)
+- feat: comprehensive 54 unit tests for all 7 backend services
+- feat: Windows client download entry on login page
 - feat: add kick companion feature — admin/owner can force companion offline via POST /api/companions/:id/kick
 - feat: simplify auth flow — Agent uses username/password login instead of manual JWT token
 - feat: companions created by OWNER are auto-authorized (isAuthorized=true)
