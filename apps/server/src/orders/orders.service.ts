@@ -125,7 +125,7 @@ export class OrdersService {
     });
   }
 
-  async grab(orderId: string, companionId: string) {
+  async grab(orderId: string, companionId?: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('订单不存在');
     this.validateTransition(order, OrderStatus.GRABBED);
@@ -136,35 +136,37 @@ export class OrdersService {
       throw new ForbiddenException('该订单不可抢');
     }
 
-    // Revenue threshold check
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Revenue threshold check (only for companions)
+    if (companionId) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayOrders = await this.prisma.order.findMany({
-      where: {
-        companionId,
-        status: 'DONE',
-        createdAt: { gte: today, lt: tomorrow },
-      },
-    });
-    const todayRevenue = todayOrders.reduce((s, o) => s + o.amount, 0);
+      const todayOrders = await this.prisma.order.findMany({
+        where: {
+          companionId,
+          status: 'DONE',
+          createdAt: { gte: today, lt: tomorrow },
+        },
+      });
+      const todayRevenue = todayOrders.reduce((s, o) => s + o.amount, 0);
 
-    const config = await this.prisma.systemConfig.findUnique({
-      where: { key: 'revenue.unlock_threshold' },
-    });
-    const threshold = (config?.value as number) ?? 100;
+      const config = await this.prisma.systemConfig.findUnique({
+        where: { key: 'revenue.unlock_threshold' },
+      });
+      const threshold = (config?.value as number) ?? 100;
 
-    if (todayRevenue < threshold) {
-      throw new ForbiddenException(
-        `今日流水 ¥${todayRevenue}，未达到解锁门槛 ¥${threshold}，还差 ¥${threshold - todayRevenue}`,
-      );
+      if (todayRevenue < threshold) {
+        throw new ForbiddenException(
+          `今日流水 ¥${todayRevenue}，未达到解锁门槛 ¥${threshold}，还差 ¥${threshold - todayRevenue}`,
+        );
+      }
     }
 
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status: OrderStatus.GRABBED, companionId },
+      data: { status: OrderStatus.GRABBED, companionId: companionId || null },
     });
     this.wsGateway.broadcastToStudio(updatedOrder.studioId, 'order:pool_updated', updatedOrder);
     return updatedOrder;
