@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Card, Row, Col, Statistic, Spin, Typography, Modal } from 'antd';
 import { BarChartOutlined, TrophyOutlined, DollarOutlined } from '@ant-design/icons';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import PerformancePage from './PerformancePage';
 import AdminRevenuePage from './RevenuePage';
 import { dashboardApi } from '../../api/dashboard';
@@ -67,7 +67,9 @@ const RevenueDashboard: React.FC = () => {
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={2} />
               <YAxis tickFormatter={(v) => `¥${v}`} width={60} />
               <Tooltip formatter={(v: any) => `¥${Number(v).toLocaleString()}`} />
-              <Bar dataKey="revenue" fill="#1677ff" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="revenue" fill="#1677ff" radius={[2, 2, 0, 0]}>
+                <LabelList dataKey="revenue" position="top" formatter={(v: any) => `¥${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : <Text type="secondary">暂无数据</Text>}
@@ -123,6 +125,8 @@ const RevenueDashboard: React.FC = () => {
                   <YAxis tickFormatter={(v) => `¥${v}`} />
                   <Tooltip formatter={(v: any) => `¥${v.toLocaleString()}`} />
                   <Bar dataKey="value" fill="#1677ff" radius={[4, 4, 0, 0]}>
+                    <LabelList dataKey="value" position="top" formatter={(v: any) => `¥${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
+                  </Bar>
                     {detailBarData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Bar>
                 </BarChart>
