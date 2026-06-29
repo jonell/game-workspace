@@ -72,4 +72,53 @@ export class CustomersController {
     const data = await this.customersService.reassign(id, companionId);
     return { code: 200, message: 'ok', data };
   }
+
+  @Get('customers/:id/type')
+  async getCustomerType(
+    @Param('id') id: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.customersService.detectCustomerType(id);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Get('customers/:id/profile')
+  async getProfile(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+    const data = await this.customersService.getOrCreateProfile(id);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Put('customers/:id/profile')
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.COMPANION)
+  async updateProfile(
+    @Param('id') id: string,
+    @Body() dto: any,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.customersService.updateProfile(id, dto);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Get('customers/:id/follow-ups')
+  async getFollowUps(
+    @Param('id') id: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.customersService.getFollowUps(id);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Post('customers/:id/follow-ups')
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.COMPANION)
+  async addFollowUp(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() dto: { content: string; nextAction?: string },
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.customersService.addFollowUp({
+      customerId: id,
+      content: dto.content,
+      nextAction: dto.nextAction,
+      playerId: req.user.companionId,
+      adminId: req.user.companionId ? undefined : req.user.id,
+    });
+    return { code: 201, message: 'ok', data };
+  }
 }

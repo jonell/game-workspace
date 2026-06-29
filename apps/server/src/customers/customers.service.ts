@@ -198,4 +198,77 @@ export class CustomersService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async detectCustomerType(customerId: string): Promise<{ type: string; orderCount: number }> {
+    const count = await this.prisma.order.count({
+      where: { customerId, status: 'DONE' },
+    });
+    if (count === 0) return { type: 'FIRST', orderCount: 0 };
+    return { type: 'REPURCHASE', orderCount: count };
+  }
+
+  async updateCustomerStatus(customerId: string): Promise<string> {
+    const lastOrder = await this.prisma.order.findFirst({
+      where: { customerId, status: 'DONE' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let status: string;
+    if (!lastOrder) {
+      status = 'PENDING_DEVELOPMENT';
+    } else {
+      const daysSince = Math.floor(
+        (Date.now() - lastOrder.createdAt.getTime()) / 86400000,
+      );
+      if (daysSince <= 7) status = 'ACTIVE';
+      else if (daysSince <= 30) status = 'FOLLOW_UP';
+      else status = 'LOST';
+    }
+
+    await this.prisma.customer.update({
+      where: { id: customerId },
+      data: { status },
+    });
+    return status;
+  }
+
+  async getOrCreateProfile(customerId: string) {
+    let profile = await this.prisma.customerProfile.findUnique({
+      where: { customerId },
+    });
+    if (!profile) {
+      profile = await this.prisma.customerProfile.create({
+        data: { customerId },
+      });
+    }
+    return profile;
+  }
+
+  async updateProfile(customerId: string, data: any) {
+    return this.prisma.customerProfile.upsert({
+      where: { customerId },
+      create: { customerId, ...data },
+      update: data,
+    });
+  }
+
+  async getFollowUps(customerId: string) {
+    return this.prisma.customerFollowUp.findMany({
+      where: { customerId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async addFollowUp(dto: {
+    customerId: string;
+    playerId?: string;
+    adminId?: string;
+    content: string;
+    nextAction?: string;
+  }) {
+    const followUp = await this.prisma.customerFollowUp.create({ data: dto });
+    // Auto-update customer status after follow-up
+    await this.updateCustomerStatus(dto.customerId);
+    return followUp;
+  }
 }
