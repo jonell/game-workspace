@@ -100,8 +100,6 @@ const RevenueDashboard: React.FC = () => {
                   <XAxis type="number" tickFormatter={(v) => `¥${v}`} />
                   <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
                   <Tooltip formatter={(v: any) => `¥${v.toLocaleString()}`} />
-                  <ReferenceLine x={barData[0]?.revenue * 0.3} stroke="#ff4d4f" strokeWidth={2} strokeDasharray="5 5"
-                    label={{ value: '30% 基准线', position: 'top', fill: '#ff4d4f', fontSize: 12 }} />
                   <Bar dataKey="revenue" fill="#1677ff" radius={[0, 4, 4, 0]} cursor="pointer"
                     onClick={(d: any) => openDetail(d.companionId)}>
                     <LabelList dataKey="revenue" position="right" formatter={(v: any) => `¥${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
@@ -109,7 +107,7 @@ const RevenueDashboard: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : <Text type="secondary">暂无数据</Text>}
-            <Text type="secondary" style={{ fontSize: 12 }}>💡 点击陪玩查看订单类型明细 ｜ 🔴 红线=30%续单复购基准</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>💡 点击陪玩查看订单类型明细</Text>
           </Card>
         </Col>
       </Row>
@@ -128,6 +126,8 @@ const RevenueDashboard: React.FC = () => {
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(v) => `¥${v}`} />
                   <Tooltip formatter={(v: any) => `¥${v.toLocaleString()}`} />
+                  <ReferenceLine y={detail.totalRevenue * 0.3} stroke="#ff4d4f" strokeWidth={2} strokeDasharray="5 5"
+                    label={{ value: '30% 基准', position: 'right', fill: '#ff4d4f', fontSize: 11 }} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     <LabelList dataKey="value" position="top" formatter={(v: any) => `¥${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
                     {detailBarData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
