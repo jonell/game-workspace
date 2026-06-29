@@ -1,15 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Typography, Tag, Row, Col, Spin, message, Empty, Progress, Space } from 'antd';
-import { ThunderboltOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Card, Button, Typography, Tag, Row, Col, Spin, message, Empty, Progress, Space, Modal, Input } from 'antd';
+import { ThunderboltOutlined, ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { ordersApi } from '../../api/orders';
+import http from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
 
 const { Text, Title } = Typography;
 
+const orderTypeConfig: Record<string, { label: string; color: string }> = {
+  NEW: { label: '首单', color: 'green' },
+  RENEW: { label: '续单', color: 'orange' },
+  REPURCHASE: { label: '复购', color: 'blue' },
+  TIP: { label: '打赏', color: 'purple' },
+};
+
 const PoolPage: React.FC = () => {
+  const user = useAuthStore(s => s.user);
   const [orders, setOrders] = useState<any[]>([]);
   const [poolStatus, setPoolStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [grabbing, setGrabbing] = useState<string | null>(null);
+
+  // Chat state
+  const [chatOrder, setChatOrder] = useState<any>(null);
+  const [chatMessages, setChatMessages] = useState<{ text: string; time: string; from: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -43,6 +59,54 @@ const PoolPage: React.FC = () => {
     }
   };
 
+  // Chat handlers
+  const openChat = (order: any) => {
+    setChatOrder(order);
+    setChatMessages([]);
+    setChatInput('');
+    useAuthStore.getState().setChatActive(true);
+  };
+
+  const closeChat = () => {
+    setChatOrder(null);
+    setChatMessages([]);
+    setChatInput('');
+    useAuthStore.getState().setChatActive(false);
+  };
+
+  const sendChat = async () => {
+    const val = chatInput.trim();
+    if (!val) return;
+    const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    setChatMessages(prev => [...prev, { text: val, time: now, from: 'me' }]);
+    setChatInput('');
+    if (chatOrder?.id) {
+      http.post('/companions/chat-notify', { orderId: chatOrder.id, message: val }).catch(() => {});
+    }
+    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
+  };
+
+  // Poll chat from CS
+  useEffect(() => {
+    if (!chatOrder?.id) return;
+    const timer = setInterval(async () => {
+      try {
+        const { data } = await http.get(`/companions/chat-pending?orderId=${chatOrder.id}`);
+        const msgs = data.data ?? [];
+        if (Array.isArray(msgs) && msgs.length > 0) {
+          setChatMessages(prev => {
+            const existing = new Set(prev.map(m => m.text + m.time));
+            const news = msgs.filter((m: any) => !existing.has(m.text + m.time));
+            if (news.length === 0) return prev;
+            return [...prev, ...news.map((m: any) => ({ text: m.text || m.message, time: m.time || new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }), from: 'them' }))];
+          });
+          setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
+        }
+      } catch {}
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [chatOrder?.id]);
+
   if (loading) return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
 
   const isUnlocked = poolStatus?.isUnlocked ?? false;
@@ -54,7 +118,6 @@ const PoolPage: React.FC = () => {
     <div>
       <Title level={4}>📦 抢单池</Title>
 
-      {/* Status banner */}
       <Card size="small" style={{ marginBottom: 16, background: isUnlocked ? '#f6ffed' : '#fff7e6' }}>
         <Row align="middle" justify="space-between">
           <Col>
@@ -87,52 +150,111 @@ const PoolPage: React.FC = () => {
 
       {isUnlocked && orders.length === 0 && <Empty description="暂无待抢订单" />}
 
-      <Row gutter={[12, 12]}>
+      {/* Horizontal order rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {orders.map((order: any) => (
-          <Col span={8} key={order.id}>
-            <Card
-              size="small"
-              hoverable={isUnlocked}
-              title={
-                <Space>
-                  <Tag color="blue">{order.customer?.customerCode ?? 'N/A'}</Tag>
-                  <Text>{order.gameName}</Text>
+          <Card key={order.id} size="small" hoverable={isUnlocked}
+            style={{ cursor: isUnlocked ? 'default' : undefined }}>
+            <Row align="middle" gutter={16}>
+              <Col flex="40px">
+                <Tag color={orderTypeConfig[order.type]?.color || 'blue'} style={{ margin: 0 }}>
+                  {orderTypeConfig[order.type]?.label || order.type}
+                </Tag>
+              </Col>
+              <Col flex="80px">
+                <Text strong>{order.gameName}</Text>
+              </Col>
+              <Col flex="70px">
+                <Text>¥{order.amount}</Text>
+              </Col>
+              <Col flex="60px">
+                {order.customFields?.deltaMode ? <Tag>{order.customFields.deltaMode}</Tag> : null}
+                {order.customFields?.deltaCount ? <Tag>{order.customFields.deltaCount}</Tag> : null}
+              </Col>
+              <Col flex="auto">
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {order.customFields?.deltaMission && `🎯${order.customFields.deltaMission} `}
+                  {order.customFields?.deltaNote && `⚠️${order.customFields.deltaNote}`}
+                </Text>
+              </Col>
+              <Col>
+                <Space size={8}>
+                  <Button size="small" icon={React.createElement(MessageOutlined)}
+                    onClick={() => openChat(order)}>沟通</Button>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}
+                  </Text>
+                  {isUnlocked && (
+                    <Button type="primary" size="small" loading={grabbing === order.id}
+                      onClick={() => handleGrab(order.id)}>抢单</Button>
+                  )}
                 </Space>
-              }
-              extra={
-                isUnlocked ? (
-                  <Button
-                    type="primary"
-                    size="small"
-                    loading={grabbing === order.id}
-                    onClick={() => handleGrab(order.id)}
-                  >
-                    抢单
-                  </Button>
-                ) : (
-                  <Button size="small" disabled>🔒</Button>
-                )
-              }
-            >
-              <div style={{ fontSize: 13 }}>
-                <div>金额：¥{order.amount}</div>
-                <div>来源：{order.customFields?.customerWechat ? '微信' : '平台'}</div>
-                {order.customFields?.deltaMode && <div>模式：{order.customFields.deltaMode}</div>}
-                {order.customFields?.deltaNote && (
-                  <div style={{ color: '#faad14', marginTop: 4 }}>⚠️ {order.customFields.deltaNote}</div>
-                )}
-                <div style={{ marginTop: 4, color: '#999', fontSize: 12 }}>
-                  {React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}
-                </div>
-              </div>
-            </Card>
-          </Col>
+              </Col>
+            </Row>
+          </Card>
         ))}
-      </Row>
+      </div>
 
       <Card size="small" style={{ marginTop: 16 }}>
         <Text type="secondary">💡 抢单后可见客户联系方式和来源账号ID</Text>
       </Card>
+
+      {/* Chat Modal */}
+      <Modal title={null} open={!!chatOrder} onCancel={closeChat} footer={null}
+        width={440} style={{ top: 20 }} bodyStyle={{ padding: 0 }}>
+        {chatOrder && (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '65vh', maxHeight: 550 }}>
+            <div style={{ background: '#EDEDED', padding: '10px 16px', borderBottom: '1px solid #D9D9D9' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#1E293B', textAlign: 'center' }}>
+                💬 {chatOrder.csUser?.username || '客服'}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 10px', fontSize: 11, color: '#8E8E93', marginTop: 4, justifyContent: 'center' }}>
+                <span>📋 {chatOrder.gameName}</span>
+                <span>· {orderTypeConfig[chatOrder.type]?.label}</span>
+                <span>· ¥{Number(chatOrder.amount).toFixed(2)}</span>
+                <span>· ⏱{chatOrder.duration || '-'}h</span>
+                {chatOrder.customFields?.deltaMode && <span>· {chatOrder.customFields.deltaMode}</span>}
+                {chatOrder.customFields?.deltaMission && <span>· {chatOrder.customFields.deltaMission}</span>}
+                {chatOrder.customFields?.deltaCount && <span>· {chatOrder.customFields.deltaCount}</span>}
+                {chatOrder.customFields?.deltaNote && <span>· 📝{chatOrder.customFields.deltaNote}</span>}
+              </div>
+            </div>
+            <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#EDEDED' }}>
+              {chatMessages.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#8E8E93', fontSize: 13, marginTop: 60 }}>
+                  发送消息开始对话
+                </div>
+              ) : (
+                chatMessages.map((msg, i) => {
+                  const isMe = msg.from === 'me';
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12,
+                      flexDirection: isMe ? 'row-reverse' : 'row' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 4, flexShrink: 0,
+                        background: isMe ? '#95EC69' : '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, fontWeight: 700, color: isMe ? '#FFF' : '#07C160',
+                        marginLeft: isMe ? 8 : 0, marginRight: isMe ? 0 : 8 }}>
+                        {(isMe ? (user?.username || '我') : (chatOrder.csUser?.username || '?')).charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ maxWidth: '70%' }}>
+                        <div style={{ fontSize: 10, color: '#B0B0B0', marginBottom: 2, textAlign: isMe ? 'right' : 'left' }}>{msg.time}</div>
+                        <div style={{ padding: '8px 12px', borderRadius: 4, fontSize: 14, lineHeight: 1.4, wordBreak: 'break-word',
+                          background: isMe ? '#95EC69' : '#FFF', color: '#1E293B' }}>{msg.text}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div style={{ borderTop: '1px solid #D9D9D9', padding: '8px 12px', display: 'flex', gap: 8, background: '#F5F5F5' }}>
+              <Input value={chatInput} onChange={e => setChatInput(e.target.value)}
+                onPressEnter={sendChat} placeholder="输入消息..."
+                style={{ borderRadius: 4 }} />
+              <Button type="primary" onClick={sendChat}>发送</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
