@@ -16,7 +16,7 @@ import {
   List,
   Spin,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, MessageOutlined } from '@ant-design/icons';
 import { CompanionStatus, OrderType, DispatchType } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
 import { ordersApi } from '../../api/orders';
@@ -312,69 +312,41 @@ const DispatchPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
                 </div>
               ) : (
-                <List grid={{ gutter: [12, 12], column: 1 }} dataSource={poolOrders}
-                  renderItem={(order) => (
+                <List grid={{ gutter: [0, 8], column: 1 }} dataSource={poolOrders}
+                  renderItem={(order, idx) => (
                     <List.Item style={{ marginBottom: 0 }}>
-                      <div style={{
-                        background: '#FFF', borderRadius: 10, padding: '8px 14px',
+                      <div style={{ background: '#FFF', borderRadius: 10, padding: '8px 14px',
                         border: '1px solid #E8ECF1', transition: 'all 0.2s',
                         animation: 'fade-slide-in 0.3s ease',
-                      }} className="pool-card">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', flex: 1 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: '#1E293B' }}>{order.gameName}</span>
-                            <Tag color={orderTypeConfig[order.type]?.color} style={{ fontSize: 13, padding: '2px 10px', borderRadius: 6 }}>{orderTypeConfig[order.type]?.label ?? order.type}</Tag>
-                            {order.customFields?.deltaMode && (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F0F0FF', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#7B61FF', fontWeight: 600 }}>
-                                🎯 {order.customFields.deltaMode}
-                              </span>
-                            )}
-                            {order.customFields?.deltaMission && (
-                              <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>· {order.customFields.deltaMission}</span>
-                            )}
-                            {order.customFields?.deltaCount && (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#FFF7ED', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#FF9100', fontWeight: 600 }}>
-                                👥 {order.customFields.deltaCount}
-                              </span>
-                            )}
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F1F5F9', borderRadius: 8, padding: '4px 10px', fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                              ⏱ {order.duration || '-'}{order.customFields?.billingMode === 'round' ? '局' : 'h'}
-                            </span>
-                            <span style={{ fontSize: 13, color: '#1E293B' }}>
-                              ¥{Number(order.amount).toFixed(2)}
-                            </span>
-                            {order.customFields?.deltaNote && (
-                              <span style={{ fontSize: 14, fontWeight: 700, color: '#FF4757', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={order.customFields.deltaNote}>
-                                📝 {order.customFields.deltaNote}
-                              </span>
-                            )}
-                            {order.customFields?.customerWechat && (
-                              <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                                💬 {isCS ? order.customFields.customerWechat : '✳️✳️✳️'}
-                              </span>
-                            )}
-                            {order.customFields?.customerRoomCode && (
-                              <span style={{ fontSize: 13, color: '#475569', fontWeight: 500 }}>
-                                🏠 {isCS ? order.customFields.customerRoomCode : '✳️✳️✳️'}
-                              </span>
-                            )}
-                          </div>
-                          {order.csUser?.username && (
-                            <span onClick={() => { setChatOrder(order); useAuthStore.getState().setChatActive(true, order.csUser?.username); }}
-                              style={{ fontSize: 12, color: '#00D4FF', cursor: 'pointer', fontWeight: 600, borderBottom: '1px dashed #00D4FF', whiteSpace: 'nowrap' }}>
-                              💬 {order.csUser.username}
-                            </span>
-                          )}
-                          <span style={{ fontSize: 12, color: '#94A3B8', whiteSpace: 'nowrap', flexShrink: 0, minWidth: 80, textAlign: 'right' }}>
-                            {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
-                          </span>
-                          <Button type="primary" size="middle" loading={grabbingId === order.id}
-                            onClick={(e) => handleGrab(order.id, e)}
-                            style={{ borderRadius: 8, fontWeight: 600, fontSize: 14, height: 36, paddingInline: 20, flexShrink: 0 }}
-                            className="grab-btn">
-                            接 单
-                          </Button>
-                        </div>
+                        borderLeft: `3px solid ${orderTypeConfig[order.type]?.color || '#1677ff'}` }}>
+                        <Row align="middle" gutter={8} wrap={false}>
+                          <Col><Tag style={{ background: '#f0f0f0', color: '#666', fontWeight: 700, minWidth: 24, textAlign: 'center', margin: 0 }}>{idx + 1}</Tag></Col>
+                          <Col><Tag color={orderTypeConfig[order.type]?.color || 'blue'} style={{ margin: 0 }}>{orderTypeConfig[order.type]?.label || order.type}</Tag></Col>
+                          <Col><Text strong style={{ fontSize: 14, whiteSpace: 'nowrap' }}>{order.gameName}</Text></Col>
+                          <Col><Text style={{ fontSize: 14, fontWeight: 700, color: '#1677ff', whiteSpace: 'nowrap' }}>¥{Number(order.amount).toFixed(0)}</Text></Col>
+                          {order.customFields?.deltaMode && <Col><Tag color="cyan" style={{ margin: 0 }}>{order.customFields.deltaMode}</Tag></Col>}
+                          {order.customFields?.deltaMission && <Col><Tag style={{ margin: 0 }}>{order.customFields.deltaMission}</Tag></Col>}
+                          {order.customFields?.deltaCount && <Col><Tag style={{ margin: 0 }}>{order.customFields.deltaCount}</Tag></Col>}
+                          {order.customFields?.customerSource && <Col><Tag color="orange" style={{ margin: 0 }}>📡{order.customFields.customerSource}</Tag></Col>}
+                          {order.customFields?.customerWechat && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>💬{order.customFields.customerWechat}</Text></Col>}
+                          {order.customFields?.customerRoomCode && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>🏠{order.customFields.customerRoomCode}</Text></Col>}
+                          {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
+                          {order.customFields?.billingMode && <Col><Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{order.customFields.billingMode === 'round' ? '局' : '时'}</Text></Col>}
+                          <Col flex="auto" />
+                          <Col>
+                            <Space size={6}>
+                              {order.csUser?.username && (
+                                <Button size="small" icon={React.createElement(MessageOutlined)}
+                                  onClick={() => { setChatOrder(order); useAuthStore.getState().setChatActive(true, order.csUser?.username); }}>沟通</Button>
+                              )}
+                              <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+                                {order.createdAt ? new Date(order.createdAt).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : ''}
+                              </Text>
+                              <Button type="primary" size="small" loading={grabbingId === order.id}
+                                onClick={(e) => handleGrab(order.id, e)}>接单</Button>
+                            </Space>
+                          </Col>
+                        </Row>
                       </div>
                     </List.Item>
                 )}
