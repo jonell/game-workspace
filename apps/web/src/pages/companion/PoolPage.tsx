@@ -150,46 +150,63 @@ const PoolPage: React.FC = () => {
 
       {isUnlocked && orders.length === 0 && <Empty description="暂无待抢订单" />}
 
-      {/* Horizontal order rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Horizontal order rows — comprehensive info */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {orders.map((order: any) => (
-          <Card key={order.id} size="small" hoverable={isUnlocked}
-            style={{ cursor: isUnlocked ? 'default' : undefined }}>
-            <Row align="middle" gutter={16}>
-              <Col flex="40px">
-                <Tag color={orderTypeConfig[order.type]?.color || 'blue'} style={{ margin: 0 }}>
+          <Card key={order.id} size="small"
+            style={{ borderLeft: `3px solid ${orderTypeConfig[order.type]?.color || '#1677ff'}` }}>
+            {/* Row 1: main info */}
+            <Row align="middle" gutter={12} style={{ marginBottom: 4 }}>
+              <Col>
+                <Tag color={orderTypeConfig[order.type]?.color || 'blue'}>
                   {orderTypeConfig[order.type]?.label || order.type}
                 </Tag>
               </Col>
-              <Col flex="80px">
-                <Text strong>{order.gameName}</Text>
+              <Col>
+                <Text strong style={{ fontSize: 15 }}>{order.gameName}</Text>
               </Col>
-              <Col flex="70px">
-                <Text>¥{order.amount}</Text>
+              <Col>
+                <Text style={{ fontSize: 15, fontWeight: 700, color: '#1677ff' }}>¥{Number(order.amount).toFixed(0)}</Text>
               </Col>
-              <Col flex="60px">
-                {order.customFields?.deltaMode ? <Tag>{order.customFields.deltaMode}</Tag> : null}
-                {order.customFields?.deltaCount ? <Tag>{order.customFields.deltaCount}</Tag> : null}
-              </Col>
-              <Col flex="auto">
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {order.customFields?.deltaMission && `🎯${order.customFields.deltaMission} `}
-                  {order.customFields?.deltaNote && `⚠️${order.customFields.deltaNote}`}
-                </Text>
-              </Col>
+              {order.customFields?.deltaMode && (
+                <Col><Tag color="cyan">{order.customFields.deltaMode}</Tag></Col>
+              )}
+              {order.customFields?.deltaMission && (
+                <Col><Tag>{order.customFields.deltaMission}</Tag></Col>
+              )}
+              {order.customFields?.deltaCount && (
+                <Col><Tag>{order.customFields.deltaCount}</Tag></Col>
+              )}
+              {order.customFields?.billingMode && (
+                <Col><Text type="secondary" style={{ fontSize: 12 }}>{order.customFields.billingMode === 'round' ? '按局' : '按小时'}</Text></Col>
+              )}
+              <Col flex="auto" />
               <Col>
                 <Space size={8}>
                   <Button size="small" icon={React.createElement(MessageOutlined)}
                     onClick={() => openChat(order)}>沟通</Button>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                  <Text type="secondary" style={{ fontSize: 11 }}>
                     {React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}
                   </Text>
                   {isUnlocked && (
-                    <Button type="primary" size="small" loading={grabbing === order.id}
+                    <Button type="primary" size="small" danger loading={grabbing === order.id}
                       onClick={() => handleGrab(order.id)}>抢单</Button>
                   )}
                 </Space>
               </Col>
+            </Row>
+            {/* Row 2: detail line */}
+            <Row gutter={16} style={{ fontSize: 12, color: '#8c8c8c' }}>
+              <Col>编号：{order.id?.slice(-8)}</Col>
+              {order.customer?.customerCode && <Col>客户：{order.customer.customerCode}</Col>}
+              {order.customer?.platform && <Col>来源：{order.customer.platform}</Col>}
+              <Col>派单人：{order.csUser?.username || '-'}</Col>
+              {order.customFields?.deltaNote && (
+                <Col><Text type="warning" style={{ fontSize: 12 }}>📝 {order.customFields.deltaNote}</Text></Col>
+              )}
+              {order.customFields?.customerWechat && (
+                <Col>微信：{order.customFields.customerWechat}</Col>
+              )}
             </Row>
           </Card>
         ))}
