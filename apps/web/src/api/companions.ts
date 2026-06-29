@@ -9,4 +9,5 @@ export const companionsApi = {
   sendCommand: (id: string, command: string, params?: unknown) =>
     http.post(`/companions/${id}/command`, { command, params }),
   kick: (id: string) => http.post(`/companions/${id}/kick`),
+  workbench: () => http.get('/companions/me/workbench'),
 };

@@ -60,4 +60,85 @@ export class CompanionsService {
       total: transactions.reduce((s: number, t: { amount: number }) => s + t.amount, 0),
     };
   }
+
+  async getWorkbench(companionId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Today's revenue from completed orders
+    const todayOrders = await this.prisma.order.findMany({
+      where: {
+        companionId,
+        status: 'DONE',
+        createdAt: { gte: today, lt: tomorrow },
+      },
+    });
+    const todayRevenue = todayOrders.reduce((s, o) => s + o.amount, 0);
+
+    // Config thresholds
+    const [unlockCfg, freeCfg] = await Promise.all([
+      this.prisma.systemConfig.findUnique({ where: { key: 'revenue.unlock_threshold' } }),
+      this.prisma.systemConfig.findUnique({ where: { key: 'revenue.free_threshold' } }),
+    ]);
+    const unlockThreshold = (unlockCfg?.value as number) ?? 100;
+    const freeThreshold = (freeCfg?.value as number) ?? 300;
+
+    // Time logs for today
+    const timeLogs = await this.prisma.companionTimeLog.findMany({
+      where: {
+        companionId,
+        startedAt: { gte: today },
+      },
+    });
+
+    const durations = { entertainment: 0, work: 0, idle: 0, rest: 0 };
+    for (const log of timeLogs) {
+      const seconds = log.durationSeconds || 0;
+      if (log.mode === 'ENTERTAINMENT') durations.entertainment += seconds;
+      else if (log.mode === 'WORK') durations.work += seconds;
+      else if (log.mode === 'IDLE') durations.idle += seconds;
+      else durations.rest += seconds;
+    }
+
+    const formatDuration = (sec: number) => {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
+
+    const entertainmentMinutes = Math.floor(durations.entertainment / 60);
+    const entertainmentFee = entertainmentMinutes; // ¥1/min
+
+    // Online companions (same studio)
+    const companion = await this.prisma.companion.findUnique({
+      where: { id: companionId },
+      select: { studioId: true },
+    });
+    const onlineCompanions = await this.prisma.companion.findMany({
+      where: { studioId: companion?.studioId, status: { in: ['ONLINE', 'BUSY'] } },
+      select: {
+        id: true,
+        status: true,
+        user: { select: { username: true } },
+      },
+    });
+
+    return {
+      todayRevenue: Math.round(todayRevenue * 100) / 100,
+      unlockThreshold,
+      isUnlocked: todayRevenue >= unlockThreshold,
+      freeThreshold,
+      entertainmentMinutes,
+      entertainmentFee,
+      statusDurations: {
+        entertainment: formatDuration(durations.entertainment),
+        work: formatDuration(durations.work),
+        idle: formatDuration(durations.idle),
+        rest: formatDuration(durations.rest),
+      },
+      onlineCompanions,
+    };
+  }
 }

@@ -43,6 +43,13 @@ export class CompanionsController {
     return { code: 200, message: 'ok', data: { hasNew: false } };
   }
 
+  @Get('companions/me/workbench')
+  @Roles(UserRole.COMPANION)
+  async getWorkbench(@Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.companionsService.getWorkbench(req.user.companionId);
+    return { code: 200, message: 'ok', data };
+  }
+
   @Get('companions/:id')
   async findOne(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const data = await this.companionsService.findOne(id);
