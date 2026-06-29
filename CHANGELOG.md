@@ -7,12 +7,31 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased] — 2026-06-27
+## [Unreleased] — 2026-06-29
 
 ### Added
 
-- feat: expense report module — companions submit expense/withdraw reports with review workflow
-- feat: expense report monthly summary with approved/pending/rejected stats for admin
+- **Phase 1 MVP:** Core business loop complete
+- 数据看板：今日流水/订单/在线陪玩/接单率 + 7日趋势图 + 业绩排行 + 异常预警
+- 陪玩工作台：今日统计、流水解锁进度、状态时长、状态切换、在线陪玩列表
+- 抢单池流水门槛：当日流水≥100元解锁抢单功能
+- 报账财务：陪玩端提交报账/支取申请，管理端审核通过/驳回，月度汇总
+- 系统配置：流水门槛、阶梯分成、支取比例、下拉选项、超时设置等全局配置
+- `Studio.type` 字段区分直营店/租赁店
+- `StudioDailyStats` 和 `ExpenseReport` 数据模型
+- Dashboard API: GET /dashboard, /dashboard/trend, /dashboard/companions
+- Companion workbench API: GET /companions/me/workbench
+- Order pool status API: GET /orders/pool/status (with revenue threshold)
+- Expense report endpoints: CRUD + review + monthly summary
+- Config API: GET/PUT /config with 16 multi-key defaults
+
+### Changed
+
+- Enhanced settings page from 2-card to 6-tab config management
+- Enhanced companion pool page with revenue threshold lock/progress
+- Enhanced companion home page with full workbench dashboard
+- Added Dashboard admin route as default page
+- Enhanced billing pages with expense report submission and review
 - feat: companion billing page now includes expense report submission modal
 - feat: admin billing page now includes expense report review section with filter tabs
 - feat: companion workbench API with today revenue, unlock/free thresholds, and status time tracking
