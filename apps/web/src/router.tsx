@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/admin/DashboardPage';
 import CustomersPage from './pages/owner/CustomersPage';
 import AdminCustomersPage from './pages/admin/CustomersPage';
 import AdminCompanionsPage from './pages/admin/CompanionsPage';
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
         element: <SettingsPage />,
       },
       // Admin routes
+      {
+        path: 'admin',
+        element: <DashboardPage />,
+      },
       {
         path: 'admin/dispatch',
         element: <AdminDispatchPage />,

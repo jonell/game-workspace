@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space, Spin } from 'antd';
 import type { MenuProps } from 'antd';
 import {
+  DashboardOutlined,
   DollarOutlined,
   TeamOutlined,
   UserOutlined,
@@ -24,6 +25,7 @@ const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
 // Use React.createElement to bypass @ant-design/icons + @types/react 18.3.x JSX type conflict
+const IconDashboard = React.createElement(DashboardOutlined);
 const IconRevenue = React.createElement(DollarOutlined);
 const IconCustomers = React.createElement(TeamOutlined);
 const IconEmployees = React.createElement(UserOutlined);
@@ -46,6 +48,7 @@ interface MenuItemDef {
 
 const roleMenus: Record<UserRole, MenuItemDef[]> = {
   [UserRole.OWNER]: [
+    { key: '/admin', icon: IconDashboard, label: '数据看板' },
     { key: '/owner/revenue', icon: IconRevenue, label: '盈亏统计' },
     { key: '/owner/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/owner/employees', icon: IconEmployees, label: '员工管理' },
@@ -55,6 +58,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/owner/settings', icon: IconAuth, label: '系统设置' },
   ],
   [UserRole.ADMIN]: [
+    { key: '/admin', icon: IconDashboard, label: '数据看板' },
     { key: '/admin/dispatch', icon: IconDispatch, label: '派单管理' },
     { key: '/admin/companions', icon: IconCompanions, label: '陪玩管理' },
     { key: '/admin/customers', icon: IconCustomers, label: '客户管理' },

@@ -12,6 +12,7 @@
     "lint": "echo 'lint ok'"
   },
   "dependencies": {
+    "@ant-design/charts": "^2.6.7",
     "@ant-design/icons": "^5.3.0",
     "@chunlv/shared": "workspace:*",
     "antd": "^5.18.0",
