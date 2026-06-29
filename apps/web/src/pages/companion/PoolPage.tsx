@@ -247,11 +247,21 @@ const PoolPage: React.FC = () => {
             `来源：${grabbedOrder?.customFields?.customerSource || ''} ${grabbedOrder?.customFields?.customerPlatformAccount || ''}`,
             grabbedOrder?.customFields?.customerRoomCode ? `房间码：${grabbedOrder.customFields.customerRoomCode}` : '',
             `游戏：${grabbedOrder?.gameName} ¥${Number(grabbedOrder?.amount).toFixed(0)}`];
-          navigator.clipboard.writeText(info.filter(Boolean).join('\n')).then(() => {
+          const text = info.filter(Boolean).join('\n');
+          // Fallback copy method for all browsers
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand('copy');
             message.success(`已复制微信号 ${wechat} 到剪贴板，去微信粘贴添加好友 ✅`, 5);
-          }).catch(() => {
+          } catch {
             message.info(`微信号：${wechat}，请手动复制`, 5);
-          });
+          }
+          document.body.removeChild(ta);
           setGrabbedModal(false);
         }}>知道了，马上去联系</Button>} width={440}>
         {grabbedOrder && (
