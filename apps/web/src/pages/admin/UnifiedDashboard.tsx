@@ -12,11 +12,19 @@ const TYPE_LABELS: Record<string, string> = { NEW: '新单', RENEW: '续单', RE
 
 const RevenueDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
+  const [dailyRevenue, setDailyRevenue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<any>(null);
 
   useEffect(() => {
-    dashboardApi.getRevenueOverview().then(({ data }) => { setData(data.data); setLoading(false); }).catch(() => setLoading(false));
+    Promise.all([
+      dashboardApi.getRevenueOverview(),
+      dashboardApi.getDailyRevenue(31),
+    ]).then(([{ data: d1 }, { data: d2 }]) => {
+      setData(d1.data);
+      setDailyRevenue(d2.data || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const openDetail = async (companionId: string) => {
@@ -50,6 +58,20 @@ const RevenueDashboard: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      <Card title="📈 近31天每日流水" size="small" style={{ marginBottom: 16 }}>
+        {dailyRevenue.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={dailyRevenue}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} interval={2} />
+              <YAxis tickFormatter={(v) => `¥${v}`} width={60} />
+              <Tooltip formatter={(v: any) => `¥${Number(v).toLocaleString()}`} />
+              <Bar dataKey="revenue" fill="#1677ff" radius={[2, 2, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : <Text type="secondary">暂无数据</Text>}
+      </Card>
 
       <Row gutter={16}>
         <Col span={12}>

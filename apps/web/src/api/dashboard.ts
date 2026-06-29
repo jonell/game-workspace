@@ -10,4 +10,5 @@ export const dashboardApi = {
     http.get('/dashboard/performance/monthly', { params: { month } }),
   getRevenueOverview: () => http.get('/dashboard/revenue-overview'),
   getCompanionRevenueDetail: (id: string) => http.get(`/dashboard/companion-revenue/${id}`),
+  getDailyRevenue: (days?: number) => http.get('/dashboard/trend', { params: { days: days || 31 } }),
 };
