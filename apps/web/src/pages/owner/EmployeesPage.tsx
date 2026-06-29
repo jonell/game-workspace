@@ -266,7 +266,10 @@ const EmployeesPage: React.FC = () => {
       render: (_: unknown, record: Employee) => {
         const games = record.companion?.games;
         if (!games || games.length === 0) return '-';
-        return games.slice(0, 3).map((g: string) => <Tag key={g} style={{ marginBottom: 2 }}>{g}</Tag>);
+        return games.slice(0, 3).map((g: any) => {
+          const name = typeof g === 'string' ? g : g?.game || g?.name || JSON.stringify(g);
+          return <Tag key={name} style={{ marginBottom: 2 }}>{name}</Tag>;
+        });
       },
     },
     {
