@@ -128,8 +128,13 @@ const AppLayout: React.FC = () => {
   }, [user?.studioId]);
 
   useEffect(() => {
-    if (!isAuthenticated) { navigate('/login', { replace: true }); }
-  }, [isAuthenticated, navigate]);
+    if (!isAuthenticated) { navigate('/login', { replace: true }); return; }
+    // Redirect authenticated users from root to their role default page
+    if (location.pathname === '/' && user) {
+      const defaults: Record<string, string> = { OWNER: '/admin', ADMIN: '/admin', CS: '/cs/dispatch', COMPANION: '/companion' };
+      navigate(defaults[user.role] || '/admin', { replace: true });
+    }
+  }, [isAuthenticated, navigate, user, location.pathname]);
 
   const menuItems = useMemo(() => {
     if (!user) return [];
