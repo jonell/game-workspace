@@ -152,11 +152,16 @@ const PoolPage: React.FC = () => {
 
       {/* Horizontal order rows — comprehensive info */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {orders.map((order: any) => (
+        {orders.map((order: any, idx: number) => (
           <Card key={order.id} size="small"
             style={{ borderLeft: `3px solid ${orderTypeConfig[order.type]?.color || '#1677ff'}` }}>
             {/* Row 1: main info */}
             <Row align="middle" gutter={12} style={{ marginBottom: 4 }}>
+              <Col>
+                <Tag style={{ background: '#f0f0f0', color: '#666', fontWeight: 700, minWidth: 28, textAlign: 'center' }}>
+                  {idx + 1}
+                </Tag>
+              </Col>
               <Col>
                 <Tag color={orderTypeConfig[order.type]?.color || 'blue'}>
                   {orderTypeConfig[order.type]?.label || order.type}
@@ -197,7 +202,6 @@ const PoolPage: React.FC = () => {
             </Row>
             {/* Row 2: detail line */}
             <Row gutter={16} style={{ fontSize: 12, color: '#8c8c8c' }}>
-              <Col>编号：{order.id?.slice(-8)}</Col>
               {order.customer?.customerCode && <Col>客户：{order.customer.customerCode}</Col>}
               {order.customer?.platform && <Col>来源：{order.customer.platform}</Col>}
               <Col>派单人：{order.csUser?.username || '-'}</Col>
