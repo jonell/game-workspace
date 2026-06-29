@@ -155,6 +155,10 @@ export const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
+        path: 'cs/employees',
+        element: <EmployeesPage />,
+      },
+      {
         path: 'cs/companions',
         element: <CompanionListPage />,
       },

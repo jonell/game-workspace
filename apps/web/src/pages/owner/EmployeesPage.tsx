@@ -64,6 +64,7 @@ interface Studio {
 
 const EmployeesPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === UserRole.OWNER || user?.role === UserRole.ADMIN;
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [studios, setStudios] = useState<Studio[]>([]);
@@ -299,7 +300,7 @@ const EmployeesPage: React.FC = () => {
       title: '操作',
       key: 'actions',
       width: 200,
-      render: (_: unknown, record: Employee) => (
+      render: (_: unknown, record: Employee) => !isAdmin ? <Text type="secondary">-</Text> : (
         <Space size="small">
           <Button
             type="link"
@@ -384,6 +385,7 @@ const EmployeesPage: React.FC = () => {
           >
             刷新
           </Button>
+          {isAdmin && (
           <Button
             type="primary"
             icon={React.createElement(PlusOutlined)}
@@ -391,6 +393,7 @@ const EmployeesPage: React.FC = () => {
           >
             新建员工
           </Button>
+          )}
         </Space>
       </div>
 

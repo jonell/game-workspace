@@ -13,7 +13,6 @@ import {
   AuditOutlined,
   FileTextOutlined,
   DesktopOutlined,
-  HeartOutlined,
   TrophyOutlined,
   FundOutlined,
   LogoutOutlined,
@@ -34,7 +33,6 @@ const IconEmployees = React.createElement(UserOutlined);
 const IconStudios = React.createElement(ShopOutlined);
 const IconAuth = React.createElement(KeyOutlined);
 const IconDispatch = React.createElement(SendOutlined);
-const IconCompanions = React.createElement(HeartOutlined);
 const IconBilling = React.createElement(AuditOutlined);
 const IconOrders = React.createElement(FileTextOutlined);
 const IconPc = React.createElement(DesktopOutlined);
@@ -81,7 +79,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
   [UserRole.CS]: [
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },
     { key: '/cs/orders', icon: IconOrders, label: '订单管理' },
-    { key: '/cs/companions', icon: IconCompanions, label: '陪玩管理' },
+    { key: '/cs/employees', icon: IconEmployees, label: '员工管理' },
   ],
   [UserRole.COMPANION]: [
     { key: '/companion', icon: IconRevenue, label: '首页' },
