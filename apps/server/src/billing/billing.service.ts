@@ -407,4 +407,32 @@ export class BillingService {
       reports,
     };
   }
+
+  // ── Wallet Transactions ──
+
+  async getWalletTransactions(studioId: string, status?: string) {
+    const where: any = { companion: { studioId } };
+    if (status) where.status = status;
+    return this.prisma.walletTransaction.findMany({
+      where,
+      include: { companion: { include: { user: { select: { username: true } } } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async reviewWalletTransaction(id: string, status: string, reviewerId: string) {
+    const tx = await this.prisma.walletTransaction.findUnique({ where: { id } });
+    if (!tx) throw new NotFoundException('交易不存在');
+
+    const update: any = { status, reviewedById: reviewerId };
+    if (status === 'APPROVED' && tx.type === 'WITHDRAW') {
+      const companion = await this.prisma.companion.findUnique({ where: { id: tx.companionId } });
+      update.balanceAfter = (companion?.balance ?? 0) - tx.amount;
+      await this.prisma.companion.update({
+        where: { id: tx.companionId },
+        data: { balance: { decrement: tx.amount } },
+      });
+    }
+    return this.prisma.walletTransaction.update({ where: { id }, data: update });
+  }
 }

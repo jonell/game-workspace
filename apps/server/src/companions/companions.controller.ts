@@ -50,6 +50,20 @@ export class CompanionsController {
     return { code: 200, message: 'ok', data };
   }
 
+  @Get('companions/me/wallet')
+  @Roles(UserRole.COMPANION)
+  async getWallet(@Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.companionsService.getWallet(req.user.companionId);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Post('companions/me/withdraw')
+  @Roles(UserRole.COMPANION)
+  async requestWithdraw(@Req() req: any, @Body() dto: { amount: number }): Promise<ApiResponse<unknown>> {
+    const data = await this.companionsService.requestWithdraw(req.user.companionId, dto.amount);
+    return { code: 201, message: '支取申请已提交', data };
+  }
+
   @Get('companions/:id')
   async findOne(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const data = await this.companionsService.findOne(id);

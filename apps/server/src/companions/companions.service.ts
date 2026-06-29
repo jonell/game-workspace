@@ -141,4 +141,50 @@ export class CompanionsService {
       onlineCompanions,
     };
   }
+
+  async getWallet(companionId: string) {
+    const companion = await this.prisma.companion.findUnique({
+      where: { id: companionId },
+      select: { deposit: true, balance: true, frozen: true, monthlyRevenue: true },
+    });
+    const transactions = await this.prisma.walletTransaction.findMany({
+      where: { companionId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    // Calculate withdrawable: (monthlyRevenue * advanceRatio%) - alreadyWithdrawn
+    const config = await this.prisma.systemConfig.findUnique({ where: { key: 'withdraw.advance_ratio' } });
+    const ratio = (config?.value as number) ?? 50;
+    const withdrawn = transactions
+      .filter(t => t.type === 'WITHDRAW' && t.status === 'APPROVED')
+      .reduce((s, t) => s + t.amount, 0);
+    const withdrawable = Math.max(0, (companion!.monthlyRevenue * ratio / 100) - withdrawn);
+
+    return {
+      deposit: companion!.deposit,
+      balance: companion!.balance,
+      frozen: companion!.frozen,
+      monthlyRevenue: companion!.monthlyRevenue,
+      withdrawable,
+      transactions,
+    };
+  }
+
+  async requestWithdraw(companionId: string, amount: number) {
+    const wallet = await this.getWallet(companionId);
+    if (amount > wallet.withdrawable) {
+      throw new ForbiddenException(`可支取金额不足，当前可支取: ¥${wallet.withdrawable}`);
+    }
+    return this.prisma.walletTransaction.create({
+      data: {
+        companionId,
+        type: 'WITHDRAW',
+        amount,
+        balanceBefore: wallet.balance,
+        balanceAfter: wallet.balance,
+        status: 'PENDING',
+      },
+    });
+  }
 }

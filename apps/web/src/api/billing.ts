@@ -45,6 +45,10 @@ export const billingApi = {
     const filename = m ? m[1] : `revenue-daily-${date}.csv`;
     triggerDownload(res.data, filename);
   },
+  walletTransactions: (params?: { status?: string }) =>
+    http.get('/wallet-transactions', { params }),
+  reviewWalletTransaction: (id: string, status: string) =>
+    http.put(`/wallet-transactions/${id}/review`, { status }),
   downloadMonthlyCSV: async (month: string) => {
     const token = sessionStorage.getItem('accessToken');
     const res = await axios.get('/api/revenue/monthly/csv', {

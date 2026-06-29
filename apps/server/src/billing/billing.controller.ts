@@ -306,4 +306,31 @@ export class BillingController {
     );
     return { code: 200, message: 'ok', data };
   }
+
+  // ── Wallet Transactions ──
+
+  @Get('wallet-transactions')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async getWalletTransactions(
+    @Req() req: any,
+    @Query('status') status?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.getWalletTransactions(
+      req.user.studioId, status,
+    );
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Put('wallet-transactions/:id/review')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async reviewWalletTransaction(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() dto: { status: string },
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.reviewWalletTransaction(
+      id, dto.status, req.user.id,
+    );
+    return { code: 200, message: '审核完成', data };
+  }
 }
