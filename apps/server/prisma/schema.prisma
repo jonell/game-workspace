@@ -45,6 +45,9 @@ model Companion {
   billingCode    String   @unique
   revenueShare   Float    @default(0.6)
   monthlyRevenue Float    @default(0)
+  deposit        Float    @default(0)
+  balance        Float    @default(0)
+  frozen         Float    @default(0)
   realName       String?
   idNumber       String?
   phone          String?
@@ -64,6 +67,7 @@ model Companion {
   customers Customer[]
   transactions Transaction[]
   expenseReports ExpenseReport[]
+  walletTransactions WalletTransaction[]
 }
 
 model CompanionPC {
@@ -227,4 +231,19 @@ model ExpenseReport {
 
   companion     Companion @relation(fields: [companionId], references: [id])
   studio        Studio    @relation(fields: [studioId], references: [id])
+}
+
+model WalletTransaction {
+  id            String   @id @default(uuid())
+  companionId   String
+  type          String   // DEPOSIT | WITHDRAW | FREEZE | UNFREEZE | SETTLEMENT
+  amount        Float
+  balanceBefore Float
+  balanceAfter  Float
+  note          String?
+  reviewedById  String?
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+
+  companion Companion @relation(fields: [companionId], references: [id])
 }
