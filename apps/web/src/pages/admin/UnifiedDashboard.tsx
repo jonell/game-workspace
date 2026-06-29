@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Card, Row, Col, Statistic, Spin, Typography, Modal } from 'antd';
 import { BarChartOutlined, TrophyOutlined, DollarOutlined } from '@ant-design/icons';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, ReferenceLine } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import PerformancePage from './PerformancePage';
 import AdminRevenuePage from './RevenuePage';
 import { dashboardApi } from '../../api/dashboard';
@@ -126,7 +126,6 @@ const RevenueDashboard: React.FC = () => {
                   <XAxis dataKey="name" />
                   <YAxis tickFormatter={(v) => `¥${v}`} />
                   <Tooltip formatter={(v: any) => `¥${Number(v).toLocaleString()}`} />
-                  <ReferenceLine y={detail.totalRevenue * 0.3} stroke="#ff4d4f" strokeWidth={1} strokeDasharray="3 3" />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     <LabelList position="top" formatter={(v: any) => `${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
                     {detailBarData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -141,13 +140,11 @@ const RevenueDashboard: React.FC = () => {
                   <div key={d.name} style={{ flex: 1, minWidth: 100, background: '#f5f5f5', borderRadius: 8, padding: '10px 12px', textAlign: 'center', position: 'relative' }}>
                     <div style={{ fontSize: 11, color: '#666' }}>{d.name}</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: COLORS[i % COLORS.length] }}>¥{Number(d.value).toFixed(0)}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: pct >= 30 ? '#52c41a' : '#ff4d4f' }}>占比 {pct}%</div>
-                    <div style={{ position: 'absolute', top: '30%', left: 0, right: 0, borderTop: '1px dashed #ff4d4f', opacity: 0.5 }} />
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#666' }}>占比 {pct}%</div>
                   </div>
                 );
               })}
             </div>
-            <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>🔴 红线=30%基准 ｜ 绿色达标，红色未达标</Text>
           </div>
         )}
       </Modal>
