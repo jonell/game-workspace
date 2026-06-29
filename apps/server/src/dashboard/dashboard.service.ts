@@ -146,4 +146,154 @@ export class DashboardService {
       },
     });
   }
+
+  async getDailyPerformance(studioId: string, date?: string) {
+    const targetDate = date ? new Date(date) : new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const companions = await this.prisma.companion.findMany({
+      where: { studioId },
+      include: { user: { select: { username: true } } },
+    });
+
+    const results = [];
+    for (const c of companions) {
+      const logs = await this.prisma.companionTimeLog.findMany({
+        where: { companionId: c.id, startedAt: { gte: targetDate } },
+      });
+      const totalSec = logs.reduce((s, l) => s + (l.durationSeconds || 0), 0);
+      const workSec = logs
+        .filter((l) => l.mode === 'WORK')
+        .reduce((s, l) => s + (l.durationSeconds || 0), 0);
+      const onlineSec = logs
+        .filter((l) => l.mode !== 'OFFLINE')
+        .reduce((s, l) => s + (l.durationSeconds || 0), 0);
+
+      const orders = await this.prisma.order.findMany({
+        where: {
+          companionId: c.id,
+          status: 'DONE',
+          createdAt: { gte: targetDate, lt: nextDay },
+        },
+      });
+      const revenue = orders.reduce((s, o) => s + o.amount, 0);
+
+      const acceptRate =
+        onlineSec > 0 ? Math.round((workSec / onlineSec) * 100) : 0;
+      const renewOrders = orders.filter((o) => o.type === 'RENEW').length;
+      const renewRate =
+        orders.length > 0
+          ? Math.round((renewOrders / orders.length) * 100)
+          : 0;
+      const uniqueCustomers = new Set(orders.map((o) => o.customerId)).size;
+      const repurchaseRate =
+        uniqueCustomers > 0
+          ? Math.round(
+              (orders.filter((o) => o.type === 'REPURCHASE').length /
+                uniqueCustomers) *
+                100,
+            )
+          : 0;
+
+      results.push({
+        companionId: c.id,
+        companionName: c.user?.username,
+        onlineDuration: formatSeconds(totalSec),
+        workDuration: formatSeconds(workSec),
+        acceptRate,
+        renewRate,
+        repurchaseRate,
+        dailyRevenue: Math.round(revenue * 100) / 100,
+        status: c.status,
+      });
+    }
+
+    return results.sort((a, b) => b.dailyRevenue - a.dailyRevenue);
+  }
+
+  async getMonthlyPerformance(studioId: string, month?: string) {
+    const now = new Date();
+    const m =
+      month ||
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const [y, mon] = m.split('-').map(Number);
+    const start = new Date(y, mon - 1, 1);
+    const end = new Date(y, mon, 1);
+
+    const companions = await this.prisma.companion.findMany({
+      where: { studioId },
+      include: { user: { select: { username: true } } },
+    });
+
+    const results = [];
+    for (const c of companions) {
+      const orders = await this.prisma.order.findMany({
+        where: {
+          companionId: c.id,
+          status: 'DONE',
+          createdAt: { gte: start, lt: end },
+        },
+      });
+      const revenue = orders.reduce((s, o) => s + o.amount, 0);
+      const renewCount = orders.filter((o) => o.type === 'RENEW').length;
+      const repurchaseCount = orders.filter(
+        (o) => o.type === 'REPURCHASE',
+      ).length;
+
+      results.push({
+        companionId: c.id,
+        companionName: c.user?.username,
+        totalOrders: orders.length,
+        monthlyRevenue: Math.round(revenue * 100) / 100,
+        renewRate:
+          orders.length > 0
+            ? Math.round((renewCount / orders.length) * 100)
+            : 0,
+        repurchaseRate:
+          orders.length > 0
+            ? Math.round((repurchaseCount / orders.length) * 100)
+            : 0,
+        firstOrderRatio:
+          revenue > 0
+            ? Math.round(
+                (orders
+                  .filter((o) => o.type === 'NEW')
+                  .reduce((s, o) => s + o.amount, 0) /
+                  revenue) *
+                  100,
+              )
+            : 0,
+        renewRatio:
+          revenue > 0
+            ? Math.round(
+                (orders
+                  .filter((o) => o.type === 'RENEW')
+                  .reduce((s, o) => s + o.amount, 0) /
+                  revenue) *
+                  100,
+              )
+            : 0,
+        repurchaseRatio:
+          revenue > 0
+            ? Math.round(
+                (orders
+                  .filter((o) => o.type === 'REPURCHASE')
+                  .reduce((s, o) => s + o.amount, 0) /
+                  revenue) *
+                  100,
+              )
+            : 0,
+      });
+    }
+
+    return results.sort((a, b) => b.monthlyRevenue - a.monthlyRevenue);
+  }
+}
+
+function formatSeconds(sec: number): string {
+  const h = Math.floor(sec / 3600);
+  const min = Math.floor((sec % 3600) / 60);
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 }

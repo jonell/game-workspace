@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
+import PerformancePage from './pages/admin/PerformancePage';
 import CustomersPage from './pages/owner/CustomersPage';
 import AdminCustomersPage from './pages/admin/CustomersPage';
 import AdminCompanionsPage from './pages/admin/CompanionsPage';
@@ -83,6 +84,10 @@ export const router = createBrowserRouter([
         path: 'owner/settings',
         element: <SettingsPage />,
       },
+      {
+        path: 'owner/performance',
+        element: <PerformancePage />,
+      },
       // Admin routes
       {
         path: 'admin',
@@ -119,6 +124,10 @@ export const router = createBrowserRouter([
       {
         path: 'admin/review',
         element: <ReviewPage />,
+      },
+      {
+        path: 'admin/performance',
+        element: <PerformancePage />,
       },
       {
         path: 'admin/settings',
