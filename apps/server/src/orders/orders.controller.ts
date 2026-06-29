@@ -51,7 +51,7 @@ export class OrdersController {
   }
 
   @Post('orders/:id/grab')
-  @Roles(UserRole.CS, UserRole.COMPANION)
+  @Roles(UserRole.COMPANION)
   async grab(
     @Param('id') id: string,
     @Req() req: any,
