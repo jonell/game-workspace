@@ -58,7 +58,6 @@ interface PoolOrder {
 
 const DispatchPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
-  const isCS = user?.role === 'CS' || user?.role === 'ADMIN' || user?.role === 'OWNER';
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [poolOrders, setPoolOrders] = useState<PoolOrder[]>([]);
   const [todayNew, setTodayNew] = useState(0);
