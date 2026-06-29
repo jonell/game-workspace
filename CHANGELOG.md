@@ -11,7 +11,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- feat: companion self-registration with real-name ID verification (realName/idNumber/phone/ID card upload)
+- feat: companion workbench API with today revenue, unlock/free thresholds, and status time tracking
+- feat: companion workbench page with stat blocks, progress bars, status durations, and quick status switching
+- feat: online companions list with real-time status tags on workbench
 - feat: per-game rank and account profiles with visual display
 - feat: WeChat-style chat dialog between companion and CS with real-time notifications
 - feat: pulsing sidebar avatar indicator for incoming chat messages
