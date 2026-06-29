@@ -253,4 +253,57 @@ export class BillingController {
     const data = await this.billingService.getExpenses(req.user.studioId);
     return { code: 200, message: 'ok', data };
   }
+
+  // ── Expense Reports ──
+
+  @Post('expense-reports')
+  @Roles(UserRole.COMPANION)
+  async createExpenseReport(
+    @Req() req: any,
+    @Body() dto: { type: string; amount: number; screenshotUrl?: string; description?: string },
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.createExpenseReport({
+      ...dto,
+      companionId: req.user.companionId,
+      studioId: req.user.studioId,
+    });
+    return { code: 201, message: '报账提交成功', data };
+  }
+
+  @Get('expense-reports')
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.COMPANION)
+  async findExpenseReports(
+    @Req() req: any,
+    @Query('status') status?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = req.user.role === 'COMPANION'
+      ? await this.billingService.findCompanionExpenseReports(req.user.companionId)
+      : await this.billingService.findExpenseReports(req.user.studioId, status);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Put('expense-reports/:id/review')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async reviewExpenseReport(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() dto: { status: string; note?: string },
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.reviewExpenseReport(
+      id, dto.status, req.user.id, dto.note,
+    );
+    return { code: 200, message: '审核完成', data };
+  }
+
+  @Get('expense-reports/monthly-summary')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async getMonthlySummary(
+    @Req() req: any,
+    @Query('month') month?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.getExpenseMonthlySummary(
+      req.user.studioId, month,
+    );
+    return { code: 200, message: 'ok', data };
+  }
 }

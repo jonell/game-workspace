@@ -32,7 +32,8 @@ model Studio {
   companions Companion[]
   orders     Order[]
   customers  Customer[]
-  expenses   Expense[]
+  expenses        Expense[]
+  expenseReports  ExpenseReport[]
 }
 
 model Companion {
@@ -62,6 +63,7 @@ model Companion {
   orders    Order[]
   customers Customer[]
   transactions Transaction[]
+  expenseReports ExpenseReport[]
 }
 
 model CompanionPC {
@@ -207,4 +209,22 @@ model StudioDailyStats {
   createdAt         DateTime @default(now())
 
   @@unique([date, studioId])
+}
+
+model ExpenseReport {
+  id            String    @id @default(uuid())
+  companionId   String
+  studioId      String
+  type          String    @default("EXPENSE")  // EXPENSE | WITHDRAW
+  amount        Float
+  screenshotUrl String?
+  description   String?
+  status        String    @default("PENDING")  // PENDING | APPROVED | REJECTED
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime  @default(now())
+
+  companion     Companion @relation(fields: [companionId], references: [id])
+  studio        Studio    @relation(fields: [studioId], references: [id])
 }

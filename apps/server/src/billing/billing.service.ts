@@ -317,4 +317,94 @@ export class BillingService {
       orderBy: { date: 'desc' },
     });
   }
+
+  // ── Expense Reports ──
+
+  async createExpenseReport(dto: {
+    companionId: string;
+    studioId: string;
+    type: string;
+    amount: number;
+    screenshotUrl?: string;
+    description?: string;
+  }) {
+    return this.prisma.expenseReport.create({
+      data: {
+        companionId: dto.companionId,
+        studioId: dto.studioId,
+        type: dto.type,
+        amount: dto.amount,
+        screenshotUrl: dto.screenshotUrl ?? null,
+        description: dto.description ?? null,
+        status: 'PENDING',
+      },
+      include: {
+        companion: { include: { user: { select: { username: true } } } },
+      },
+    });
+  }
+
+  async findExpenseReports(studioId: string, status?: string) {
+    const where: any = { studioId };
+    if (status) where.status = status;
+    return this.prisma.expenseReport.findMany({
+      where,
+      include: {
+        companion: { include: { user: { select: { username: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findCompanionExpenseReports(companionId: string) {
+    return this.prisma.expenseReport.findMany({
+      where: { companionId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async reviewExpenseReport(id: string, status: string, reviewerId: string, note?: string) {
+    return this.prisma.expenseReport.update({
+      where: { id },
+      data: {
+        status,
+        reviewedById: reviewerId,
+        reviewedAt: new Date(),
+        reviewNote: note ?? null,
+      },
+    });
+  }
+
+  async getExpenseMonthlySummary(studioId: string, month?: string) {
+    const now = new Date();
+    const targetMonth = month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const [year, mon] = targetMonth.split('-').map(Number);
+    const start = new Date(year, mon - 1, 1);
+    const end = new Date(year, mon, 1);
+
+    const reports = await this.prisma.expenseReport.findMany({
+      where: {
+        studioId,
+        createdAt: { gte: start, lt: end },
+      },
+    });
+
+    const approved = reports.filter(r => r.status === 'APPROVED');
+    const pending = reports.filter(r => r.status === 'PENDING');
+    const rejected = reports.filter(r => r.status === 'REJECTED');
+
+    const sumByType = (list: typeof reports, type: string) =>
+      list.filter(r => r.type === type).reduce((s, r) => s + r.amount, 0);
+
+    return {
+      month: targetMonth,
+      totalExpense: sumByType(approved, 'EXPENSE'),
+      totalWithdraw: sumByType(approved, 'WITHDRAW'),
+      pendingCount: pending.length,
+      pendingAmount: pending.reduce((s, r) => s + r.amount, 0),
+      rejectedCount: rejected.length,
+      rejectedAmount: rejected.reduce((s, r) => s + r.amount, 0),
+      reports,
+    };
+  }
 }
