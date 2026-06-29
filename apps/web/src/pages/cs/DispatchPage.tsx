@@ -449,7 +449,8 @@ const DispatchPage: React.FC = () => {
                     </Select>
                   </Form.Item>
                   <Form.Item name="deltaMission" label="任务类型">
-                    <Select placeholder="请选择任务（可选）" allowClear>
+                    <Select placeholder="请选择任务（可选）" allowClear
+                      onChange={(val) => { if (val === '护航') form.setFieldsValue({ deltaCount: '双陪' }); }}>
                       <Option value="机密">机密</Option>
                       <Option value="绝密">绝密</Option>
                       <Option value="护航">护航</Option>
