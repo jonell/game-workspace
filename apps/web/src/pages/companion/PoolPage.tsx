@@ -240,16 +240,30 @@ const PoolPage: React.FC = () => {
 
       {/* Grabbed Order Success Modal */}
       <Modal title="✅ 抢单成功" open={grabbedModal} onCancel={() => setGrabbedModal(false)}
-        footer={<Button type="primary" onClick={() => setGrabbedModal(false)}>知道了</Button>} width={400}>
+        footer={<Button type="primary" size="large" onClick={() => setGrabbedModal(false)}>知道了，马上去联系</Button>} width={440}>
         {grabbedOrder && (
-          <div style={{ fontSize: 14, lineHeight: 2 }}>
-            <div><Text strong>游戏：</Text>{grabbedOrder.gameName} ｜ ¥{Number(grabbedOrder.amount).toFixed(0)}</div>
-            {grabbedOrder.customer?.customerCode && <div><Text strong>客户编号：</Text>{grabbedOrder.customer.customerCode}</div>}
-            <div style={{ background: '#FFF7E6', padding: '8px 12px', borderRadius: 6, margin: '8px 0' }}>
-              <div><Text strong>微信：</Text>{grabbedOrder.customFields?.customerWechat || '暂无'}</div>
-              {grabbedOrder.customFields?.customerSource && <div><Text strong>来源：</Text>{grabbedOrder.customFields.customerSource} {grabbedOrder.customFields?.customerPlatformAccount && `(${grabbedOrder.customFields.customerPlatformAccount})`}</div>}
+          <div style={{ fontSize: 14, lineHeight: 2.2 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#1E293B', marginBottom: 8 }}>
+              {grabbedOrder.gameName} ｜ ¥{Number(grabbedOrder.amount).toFixed(0)}
             </div>
-            <Text type="secondary">请尽快联系客户，添加微信开始服务</Text>
+            <Row gutter={8}>
+              <Col><Tag color={orderTypeConfig[grabbedOrder.type]?.color || 'blue'}>{orderTypeConfig[grabbedOrder.type]?.label || grabbedOrder.type}</Tag></Col>
+              {grabbedOrder.customFields?.deltaMode && <Col><Tag color="cyan">{grabbedOrder.customFields.deltaMode}</Tag></Col>}
+              {grabbedOrder.customFields?.deltaMission && <Col><Tag>{grabbedOrder.customFields.deltaMission}</Tag></Col>}
+              {grabbedOrder.customFields?.deltaCount && <Col><Tag>{grabbedOrder.customFields.deltaCount}</Tag></Col>}
+              {grabbedOrder.customFields?.billingMode && <Col><Text type="secondary" style={{ fontSize: 12 }}>{grabbedOrder.customFields.billingMode === 'round' ? '按局' : '按小时'}</Text></Col>}
+            </Row>
+            {grabbedOrder.customFields?.deltaNote && (
+              <div style={{ marginTop: 8 }}><Text type="warning">📝 {grabbedOrder.customFields.deltaNote}</Text></div>
+            )}
+            <div style={{ background: '#FFF7E6', padding: '10px 14px', borderRadius: 8, margin: '10px 0' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>📱 联系方式</div>
+              <div>微信：<Text strong style={{ fontSize: 16 }}>{grabbedOrder.customFields?.customerWechat || '暂无'}</Text></div>
+              {grabbedOrder.customer?.customerCode && <div>客户编号：{grabbedOrder.customer.customerCode}</div>}
+              {grabbedOrder.customFields?.customerSource && <div>来源：{grabbedOrder.customFields.customerSource}{grabbedOrder.customFields?.customerPlatformAccount ? ` (${grabbedOrder.customFields.customerPlatformAccount})` : ''}</div>}
+              {grabbedOrder.customFields?.customerRoomCode && <div>房间码：{grabbedOrder.customFields.customerRoomCode}</div>}
+            </div>
+            <Text type="secondary">⏰ 抢单时间：{new Date().toLocaleTimeString()} ｜ 🎮 添加微信后即可开始服务</Text>
           </div>
         )}
       </Modal>
