@@ -164,6 +164,8 @@ erDiagram
     Studio ||--o{ Order : "has"
     Studio ||--o{ Customer : "has"
     Studio ||--o{ Expense : "has"
+    Companion ||--o{ ExpenseReport : "submits"
+    Studio ||--o{ ExpenseReport : "has"
     Companion ||--o{ Order : "serves"
     Companion ||--o| CompanionPC : "controls"
     Companion ||--o{ CompanionTimeLog : "records"

@@ -11,6 +11,10 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- feat: expense report module — companions submit expense/withdraw reports with review workflow
+- feat: expense report monthly summary with approved/pending/rejected stats for admin
+- feat: companion billing page now includes expense report submission modal
+- feat: admin billing page now includes expense report review section with filter tabs
 - feat: companion workbench API with today revenue, unlock/free thresholds, and status time tracking
 - feat: companion workbench page with stat blocks, progress bars, status durations, and quick status switching
 - feat: online companions list with real-time status tags on workbench
