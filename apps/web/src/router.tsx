@@ -5,7 +5,6 @@ import DashboardPage from './pages/admin/DashboardPage';
 import PerformancePage from './pages/admin/PerformancePage';
 import CustomersPage from './pages/owner/CustomersPage';
 import AdminCustomersPage from './pages/admin/CustomersPage';
-import AdminCompanionsPage from './pages/admin/CompanionsPage';
 import AdminDispatchPage from './pages/admin/DispatchPage';
 import DispatchPage from './pages/cs/DispatchPage';
 import OrdersPage from './pages/cs/OrdersPage';
@@ -103,8 +102,8 @@ export const router = createBrowserRouter([
         element: <AdminDispatchPage />,
       },
       {
-        path: 'admin/companions',
-        element: <AdminCompanionsPage />,
+        path: 'admin/employees',
+        element: <EmployeesPage />,
       },
       {
         path: 'admin/customers/:id',

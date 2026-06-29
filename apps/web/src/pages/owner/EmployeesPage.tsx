@@ -34,6 +34,13 @@ const roleLabels: Record<string, { label: string; color: string }> = {
   [UserRole.COMPANION]: { label: '陪玩', color: 'orange' },
 };
 
+const statusLabels: Record<string, { color: string; label: string }> = {
+  ONLINE: { color: 'green', label: '🟢等单中' },
+  BUSY: { color: 'red', label: '🔴接单中' },
+  IDLE: { color: 'orange', label: '⚪娱乐中' },
+  OFFLINE: { color: 'default', label: '⚫离线' },
+};
+
 interface Employee {
   id: string;
   username: string;
@@ -46,6 +53,7 @@ interface Employee {
     status: string;
     monthlyRevenue: number;
     games: string[];
+    billingCode: string;
   } | null;
 }
 
@@ -183,6 +191,18 @@ const EmployeesPage: React.FC = () => {
     }
   };
 
+  // --- Resign companion ---
+  const handleResign = async (record: Employee) => {
+    if (!record.companion?.id) return;
+    try {
+      await companionsApi.resign(record.companion.id);
+      message.success(`${record.username} 已离职，工位和微信已释放`);
+      fetchEmployees();
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || '离职处理失败');
+    }
+  };
+
   // --- Delete employee ---
   const handleDelete = async (id: string) => {
     try {
@@ -220,7 +240,44 @@ const EmployeesPage: React.FC = () => {
       render: (studioId: string) => getStudioName(studioId),
     },
     {
-      title: '状态',
+      title: '机号',
+      dataIndex: ['companion', 'billingCode'],
+      key: 'billingCode',
+      width: 80,
+      render: (_: unknown, record: Employee) => record.companion?.billingCode || '-',
+    },
+    {
+      title: '陪玩状态',
+      dataIndex: ['companion', 'status'],
+      key: 'status',
+      width: 110,
+      render: (_: unknown, record: Employee) => {
+        if (!record.companion) return '-';
+        const s = statusLabels[record.companion.status];
+        return <Tag color={s?.color}>{s?.label || record.companion.status}</Tag>;
+      },
+    },
+    {
+      title: '游戏',
+      dataIndex: ['companion', 'games'],
+      key: 'games',
+      width: 160,
+      render: (_: unknown, record: Employee) => {
+        const games = record.companion?.games;
+        if (!games || games.length === 0) return '-';
+        return games.slice(0, 3).map((g: string) => <Tag key={g} style={{ marginBottom: 2 }}>{g}</Tag>);
+      },
+    },
+    {
+      title: '月流水',
+      dataIndex: ['companion', 'monthlyRevenue'],
+      key: 'revenue',
+      width: 100,
+      render: (_: unknown, record: Employee) =>
+        record.companion ? `¥${(record.companion.monthlyRevenue || 0).toLocaleString()}` : '-',
+    },
+    {
+      title: '审核',
       dataIndex: 'isAuthorized',
       key: 'isAuthorized',
       width: 100,
@@ -253,22 +310,24 @@ const EmployeesPage: React.FC = () => {
             重置密码
           </Button>
           {record.role === UserRole.COMPANION && record.companion && (
-            <Popconfirm
-              title="确定踢出该陪玩？Agent 将被强制下线"
-              onConfirm={() => handleKick(record)}
-              okText="踢出"
-              cancelText="取消"
-            >
-              <Button
-                type="link"
-                size="small"
-                danger
-                icon={React.createElement(LogoutOutlined)}
-                loading={kickingId === record.id}
+            <>
+              <Popconfirm
+                title="确定踢出该陪玩？Agent 将被强制下线"
+                onConfirm={() => handleKick(record)}
+                okText="踢出"
+                cancelText="取消"
               >
-                踢出
-              </Button>
-            </Popconfirm>
+                <Button type="link" size="small" danger icon={React.createElement(LogoutOutlined)} loading={kickingId === record.id}>踢出</Button>
+              </Popconfirm>
+              <Popconfirm
+                title="确定离职处理？将清空流水/余额/机号，释放工位"
+                onConfirm={() => handleResign(record)}
+                okText="离职"
+                cancelText="取消"
+              >
+                <Button type="link" size="small" danger>离职</Button>
+              </Popconfirm>
+            </>
           )}
           <Popconfirm
             title="确定删除该员工？"

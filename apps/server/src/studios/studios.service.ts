@@ -35,7 +35,7 @@ export class StudiosService {
         createdAt: true,
         // 排除 passwordHash 和 secondPasswordHash，防止密码哈希泄露
         studio: { select: { id: true, name: true } },
-        companion: { select: { id: true, status: true, monthlyRevenue: true, games: true } },
+        companion: { select: { id: true, status: true, monthlyRevenue: true, games: true, billingCode: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
