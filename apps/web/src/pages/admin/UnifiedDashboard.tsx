@@ -8,7 +8,7 @@ import { dashboardApi } from '../../api/dashboard';
 
 const { Text } = Typography;
 const COLORS = ['#52c41a', '#faad14', '#1677ff', '#eb2f96'];
-const TYPE_LABELS: Record<string, string> = { NEW: '新单', RENEW: '续单', REPURCHASE: '复购', TIP: '打赏' };
+const TYPE_LABELS: Record<string, string> = { NEW: '首单', RENEW: '续单', REPURCHASE: '复购', TIP: '打赏' };
 
 const RevenueDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);

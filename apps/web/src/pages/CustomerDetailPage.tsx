@@ -48,7 +48,7 @@ const platformLabels: Record<string, string> = {
 };
 
 const orderTypeLabels: Record<string, string> = {
-  NEW: '新单',
+  NEW: '首单',
   RENEW: '续单',
   REPURCHASE: '复购',
   TIP: '打赏',

@@ -29,7 +29,7 @@ const { Option } = Select;
 const STATUS_SORT: Record<string, number> = { IDLE: 0, ONLINE: 1, BUSY: 2, OFFLINE: 9 };
 
 const orderTypeConfig: Record<OrderType, { color: string; label: string }> = {
-  [OrderType.NEW]: { color: 'blue', label: '新单' },
+  [OrderType.NEW]: { color: 'blue', label: '首单' },
   [OrderType.RENEW]: { color: 'cyan', label: '续费' },
   [OrderType.REPURCHASE]: { color: 'purple', label: '复购' },
   [OrderType.TIP]: { color: 'orange', label: '打赏' },

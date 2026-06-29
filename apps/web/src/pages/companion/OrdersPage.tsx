@@ -9,7 +9,7 @@ const { Text } = Typography;
 const { Option } = Select;
 
 const typeConfig: Record<string, { color: string; label: string }> = {
-  NEW: { color: 'blue', label: '新单' }, RENEW: { color: 'cyan', label: '续费' },
+  NEW: { color: 'blue', label: '首单' }, RENEW: { color: 'cyan', label: '续费' },
   REPURCHASE: { color: 'purple', label: '复购' }, TIP: { color: 'orange', label: '打赏' },
 };
 const statusConfig: Record<string, { color: string; label: string }> = {

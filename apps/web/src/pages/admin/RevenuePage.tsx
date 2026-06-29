@@ -61,7 +61,7 @@ interface MonthlyRevenueData {
 }
 
 const orderTypeLabel: Record<OrderType, string> = {
-  [OrderType.NEW]: '新单',
+  [OrderType.NEW]: '首单',
   [OrderType.RENEW]: '续费',
   [OrderType.REPURCHASE]: '复购',
   [OrderType.TIP]: '打赏',
