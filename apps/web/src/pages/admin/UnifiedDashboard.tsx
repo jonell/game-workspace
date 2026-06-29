@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, Card, Row, Col, Statistic, Spin, Typography, Modal } from 'antd';
 import { BarChartOutlined, TrophyOutlined, DollarOutlined } from '@ant-design/icons';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, ReferenceLine } from 'recharts';
 import PerformancePage from './PerformancePage';
 import AdminRevenuePage from './RevenuePage';
 import { dashboardApi } from '../../api/dashboard';
@@ -44,14 +44,14 @@ const RevenueDashboard: React.FC = () => {
     <div>
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col span={12}>
-          <Card size="small" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
+          <Card size="small" style={{ background: 'linear-gradient(135deg, #134e4a 0%, #0f766e 100%)', border: 'none' }}>
             <Statistic title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>昨日总流水</span>}
               value={data.yesterdayRevenue} prefix="¥" precision={2}
               valueStyle={{ color: '#fff', fontWeight: 700, fontSize: 32 }} />
           </Card>
         </Col>
         <Col span={12}>
-          <Card size="small" style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', border: 'none' }}>
+          <Card size="small" style={{ background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%)', border: 'none' }}>
             <Statistic title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>全月总流水</span>}
               value={data.monthlyRevenue} prefix="¥" precision={2}
               valueStyle={{ color: '#fff', fontWeight: 700, fontSize: 32 }} />
@@ -100,12 +100,16 @@ const RevenueDashboard: React.FC = () => {
                   <XAxis type="number" tickFormatter={(v) => `¥${v}`} />
                   <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
                   <Tooltip formatter={(v: any) => `¥${v.toLocaleString()}`} />
+                  <ReferenceLine x={barData[0]?.revenue * 0.3} stroke="#ff4d4f" strokeWidth={2} strokeDasharray="5 5"
+                    label={{ value: '30% 基准线', position: 'top', fill: '#ff4d4f', fontSize: 12 }} />
                   <Bar dataKey="revenue" fill="#1677ff" radius={[0, 4, 4, 0]} cursor="pointer"
-                    onClick={(d: any) => openDetail(d.companionId)} />
+                    onClick={(d: any) => openDetail(d.companionId)}>
+                    <LabelList dataKey="revenue" position="right" formatter={(v: any) => `¥${Number(v).toFixed(0)}`} style={{ fontSize: 10 }} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : <Text type="secondary">暂无数据</Text>}
-            <Text type="secondary" style={{ fontSize: 12 }}>💡 点击陪玩查看订单类型明细</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>💡 点击陪玩查看订单类型明细 ｜ 🔴 红线=30%续单复购基准</Text>
           </Card>
         </Col>
       </Row>
