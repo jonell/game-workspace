@@ -208,7 +208,7 @@ const DispatchPage: React.FC = () => {
           onClick={() => {
             form.setFieldsValue({
               type: 'NEW', gameName: '三角洲行动', dispatchType: DispatchType.POOL,
-              billingMode: 'hour', duration: 1, deltaMode: '陪玩', deltaCount: '单陪',
+              billingMode: 'hour', duration: 1, deltaMode: '陪玩', deltaCount: '单',
             });
             setModalOpen(true);
           }}
@@ -443,7 +443,8 @@ const DispatchPage: React.FC = () => {
               getFieldValue('gameName') === '三角洲行动' ? (
                 <>
                   <Form.Item initialValue="陪玩" name="deltaMode" label="模式" rules={[{ required: true, message: '请选择' }]}>
-                    <Select placeholder="请选择模式">
+                    <Select placeholder="请选择模式"
+                      onChange={(val) => { if (val === '护航') form.setFieldsValue({ deltaCount: '双' }); }}>
                       <Option value="护航">护航</Option>
                       <Option value="陪玩">陪玩</Option>
                     </Select>
@@ -454,10 +455,10 @@ const DispatchPage: React.FC = () => {
                       <Option value="绝密">绝密</Option>
                     </Select>
                   </Form.Item>
-                  <Form.Item initialValue="单陪" name="deltaCount" label="陪陪数量">
+                  <Form.Item initialValue="单" name="deltaCount" label="陪陪数量">
                     <Select placeholder="请选择">
-                      <Option value="单陪">单陪</Option>
-                      <Option value="双陪">双陪</Option>
+                      <Option value="单">单</Option>
+                      <Option value="双">双</Option>
                     </Select>
                   </Form.Item>
                   <Form.Item name="deltaNote" label="备注">
