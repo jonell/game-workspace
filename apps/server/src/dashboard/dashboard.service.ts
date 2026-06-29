@@ -5,7 +5,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  async getDashboard(studioId: string) {
+  async getDashboard(studioId: string | null) {
+    const studioWhere: any = studioId ? { studioId } : {};
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -14,7 +16,7 @@ export class DashboardService {
     // Today's completed orders
     const todayOrders = await this.prisma.order.findMany({
       where: {
-        studioId,
+        ...studioWhere,
         status: 'DONE',
         createdAt: { gte: today, lt: tomorrow },
       },
@@ -25,7 +27,7 @@ export class DashboardService {
 
     // Online/Total companions
     const allCompanions = await this.prisma.companion.findMany({
-      where: { studioId },
+      where: studioWhere,
       select: { id: true, status: true },
     });
     const onlineCompanions = allCompanions.filter(
@@ -41,7 +43,7 @@ export class DashboardService {
     // Entertainment fee from time logs
     const timeLogs = await this.prisma.companionTimeLog.findMany({
       where: {
-        companion: { studioId },
+        companion: studioWhere,
         mode: 'ENTERTAINMENT',
         startedAt: { gte: today },
       },
@@ -53,7 +55,7 @@ export class DashboardService {
 
     // Ranking (monthly revenue)
     const ranking = await this.prisma.companion.findMany({
-      where: { studioId, monthlyRevenue: { gt: 0 } },
+      where: { ...studioWhere, monthlyRevenue: { gt: 0 } },
       orderBy: { monthlyRevenue: 'desc' },
       take: 10,
       select: {
@@ -72,7 +74,7 @@ export class DashboardService {
     // Get today's revenue per companion from transactions
     const todayTransactions = await this.prisma.transaction.findMany({
       where: {
-        companion: { studioId },
+        companion: studioWhere,
         createdAt: { gte: today, lt: tomorrow },
         status: 'APPROVED',
       },
@@ -109,7 +111,8 @@ export class DashboardService {
     };
   }
 
-  async getTrend(studioId: string, days: number = 7) {
+  async getTrend(studioId: string | null, days: number = 7) {
+    const studioWhere: any = studioId ? { studioId } : {};
     const result: { date: string; revenue: number; orderCount: number }[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date();
@@ -120,7 +123,7 @@ export class DashboardService {
 
       const orders = await this.prisma.order.findMany({
         where: {
-          studioId,
+          ...studioWhere,
           status: 'DONE',
           createdAt: { gte: d, lt: next },
         },
@@ -134,9 +137,10 @@ export class DashboardService {
     return result;
   }
 
-  async getCompanionStatus(studioId: string) {
+  async getCompanionStatus(studioId: string | null) {
+    const studioWhere: any = studioId ? { studioId } : {};
     return this.prisma.companion.findMany({
-      where: { studioId },
+      where: studioWhere,
       select: {
         id: true,
         status: true,
@@ -147,14 +151,15 @@ export class DashboardService {
     });
   }
 
-  async getDailyPerformance(studioId: string, date?: string) {
+  async getDailyPerformance(studioId: string | null, date?: string) {
+    const studioWhere: any = studioId ? { studioId } : {};
     const targetDate = date ? new Date(date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
     const nextDay = new Date(targetDate);
     nextDay.setDate(nextDay.getDate() + 1);
 
     const companions = await this.prisma.companion.findMany({
-      where: { studioId },
+      where: studioWhere,
       include: { user: { select: { username: true } } },
     });
 
@@ -213,7 +218,8 @@ export class DashboardService {
     return results.sort((a, b) => b.dailyRevenue - a.dailyRevenue);
   }
 
-  async getMonthlyPerformance(studioId: string, month?: string) {
+  async getMonthlyPerformance(studioId: string | null, month?: string) {
+    const studioWhere: any = studioId ? { studioId } : {};
     const now = new Date();
     const m =
       month ||
@@ -223,7 +229,7 @@ export class DashboardService {
     const end = new Date(y, mon, 1);
 
     const companions = await this.prisma.companion.findMany({
-      where: { studioId },
+      where: studioWhere,
       include: { user: { select: { username: true } } },
     });
 
