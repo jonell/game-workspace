@@ -13,7 +13,7 @@ const IconUser = React.createElement(UserOutlined);
 const IconLock = React.createElement(LockOutlined);
 
 const roleRouteMap: Record<UserRole, string> = {
-  [UserRole.OWNER]: '/owner/revenue',
+  [UserRole.OWNER]: '/admin',
   [UserRole.ADMIN]: '/admin/dispatch',
   [UserRole.CS]: '/cs/dispatch',
   [UserRole.COMPANION]: '/companion',
