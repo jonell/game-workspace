@@ -51,13 +51,20 @@ export class OrdersController {
   }
 
   @Post('orders/:id/grab')
-  @Roles(UserRole.CS, UserRole.ADMIN, UserRole.COMPANION)
+  @Roles(UserRole.COMPANION)
   async grab(
     @Param('id') id: string,
     @Req() req: any,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.grab(id, req.user.companionId);
     return { code: 200, message: '抢单成功', data };
+  }
+
+  @Get('orders/pool/status')
+  @Roles(UserRole.COMPANION)
+  async getPoolStatus(@Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.getPoolStatus(req.user.companionId);
+    return { code: 200, message: 'ok', data };
   }
 
   @Post('orders/:id/assign')

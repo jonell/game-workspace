@@ -3,6 +3,7 @@ import http from './client';
 export const ordersApi = {
   list: (params?: any) => http.get('/orders', { params }),
   pool: () => http.get('/orders/pool'),
+  poolStatus: () => http.get('/orders/pool/status'),
   create: (data: any) => http.post('/orders', data),
   grab: (id: string) => http.post(`/orders/${id}/grab`),
   assign: (id: string, companionId: string) =>
