@@ -333,4 +333,32 @@ export class BillingController {
     );
     return { code: 200, message: '审核完成', data };
   }
+
+  // ── Monthly Settlement ──
+
+  @Post('monthly-settlement')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async runMonthlySettlement(
+    @Req() req: any,
+    @Body() dto: { month: string },
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.runMonthlySettlement(
+      req.user.studioId,
+      dto.month,
+    );
+    return { code: 200, message: '月底结算完成', data };
+  }
+
+  @Get('monthly-settlement')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async getMonthlySettlement(
+    @Req() req: any,
+    @Query('month') month?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.billingService.getMonthlySettlement(
+      req.user.studioId,
+      month,
+    );
+    return { code: 200, message: 'ok', data };
+  }
 }

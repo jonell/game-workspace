@@ -28,6 +28,10 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Enhanced settings page from 2-card to 6-tab config management
+- **月底结算模块：** 阶梯分成自动结算，根据陪玩当月业绩匹配分成阶梯，结算后业绩清零计入可支取余额
+- 结算页面：月份选择器 + 执行结算按钮 + 结算结果汇总表 + 历史结算记录查询
+- 结算 API: POST /monthly-settlement, GET /monthly-settlement
+- 阶梯分成配置通过 SystemConfig (`revenue.share_tiers`) 动态读取，支持自定义阶梯
 - Enhanced companion pool page with revenue threshold lock/progress
 - Enhanced companion home page with full workbench dashboard
 - Added Dashboard admin route as default page

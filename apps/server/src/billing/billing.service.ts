@@ -435,4 +435,125 @@ export class BillingService {
     }
     return this.prisma.walletTransaction.update({ where: { id }, data: update });
   }
+
+  // ── Monthly Settlement ──
+
+  async runMonthlySettlement(studioId: string, month: string) {
+    const [year, mon] = month.split('-').map(Number);
+    const start = new Date(year, mon - 1, 1);
+    const end = new Date(year, mon, 1);
+
+    // Get all companions in studio
+    const companions = await this.prisma.companion.findMany({
+      where: { studioId },
+      include: { user: { select: { username: true } } },
+    });
+
+    // Get share tiers config
+    const config = await this.prisma.systemConfig.findUnique({
+      where: { key: 'revenue.share_tiers' },
+    });
+    const tiers: Array<{ min: number; max: number | null; studio: number; companion: number }> =
+      (config?.value as any) ?? [
+        { min: 0, max: 5999.99, studio: 50, companion: 50 },
+        { min: 6000, max: 9999, studio: 40, companion: 60 },
+        { min: 10000, max: null, studio: 30, companion: 70 },
+      ];
+
+    const results: Array<{
+      companionId: string;
+      companionName: string;
+      monthlyRevenue: number;
+      tierCompanionPct: number;
+      companionShare: number;
+      studioShare: number;
+    }> = [];
+
+    for (const c of companions) {
+      // Get monthly completed orders revenue for this companion
+      const orders = await this.prisma.order.findMany({
+        where: {
+          companionId: c.id,
+          status: 'DONE',
+          createdAt: { gte: start, lt: end },
+        },
+      });
+      const monthlyRevenue = orders.reduce((s, o) => s + o.amount, 0);
+
+      if (monthlyRevenue === 0) continue; // skip companions with no revenue
+
+      // Find applicable tier
+      const tier =
+        tiers.find(
+          (t) =>
+            monthlyRevenue >= t.min &&
+            (t.max === null || monthlyRevenue <= t.max),
+        ) || tiers[tiers.length - 1];
+
+      const companionShare =
+        Math.round(monthlyRevenue * (tier.companion / 100) * 100) / 100;
+      const studioShare =
+        Math.round(monthlyRevenue * (tier.studio / 100) * 100) / 100;
+
+      // Create settlement transaction
+      await this.prisma.walletTransaction.create({
+        data: {
+          companionId: c.id,
+          type: 'SETTLEMENT',
+          amount: companionShare,
+          balanceBefore: c.balance,
+          balanceAfter: c.balance + companionShare,
+          status: 'APPROVED',
+          note: `${month} 月底结算：业绩¥${monthlyRevenue}，${tier.companion}%分成`,
+        },
+      });
+
+      // Update companion balance and reset monthlyRevenue
+      await this.prisma.companion.update({
+        where: { id: c.id },
+        data: {
+          balance: { increment: companionShare },
+          monthlyRevenue: 0,
+        },
+      });
+
+      results.push({
+        companionId: c.id,
+        companionName: c.user?.username ?? c.id,
+        monthlyRevenue: Math.round(monthlyRevenue * 100) / 100,
+        tierCompanionPct: tier.companion,
+        companionShare,
+        studioShare,
+      });
+    }
+
+    return {
+      month,
+      results,
+      totalDistributed: Math.round(results.reduce((s, r) => s + r.companionShare, 0) * 100) / 100,
+    };
+  }
+
+  async getMonthlySettlement(studioId: string, month?: string) {
+    const targetMonth =
+      month ||
+      `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    const [year, mon] = targetMonth.split('-').map(Number);
+    const start = new Date(year, mon - 1, 1);
+    const end = new Date(year, mon, 1);
+
+    return this.prisma.walletTransaction.findMany({
+      where: {
+        type: 'SETTLEMENT',
+        createdAt: { gte: start, lt: end },
+        companion: { studioId },
+      },
+      include: {
+        companion: {
+          include: { user: { select: { username: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

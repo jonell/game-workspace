@@ -61,4 +61,8 @@ export const billingApi = {
     const filename = m ? m[1] : `revenue-monthly-${month}.csv`;
     triggerDownload(res.data, filename);
   },
+  runSettlement: (month: string) =>
+    http.post('/monthly-settlement', { month }),
+  getSettlement: (month?: string) =>
+    http.get('/monthly-settlement', { params: { month } }),
 };
