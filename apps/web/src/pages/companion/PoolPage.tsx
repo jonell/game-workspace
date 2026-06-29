@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Button, Typography, Tag, Row, Col, Spin, message, Empty, Progress, Space, Modal, Input } from 'antd';
-import { ThunderboltOutlined, ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { ordersApi } from '../../api/orders';
 import http from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
@@ -135,20 +135,7 @@ const PoolPage: React.FC = () => {
         {!isUnlocked && <Progress percent={pct} size="small" style={{ marginTop: 8 }} />}
       </Card>
 
-      {!isUnlocked && (
-        <Card size="small" style={{ marginBottom: 16, textAlign: 'center', opacity: 0.6 }}>
-          <div style={{ fontSize: 48, color: '#faad14' }}>
-            {React.createElement(ThunderboltOutlined)}
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <Text type="secondary">今日流水不足 ¥{threshold}，订单池已锁定</Text>
-            <br />
-            <Text type="secondary">请先完成老客户服务提升流水</Text>
-          </div>
-        </Card>
-      )}
-
-      {isUnlocked && orders.length === 0 && <Empty description="暂无待抢订单" />}
+      {orders.length === 0 && <Empty description="暂无待派订单" />}
 
       {/* Horizontal order rows — all info in one row */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -173,9 +160,12 @@ const PoolPage: React.FC = () => {
                 <Space size={6}>
                   <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(order)}>沟通</Button>
                   <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}</Text>
-                  {isUnlocked && (
-                    <Button type="primary" size="small" danger loading={grabbing === order.id} onClick={() => handleGrab(order.id)}>抢单</Button>
-                  )}
+                  <Button type="primary" size="small" danger
+                    disabled={!isUnlocked}
+                    loading={grabbing === order.id}
+                    onClick={() => handleGrab(order.id)}>
+                    {isUnlocked ? '抢单' : `还差¥${Math.round((threshold - todayRevenue) * 100) / 100}`}
+                  </Button>
                 </Space>
               </Col>
             </Row>
