@@ -1,20 +1,17 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/admin/DashboardPage';
-import PerformancePage from './pages/admin/PerformancePage';
+import UnifiedDashboard from './pages/admin/UnifiedDashboard';
 import CustomersPage from './pages/owner/CustomersPage';
 import AdminCustomersPage from './pages/admin/CustomersPage';
 import AdminDispatchPage from './pages/admin/DispatchPage';
 import DispatchPage from './pages/cs/DispatchPage';
 import OrdersPage from './pages/cs/OrdersPage';
 import AdminBillingPage from './pages/admin/BillingPage';
-import AdminRevenuePage from './pages/admin/RevenuePage';
 import AdminPcControlPage from './pages/admin/PcControlPage';
 import EmployeesPage from './pages/owner/EmployeesPage';
 import StudiosPage from './pages/owner/StudiosPage';
 import AuthorizationsPage from './pages/owner/AuthorizationsPage';
-import OwnerRevenuePage from './pages/owner/RevenuePage';
 import ReviewPage from './pages/admin/ReviewPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
@@ -57,10 +54,6 @@ export const router = createBrowserRouter([
     children: [
       // Owner routes
       {
-        path: 'owner/revenue',
-        element: <OwnerRevenuePage />,
-      },
-      {
         path: 'owner/customers',
         element: <CustomersPage />,
       },
@@ -88,14 +81,10 @@ export const router = createBrowserRouter([
         path: 'owner/orders',
         element: <OrdersPage />,
       },
-      {
-        path: 'owner/performance',
-        element: <PerformancePage />,
-      },
       // Admin routes
       {
         path: 'admin',
-        element: <DashboardPage />,
+        element: <UnifiedDashboard />,
       },
       {
         path: 'admin/dispatch',
@@ -118,20 +107,12 @@ export const router = createBrowserRouter([
         element: <AdminBillingPage />,
       },
       {
-        path: 'admin/revenue',
-        element: <AdminRevenuePage />,
-      },
-      {
         path: 'admin/pc-control',
         element: <AdminPcControlPage />,
       },
       {
         path: 'admin/review',
         element: <ReviewPage />,
-      },
-      {
-        path: 'admin/performance',
-        element: <PerformancePage />,
       },
       {
         path: 'admin/orders',

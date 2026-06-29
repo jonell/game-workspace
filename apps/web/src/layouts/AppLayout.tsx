@@ -13,7 +13,6 @@ import {
   AuditOutlined,
   FileTextOutlined,
   DesktopOutlined,
-  TrophyOutlined,
   FundOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -37,7 +36,6 @@ const IconBilling = React.createElement(AuditOutlined);
 const IconOrders = React.createElement(FileTextOutlined);
 const IconPc = React.createElement(DesktopOutlined);
 const IconLogout = React.createElement(LogoutOutlined);
-const IconPerformance = React.createElement(TrophyOutlined);
 const IconTraffic = React.createElement(FundOutlined);
 const IconFold = React.createElement(MenuFoldOutlined);
 const IconUnfold = React.createElement(MenuUnfoldOutlined);
@@ -52,8 +50,6 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
   [UserRole.OWNER]: [
     { key: '/admin', icon: IconDashboard, label: '数据看板' },
     { key: '/owner/orders', icon: IconOrders, label: '订单管理' },
-    { key: '/owner/performance', icon: IconPerformance, label: '绩效看板' },
-    { key: '/owner/revenue', icon: IconRevenue, label: '盈亏统计' },
     { key: '/owner/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/owner/employees', icon: IconEmployees, label: '员工管理' },
     { key: '/owner/studios', icon: IconStudios, label: '工作室管理' },
@@ -70,9 +66,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/admin/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/admin/traffic', icon: IconTraffic, label: '订单池' },
     { key: '/admin/billing', icon: IconBilling, label: '报账审核' },
-    { key: '/admin/revenue', icon: IconRevenue, label: '收入流水' },
     { key: '/admin/pc-control', icon: IconPc, label: '远程控制' },
-    { key: '/admin/performance', icon: IconPerformance, label: '绩效看板' },
     { key: '/admin/review', icon: IconAuth, label: '实名审核' },
     { key: '/admin/settings', icon: IconAuth, label: '系统设置' },
   ],
