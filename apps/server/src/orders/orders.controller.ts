@@ -115,4 +115,24 @@ export class OrdersController {
     const data = await this.ordersService.cancel(id);
     return { code: 200, message: '取消成功', data };
   }
+
+  @Post('orders/:id/call-partner')
+  @Roles(UserRole.COMPANION)
+  async callPartner(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.callPartner(id, req.user.companionId);
+    return { code: 200, message: 'ok', data };
+  }
+
+  @Post('orders/:id/accept-partner')
+  @Roles(UserRole.COMPANION)
+  async acceptPartner(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.acceptPartner(id, req.user.companionId);
+    return { code: 200, message: 'ok', data };
+  }
 }

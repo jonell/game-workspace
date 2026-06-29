@@ -313,6 +313,21 @@ export class OrdersService {
     });
   }
 
+  async callPartner(orderId: string, callerId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: { customer: true } });
+    if (!order) throw new NotFoundException('订单不存在');
+    this.wsGateway.broadcastToStudio(order.studioId, 'order:partner_call', {
+      orderId, callerId, customerName: order.customer?.customerCode, gameName: order.gameName, amount: order.amount
+    });
+    return { ok: true };
+  }
+
+  async acceptPartner(orderId: string, partnerId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    return this.prisma.order.update({ where: { id: orderId }, data: { customFields: { ...((order.customFields as any)||{}), partnerId } } });
+  }
+
   async getPoolStatus(companionId: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
