@@ -4,21 +4,24 @@
 
 ---
 
-## Recent Updates (v2.2.0)
+## Recent Updates (v3.0.0)
 
-- **Real-name registration:** companion self-registration with ID card upload + admin review
-- **Game profiles:** per-game rank and account selection with visual tags
-- **WeChat-style chat:** real-time chat between companion and CS with cross-client notifications
-- **Ranking leaderboard:** 4-metric dashboard (续单率/复购率/昨日业绩/本月业绩) with bar charts
-- **Delta Force fields:** 护航/陪玩, 机密/绝密/陪做任务, 单陪/双陪 on order creation
-- **Companion dashboard:** sidebar with 首页/抢单中心/报账/客户管理/接单记录/派单记录
-- **Order pool real-time stats:** today new/grabbed/remaining with 60s auto-refresh
-- **Companion sidebar:** dual role support — can grab orders AND create orders
-- **Simplified auth:** username/password login in Agent (no manual JWT copying)
-- **Auto-authorization:** companions created by OWNER are immediately authorized
-- **54 unit tests** covering all backend services
-- **Recharts revenue charts + CSV export + Batch billing**
-- **Linux + Windows** dual-platform Go Agent
+- **Unified Dashboard:** 昨日/全月总流水, 31天趋势图, 订单类型饼图, 陪玩收入排行, 点击陪玩查看明细
+- **Performance Dashboard:** 每日/全月绩效排行（接单率/续单率/复购率/流水结构分析）
+- **Companion Wallet:** 押金/余额/冻结/可支取 + 支取申请/审核流程
+- **Monthly Settlement:** 阶梯分成自动结算（三段阶梯：50%/60%/70%）
+- **Customer Profiles:** 19字段画像 + 自定义备注 + 跟进记录
+- **Customer Intelligence:** 首单/复购自动检测, 活跃/待跟进/流失状态判定
+- **AI Analysis:** 消费力/忠诚度/活跃度评分 + 维护建议 + 话术生成
+- **Enhanced Service Settlement:** 首单+续单结算, 自动创建续单子订单
+- **Dual Companion Flow:** 呼叫搭档/接受搭档 WebSocket 通知
+- **Traffic Pool:** 渠道管理（小红书/抖音/快手/转介绍）+ 统计
+- **Companion Resignation:** 一键离职处理（清数据/释工位/释微信）
+- **Tenant Authorization:** 租客→客服权限范围管理
+- **Work WeChat Management:** 工作微信绑定/解绑/自动释放
+- **Unified Order Pool:** 全角色统一横向卡片 + 沟通按钮 + 抢单弹窗+复制微信
+- **System Config:** 16项全局配置（流水门槛/阶梯分成/支取比例/超时/下拉选项）
+- **7 new models:** StudioDailyStats, ExpenseReport, WalletTransaction, CustomerProfile, CustomerFollowUp, TenantAuthorization, WorkWechat
 
 ---
 
@@ -314,6 +317,72 @@ Every endpoint returns a standard JSON envelope:
 | `POST` | `/api/orders/:id/cancel` | JWT | CS, ADMIN | Cancel an order. |
 
 **Order Status Flow:** `PENDING` -> `GRABBED` -> `CONFIRMED` -> `DONE` (or `CANCELLED` at any point)
+
+| `POST` | `/api/orders/:id/complete-billing` | JWT | COMPANION | Complete order with billing detail. |
+| `POST` | `/api/orders/:id/call-partner` | JWT | COMPANION | Call partner for dual companion order. |
+| `POST` | `/api/orders/:id/accept-partner` | JWT | COMPANION | Accept partner invitation. |
+| `GET` | `/api/orders/pool/status` | JWT | COMPANION | Get pool unlock status (revenue threshold). |
+
+### Dashboard
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `GET` | `/api/dashboard` | JWT | ADMIN, OWNER | Dashboard overview (today stats, ranking, alerts). |
+| `GET` | `/api/dashboard/trend` | JWT | ADMIN, OWNER | N-day revenue trend. Query: `?days=7`. |
+| `GET` | `/api/dashboard/companions` | JWT | ADMIN, OWNER | Companion status list. |
+| `GET` | `/api/dashboard/revenue-overview` | JWT | ADMIN, OWNER | Yesterday/monthly revenue + type breakdown + companion ranking. |
+| `GET` | `/api/dashboard/companion-revenue/:id` | JWT | ADMIN, OWNER | Single companion revenue detail. |
+| `GET` | `/api/dashboard/performance/daily` | JWT | ADMIN, OWNER | Daily KPI rankings. |
+| `GET` | `/api/dashboard/performance/monthly` | JWT | ADMIN, OWNER | Monthly KPI rankings. |
+
+### Config
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `GET` | `/api/config` | JWT | -- | Get config values. Query: `?keys=a,b`. |
+| `PUT` | `/api/config` | JWT | ADMIN, OWNER | Batch update config. |
+
+### Expense Reports
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `POST` | `/api/expense-reports` | JWT | COMPANION | Submit expense/withdraw report. |
+| `GET` | `/api/expense-reports` | JWT | -- | List reports (role-filtered). |
+| `PUT` | `/api/expense-reports/:id/review` | JWT | ADMIN, OWNER | Review (approve/reject). |
+| `GET` | `/api/expense-reports/monthly-summary` | JWT | ADMIN, OWNER | Monthly summary stats. |
+
+### Wallet & Settlement
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `GET` | `/api/companions/me/wallet` | JWT | COMPANION | Get wallet balance. |
+| `POST` | `/api/companions/me/withdraw` | JWT | COMPANION | Request withdrawal. |
+| `GET` | `/api/wallet-transactions` | JWT | ADMIN, OWNER | List wallet transactions. |
+| `PUT` | `/api/wallet-transactions/:id/review` | JWT | ADMIN, OWNER | Review wallet transaction. |
+| `POST` | `/api/monthly-settlement` | JWT | ADMIN, OWNER | Run monthly settlement. |
+| `GET` | `/api/monthly-settlement` | JWT | ADMIN, OWNER | Get settlement history. |
+
+### Customer Profiles & AI
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `GET` | `/api/customers/:id/profile` | JWT | -- | Get/auto-create customer profile. |
+| `PUT` | `/api/customers/:id/profile` | JWT | ADMIN, OWNER, COMPANION | Update profile. |
+| `GET` | `/api/customers/:id/type` | JWT | -- | Detect customer type (first/repeat). |
+| `GET` | `/api/customers/:id/follow-ups` | JWT | -- | List follow-up records. |
+| `POST` | `/api/customers/:id/follow-ups` | JWT | ADMIN, OWNER, COMPANION | Add follow-up. |
+| `GET` | `/api/customers/traffic/pool` | JWT | ADMIN, OWNER | Traffic pool (channel data). |
+| `GET` | `/api/customers/traffic/stats` | JWT | ADMIN, OWNER | Channel statistics. |
+| `POST` | `/api/ai/analyze/:customerId` | JWT | ADMIN, OWNER, COMPANION | AI customer analysis. |
+
+### Work Wechat
+
+| Method | Path | Auth | Roles | Description |
+|--------|------|------|-------|-------------|
+| `GET` | `/api/companions/work-wechats` | JWT | ADMIN, OWNER | List work wechats. |
+| `POST` | `/api/companions/work-wechats` | JWT | ADMIN, OWNER | Add work wechat. |
+| `PUT` | `/api/companions/work-wechats/:id/bind` | JWT | ADMIN, OWNER | Bind to companion. |
+| `PUT` | `/api/companions/work-wechats/:id/unbind` | JWT | ADMIN, OWNER | Unbind wechat. |
 
 ### Customers
 
