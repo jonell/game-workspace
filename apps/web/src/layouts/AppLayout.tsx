@@ -126,46 +126,45 @@ const AppLayout: React.FC = () => {
         });
         if (!res.ok) return;
         const { data } = await res.json();
-        if (!data?.messages?.length) return;
 
-        // Process new messages
-        const msgs = data.messages as Array<{text:string;time:string;from:string}>;
-        for (const m of msgs) {
-          const dedupKey = `${m.text}|${m.time}`;
-          if (seenKeys.has(dedupKey)) continue;
-          seenKeys.add(dedupKey);
-
-          // Save to localStorage
-          const storageKey = `chat-msgs-${data.companionId || 'global'}`;
-          try {
-            const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            if (!existing.some((em: any) => em.text === m.text && em.time === m.time)) {
-              existing.push({ ...m, from: 'them' });
-              localStorage.setItem(storageKey, JSON.stringify(existing.slice(-100)));
-            }
-          } catch {}
-
-          // Dispatch to open ChatModal instances
-          window.dispatchEvent(new CustomEvent('chat-message', {
-            detail: { text: m.text, time: m.time, companionId: data.companionId },
-          }));
-        }
-
-        // Update sidebar red dot
+        // Sidebar red dot (always check, regardless of messages)
         if (data?.hasNew) {
           useAuthStore.getState().setChatActive(true, data.companionName);
           if (data.companionId) useAuthStore.getState().addChatCompanion(data.companionId);
         }
 
-        // Unread badge: set count (not increment) based on messages newer than lastRead
+        // Process messages if any
+        if (data?.messages?.length) {
+          for (const m of data.messages) {
+            const dedupKey = `${m.text}|${m.time}`;
+            if (seenKeys.has(dedupKey)) continue;
+            seenKeys.add(dedupKey);
+
+            // Save to localStorage
+            const storageKey = `chat-msgs-${data.companionId || 'global'}`;
+            try {
+              const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+              if (!existing.some((em: any) => em.text === m.text && em.time === m.time)) {
+                existing.push({ ...m, from: 'them' });
+                localStorage.setItem(storageKey, JSON.stringify(existing.slice(-100)));
+              }
+            } catch {}
+
+            // Dispatch to open ChatModal instances
+            window.dispatchEvent(new CustomEvent('chat-message', {
+              detail: { text: m.text, time: m.time, companionId: data.companionId },
+            }));
+          }
+        }
+
+        // Unread badge
         const unreadKey = data?.orderId || data?.companionId;
-        if (unreadKey && data.messages.length > 0) {
+        if (unreadKey && data?.messages?.length) {
           try {
             const lastRead = parseInt(localStorage.getItem(`chat-lastRead-${unreadKey}`) || '0', 10);
             const unread = data.messages.filter((m: any) => {
               const [h, min] = (m.time || '00:00').split(':').map(Number);
-              const msgTs = Date.now() - (Date.now() % 86400000) + h * 3600000 + min * 60000;
-              return msgTs > lastRead;
+              return new Date().setHours(h, min, 0, 0) > lastRead;
             }).length;
             localStorage.setItem(`unread-${unreadKey}`, String(unread));
           } catch {}
