@@ -158,7 +158,7 @@ const AppLayout: React.FC = () => {
         }
 
         // Unread badge: total messages minus last seen count
-        if (!useAuthStore.getState().isChatOpen && data?.companionId) {
+        if (data?.companionId) {
           const key = data.companionId;
           try {
             const total = data?.messages?.length || 0;
