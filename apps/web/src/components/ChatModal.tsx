@@ -37,8 +37,10 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     setMsgs(loadMsgs(partner.companionId));
     setInput('');
     // Mark as read — clear unread badge
+    useAuthStore.getState().setChatOpen(true);
     useAuthStore.getState().markRead(partner.orderId || partner.companionId, msgs.length);
     if (partner.orderId) localStorage.removeItem(`unread-${partner.orderId}`);
+    localStorage.removeItem(`unread-${partner.companionId}`);
     // Listen for new messages from global poll
     const handler = (e: any) => {
       const msg = e.detail;
@@ -91,6 +93,15 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     );
   };
 
+  const handleClose = () => {
+    useAuthStore.getState().setChatOpen(false);
+    if (partner) {
+      localStorage.removeItem(`unread-${partner.companionId}`);
+      if (partner.orderId) localStorage.removeItem(`unread-${partner.orderId}`);
+    }
+    onClose();
+  };
+
   // Current user avatar
   const myName = user?.displayName || user?.username || '我';
   const myAvatar = { name: myName, avatar: user?.avatar || undefined, companionId: '', orderInfo: '' };
@@ -107,7 +118,7 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
               <div style={{ fontWeight: 600, fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{partner.name}</div>
               {partner.orderInfo && <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2, lineHeight: 1.4 }}>{partner.orderInfo}</div>}
             </div>
-            <Button type="text" icon={React.createElement(CloseOutlined)} onClick={onClose} style={{ color: '#FFF', fontSize: 18 }} />
+            <Button type="text" icon={React.createElement(CloseOutlined)} onClick={handleClose} style={{ color: '#FFF', fontSize: 18 }} />
           </div>
 
           {/* Messages — WeChat gray background */}

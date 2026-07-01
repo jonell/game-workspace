@@ -157,8 +157,8 @@ const AppLayout: React.FC = () => {
           }
         }
 
-        // Unread badge: increment per new notification
-        if (data?.hasNew) {
+        // Unread badge: increment per new notification (skip if chat is open)
+        if (data?.hasNew && !useAuthStore.getState().isChatOpen) {
           const unreadKey = data?.companionId;
           if (unreadKey) {
             try {
