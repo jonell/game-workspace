@@ -201,7 +201,13 @@ const OrdersPage: React.FC = () => {
           <Button icon={React.createElement(ReloadOutlined)} onClick={fetch} loading={loading}>刷新</Button>
         </div>
       </div>
-      <Table size="small" dataSource={orders.filter((o: any) => {
+      <Table size="small" dataSource={[...orders].sort((a: any, b: any) => {
+        const aUnread = unreadMap[a.id] || 0;
+        const bUnread = unreadMap[b.id] || 0;
+        if (aUnread > 0 && bUnread === 0) return -1;
+        if (bUnread > 0 && aUnread === 0) return 1;
+        return new Date(b.grabbedAt || b.createdAt).getTime() - new Date(a.grabbedAt || a.createdAt).getTime();
+      }).filter((o: any) => {
         if (!dateFilter) return true;
         const d = new Date(o.grabbedAt || o.createdAt).toDateString();
         return d === dateFilter.toDate().toDateString();
