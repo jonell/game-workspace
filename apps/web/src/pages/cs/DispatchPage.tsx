@@ -247,13 +247,15 @@ const DispatchPage: React.FC = () => {
                       // Clear badge
                       localStorage.removeItem(`unread-${c.id}`);
                       setUnreadMap(prev => { const { [c.id]: _, ...r } = prev; return r; });
-                      // Open WeChat-style chat
+                      // Open WeChat-style chat — use notification's orderId
                       const u = c.user as any;
+                      const notifOrderId = localStorage.getItem(`last-orderId-${c.id}`);
                       const activeOrder = [...poolOrders, ...allOrders].find((o: any) => o.companionId === c.id);
+                      const chatOrderId = notifOrderId || activeOrder?.id;
                       setChatPartner({
                         name: u?.displayName || u?.username || c.id,
                         avatar: u?.avatar || null,
-                        orderId: activeOrder?.id,
+                        orderId: chatOrderId,
                         orderInfo: activeOrder
                           ? `📋 ${activeOrder.gameName} · ${(orderTypeConfig as any)[activeOrder.type]?.label || activeOrder.type} · ¥${Number(activeOrder.amount).toFixed(2)}`
                           : (c.games?.length ? `🎮 ${c.games.map((g:any)=>g.game||g).join(',')}` : ''),
