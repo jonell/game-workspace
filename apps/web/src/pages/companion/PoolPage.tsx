@@ -163,8 +163,8 @@ const PoolPage: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}</Text>
                   <Button type="primary" size="small" danger
                     disabled={!isUnlocked}
-                    loading={grabbing === user?.companionId || order.id}
-                    onClick={() => handleGrab(user?.companionId || order.id)}>
+                    loading={grabbing === order.id}
+                    onClick={() => handleGrab(order.id)}>
                     {isUnlocked ? '抢单' : `还差¥${Math.round((threshold - todayRevenue) * 100) / 100}`}
                   </Button>
                 </Space>
