@@ -57,7 +57,10 @@ const TrafficPoolPage: React.FC = () => {
                 {order.customFields?.customerSource && <Col><Tag color="orange" style={{ margin: 0 }}>📡{order.customFields.customerSource}</Tag></Col>}
                 {order.customFields?.customerWechat && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>💬{order.customFields.customerWechat}</Text></Col>}
                 {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
-                {order.customFields?.billingMode === 'round' && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯按局</Text></Col>}
+                {order.customFields?.billingMode === 'round'
+                  ? <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯{order.duration || order.customFields?.deltaCount || '?'}局</Text></Col>
+                  : order.duration && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>⏱{order.duration}h</Text></Col>
+                }
                 <Col flex="auto" />
                 <Col>
                   <Space size={6}>

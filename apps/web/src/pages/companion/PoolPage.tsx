@@ -150,8 +150,10 @@ const PoolPage: React.FC = () => {
               {(order.customFields?.customerSource || order.customer?.platform) && <Col><Tag color="orange" style={{ margin: 0 }}>📡{order.customFields?.customerSource || order.customer?.platform}</Tag></Col>}
               {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
               {order.companionId && <Col><Tag color="red" style={{ margin: 0, fontWeight: 600 }}>该订单客服指定给你接</Tag></Col>}
-              {order.duration && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>⏱{order.duration}h</Text></Col>}
-              {order.customFields?.billingMode === 'round' && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯按局</Text></Col>}
+              {order.customFields?.billingMode === 'round'
+                ? <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯{order.duration || order.customFields?.deltaCount || '?'}局</Text></Col>
+                : order.duration && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>⏱{order.duration}h</Text></Col>
+              }
               <Col flex="auto" />
               <Col>
                 <Space size={6}>
