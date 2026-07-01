@@ -63,7 +63,7 @@ const TrafficPoolPage: React.FC = () => {
                   <Space size={6}>
                     {order.customer?.customerCode && <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>👤{order.customer.customerCode}</Text>}
                     <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
-                      {React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleTimeString()}
+                      {React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleDateString('zh-CN')} {new Date(order.createdAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}
                     </Text>
                     <Tag color="orange">待派单</Tag>
                   </Space>
