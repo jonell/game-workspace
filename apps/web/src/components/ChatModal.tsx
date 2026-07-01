@@ -39,10 +39,16 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     setInput('');
     useAuthStore.getState().setChatOpen(true);
     localStorage.removeItem(`unread-${partner.orderId}`);
-    // Mark read using server count for accurate baseline
+    // Fetch messages from server and merge with localStorage
     http.get(`/companions/chat-pending?orderId=${partner.orderId}`).then(({ data }) => {
-      const total = data?.data?.messages?.length || loaded.length;
+      const serverMsgs = data?.data?.messages || [];
+      const total = serverMsgs.length || loaded.length;
       useAuthStore.getState().markRead(partner.orderId, total);
+      // Merge server messages into state (server has full history)
+      if (serverMsgs.length > loaded.length) {
+        setMsgs(serverMsgs.map((m: any) => ({ ...m, from: m.from === 'me' ? 'them' : m.from })));
+        saveMsgs(partner.orderId, serverMsgs.map((m: any) => ({ ...m, from: m.from === 'me' ? 'them' : m.from })));
+      }
     }).catch(() => {
       useAuthStore.getState().markRead(partner.orderId, loaded.length);
     });
