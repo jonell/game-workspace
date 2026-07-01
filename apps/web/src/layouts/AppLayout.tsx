@@ -140,8 +140,8 @@ const AppLayout: React.FC = () => {
             if (seenKeys.has(dedupKey)) continue;
             seenKeys.add(dedupKey);
 
-            // Save to localStorage
-            const storageKey = `chat-msgs-${data.companionId || 'global'}`;
+            // Save to localStorage (keyed by orderId to match ChatModal)
+            const storageKey = `chat-msgs-${data.orderId || 'global'}`;
             try {
               const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
               if (!existing.some((em: any) => em.text === m.text && em.time === m.time)) {
@@ -150,9 +150,9 @@ const AppLayout: React.FC = () => {
               }
             } catch {}
 
-            // Dispatch to open ChatModal instances
+            // Dispatch to open ChatModal instances (include orderId for matching)
             window.dispatchEvent(new CustomEvent('chat-message', {
-              detail: { text: m.text, time: m.time, companionId: data.companionId },
+              detail: { text: m.text, time: m.time, orderId: data.orderId, companionId: data.companionId },
             }));
           }
         }
