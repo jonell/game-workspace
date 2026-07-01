@@ -250,14 +250,14 @@ const DispatchPage: React.FC = () => {
                       // Open WeChat-style chat — use notification's orderId
                       const u = c.user as any;
                       const notifOrderId = localStorage.getItem(`last-orderId-${c.id}`);
-                      const activeOrder = [...poolOrders, ...allOrders].find((o: any) => o.companionId === c.id);
-                      const chatOrderId = notifOrderId || activeOrder?.id;
+                      const matchedOrder = [...poolOrders, ...allOrders].find((o: any) => o.id === notifOrderId || o.companionId === c.id);
+                      const chatOrderId = notifOrderId || matchedOrder?.id;
                       setChatPartner({
                         name: u?.displayName || u?.username || c.id,
                         avatar: u?.avatar || null,
                         orderId: chatOrderId,
-                        orderInfo: activeOrder
-                          ? `📋 ${activeOrder.gameName} · ${(orderTypeConfig as any)[activeOrder.type]?.label || activeOrder.type} · ¥${Number(activeOrder.amount).toFixed(2)}`
+                        orderInfo: matchedOrder
+                          ? `📋 ${matchedOrder.gameName} · ${(orderTypeConfig as any)[matchedOrder.type]?.label || matchedOrder.type} · ¥${Number(matchedOrder.amount).toFixed(2)}`
                           : (c.games?.length ? `🎮 ${c.games.map((g:any)=>g.game||g).join(',')}` : ''),
                       });
                     }}>
