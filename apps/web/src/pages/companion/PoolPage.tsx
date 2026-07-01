@@ -6,6 +6,14 @@ import { useSocket } from '../../hooks/useSocket';
 import ChatModal from '../../components/ChatModal';
 import { useAuthStore } from '../../stores/authStore';
 
+// Inject message pulse animation
+if (!document.getElementById('msg-pulse-pool')) {
+  const s = document.createElement('style');
+  s.id = 'msg-pulse-pool';
+  s.textContent = '@keyframes msg-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}';
+  document.head.appendChild(s);
+}
+
 const { Text, Title } = Typography;
 
 const orderTypeConfig: Record<string, { label: string; color: string }> = {
