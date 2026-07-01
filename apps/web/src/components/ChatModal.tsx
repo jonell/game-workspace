@@ -37,10 +37,15 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     const loaded = loadMsgs(partner.companionId);
     setMsgs(loaded);
     setInput('');
-    // Mark as read with actual loaded count
     useAuthStore.getState().setChatOpen(true);
-    useAuthStore.getState().markRead(partner.companionId, loaded.length);
     localStorage.removeItem(`unread-${partner.companionId}`);
+    // Mark read using server count for accurate baseline
+    http.get(`/companions/chat-pending?companionId=${partner.companionId}`).then(({ data }) => {
+      const total = data?.data?.messages?.length || loaded.length;
+      useAuthStore.getState().markRead(partner.companionId, total);
+    }).catch(() => {
+      useAuthStore.getState().markRead(partner.companionId, loaded.length);
+    });
     // Listen for new messages from global poll
     const handler = (e: any) => {
       const msg = e.detail;
