@@ -263,7 +263,6 @@ const DispatchPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                       <Space size="small">
                         {(() => {
-                          const hasMsg = chatIds.includes(c.id);
                           const u = c.user as any;
                           const avatarUrl = u?.avatar ? `/uploads/avatars/${u.avatar}` : null;
                           const initial = (u?.displayName || u?.username || '?')[0].toUpperCase();
