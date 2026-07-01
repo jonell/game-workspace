@@ -161,7 +161,7 @@ const PoolPage: React.FC = () => {
                       沟通
                     </Button>
                   </Badge>
-                  <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{React.createElement(ClockCircleOutlined)} {new Date(order.createdAt).toLocaleDateString('zh-CN')} {new Date(order.createdAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</Text>
+                  <Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{React.createElement(ClockCircleOutlined)} {(()=>{const d=new Date(order.createdAt);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`})()}</Text>
                   <Button type="primary" size="small" danger
                     disabled={!isUnlocked}
                     loading={grabbing === order.id}
