@@ -289,7 +289,8 @@ const DispatchPage: React.FC = () => {
                             </div>
                           );
                         })()}
-                        <Badge count={unreadMap[c.id] || 0} size="small" offset={[6, -2]}>
+                        <Badge count={unreadMap[c.id] || 0} size="small" offset={[6, -2]}
+                          style={(unreadMap[c.id] || 0) > 0 ? { animation: 'badge-pulse 0.6s ease-in-out infinite' } : undefined}>
                           <Text strong>{c.user?.username ?? c.id}</Text>
                         </Badge>
                       </Space>

@@ -3,6 +3,15 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space, Spin } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSocket } from '../hooks/useSocket';
+
+// Badge pulse animation
+if (!document.getElementById('badge-pulse-css')) {
+  const s = document.createElement('style');
+  s.id = 'badge-pulse-css';
+  s.textContent = '@keyframes badge-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}';
+  document.head.appendChild(s);
+}
+
 import {
   DashboardOutlined,
   DollarOutlined,
