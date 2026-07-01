@@ -253,7 +253,7 @@ const DispatchPage: React.FC = () => {
                       setChatPartner({
                         name: u?.displayName || u?.username || c.id,
                         avatar: u?.avatar || null,
-                        orderId: activeOrder?.id || c.id,
+                        orderId: activeOrder?.id,
                         orderInfo: activeOrder
                           ? `📋 ${activeOrder.gameName} · ${(orderTypeConfig as any)[activeOrder.type]?.label || activeOrder.type} · ¥${Number(activeOrder.amount).toFixed(2)}`
                           : (c.games?.length ? `🎮 ${c.games.map((g:any)=>g.game||g).join(',')}` : ''),
