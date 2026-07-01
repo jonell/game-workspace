@@ -34,8 +34,8 @@ export class OrdersController {
   }
 
   @Get('orders/pool')
-  async findPool(): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.findPool();
+  async findPool(@Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.findPool(req.user?.companionId);
     return { code: 200, message: 'ok', data };
   }
 
