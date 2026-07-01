@@ -59,7 +59,7 @@ const PoolPage: React.FC = () => {
   // Real-time pool updates via WebSocket
   useSocket({
     onOrderPoolUpdated: fetchData,
-    onChatNotify: (d: any) => { if (d?.companionId) addChatUnread(d.companionId); },
+    onChatNotify: (d: any) => { if (d?.orderId) addChatUnread(d.orderId); },
   });
 
   const handleGrab = async (orderId: string) => {
