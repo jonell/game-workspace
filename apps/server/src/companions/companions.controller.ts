@@ -7,10 +7,10 @@ import { WsGateway } from '../ws/ws.gateway';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
-// 内存聊天消息存储 (studioId -> orderId -> messages[])
+// 内存聊天消息存储 (studioId -> companionId -> messages[])
 interface ChatMsg { text: string; from: string; time: string; }
 const chatMessages = new Map<string, Map<string, ChatMsg[]>>();
-const chatNotifications = new Map<string, { companionName: string; companionId: string; timestamp: number; message?: string; orderId?: string }>();
+const chatNotifications = new Map<string, { companionName: string; companionId: string; timestamp: number; message?: string }>();
 
 @Controller()
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -35,17 +35,17 @@ export class CompanionsController {
 
   // 轮询聊天通知 — 必须在 :id 之前
   @Get('companions/chat-pending')
-  async chatPending(@Req() req: any, @Query('orderId') orderId?: string): Promise<ApiResponse<unknown>> {
+  async chatPending(@Req() req: any, @Query('companionId') companionId?: string): Promise<ApiResponse<unknown>> {
     const studioId = req.user?.studioId;
     if (!studioId) return { code: 200, message: 'ok', data: { hasNew: false, messages: [] } };
 
-    // Always return message history for the requested orderId
-    const messages = orderId ? (chatMessages.get(studioId)?.get(orderId) || []) : [];
+    // Always return message history for the requested companionId
+    const messages = companionId ? (chatMessages.get(studioId)?.get(companionId) || []) : [];
 
     // Check for active notification (for hasNew flag)
     let notif;
-    if (orderId) {
-      notif = chatNotifications.get(`${studioId}:${orderId}`);
+    if (companionId) {
+      notif = chatNotifications.get(`${studioId}:${companionId}`);
     } else {
       for (const [k, v] of chatNotifications) {
         if (k.startsWith(`${studioId}:`)) { notif = v; break; }
@@ -67,8 +67,7 @@ export class CompanionsController {
     return { code: 200, message: 'ok', data: {
       hasNew: !!hasNew,
       companionName: notif?.companionName,
-      companionId: notif?.companionId,
-      orderId: notif?.orderId || orderId,
+      companionId: notif?.companionId || companionId,
       avatar,
       messages,
     }};
@@ -280,29 +279,29 @@ export class CompanionsController {
   // 聊天通知：陪玩端发送消息时通知客服
   @Post('companions/chat-notify')
   @Roles(UserRole.COMPANION, UserRole.CS, UserRole.ADMIN, UserRole.OWNER)
-  async chatNotify(@Req() req: any, @Body() body: { orderId: string; message?: string; time?: string }): Promise<ApiResponse<unknown>> {
+  async chatNotify(@Req() req: any, @Body() body: { companionId?: string; message?: string; time?: string }): Promise<ApiResponse<unknown>> {
     const username = req.user.username || 'unknown';
-    const companionId = req.user.companionId || '';
+    const myCompanionId = req.user.companionId || '';
     const studioId = req.user.studioId;
     if (!studioId) return { code: 400, message: 'error', data: null };
-    const orderId = body.orderId || 'global';
+    const chatKey = body.companionId || myCompanionId || 'global';
     const msgText = body.message || '发来一条消息';
 
-    // Store message in per-order history
+    // Store message history keyed by companionId
     if (!chatMessages.has(studioId)) chatMessages.set(studioId, new Map());
     const studioMsgs = chatMessages.get(studioId)!;
-    if (!studioMsgs.has(orderId)) studioMsgs.set(orderId, []);
+    if (!studioMsgs.has(chatKey)) studioMsgs.set(chatKey, []);
     const time = body.time || `${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}`;
-    studioMsgs.get(orderId)!.push({
+    studioMsgs.get(chatKey)!.push({
       text: msgText,
       from: req.user.role === 'COMPANION' ? 'them' : 'me',
       time,
     });
 
-    // Store notification — keyed by studioId:orderId so each chat thread is isolated
-    chatNotifications.set(`${studioId}:${orderId}`, { companionName: username, companionId, timestamp: Date.now(), message: msgText, orderId });
+    // Store notification keyed by studioId:companionId
+    chatNotifications.set(`${studioId}:${chatKey}`, { companionName: username, companionId: myCompanionId, timestamp: Date.now(), message: msgText });
     // WebSocket broadcast
-    this.wsGateway.notifyChat(studioId, username, orderId, companionId);
+    this.wsGateway.notifyChat(studioId, username, chatKey, myCompanionId);
     return { code: 200, message: 'ok', data: null };
   }
 

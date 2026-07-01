@@ -21,7 +21,7 @@ const PoolPage: React.FC = () => {
   const [grabbing, setGrabbing] = useState<string | null>(null);
 
   // Chat state
-  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
+  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; companionId: string; orderInfo?: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -63,7 +63,7 @@ const PoolPage: React.FC = () => {
     setChatPartner({
       name: order.csUser?.displayName || order.csUser?.username || '未知',
       avatar: order.csUser?.avatar || null,
-      orderId: order.id,
+      companionId: order.companionId,
       orderInfo: [
         `📋 ${order.gameName}`,
         `${order.type === 'NEW' ? '首单' : order.type === 'RENEW' ? '续费' : order.type === 'REPURCHASE' ? '复购' : order.type}`,

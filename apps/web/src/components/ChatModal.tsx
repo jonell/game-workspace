@@ -5,7 +5,7 @@ import http from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 
 interface ChatMsg { text: string; time: string; from: string; }
-interface ChatPartner { name: string; avatar?: string; orderId: string; orderInfo?: string; }
+interface ChatPartner { name: string; avatar?: string; companionId: string; orderInfo?: string; }
 
 interface Props {
   open: boolean;
@@ -15,12 +15,12 @@ interface Props {
 
 const STORAGE_KEY = 'chat-msgs';
 
-function loadMsgs(orderId: string): ChatMsg[] {
-  try { const r = localStorage.getItem(`${STORAGE_KEY}-${orderId}`); return r ? JSON.parse(r) : []; }
+function loadMsgs(companionId: string): ChatMsg[] {
+  try { const r = localStorage.getItem(`${STORAGE_KEY}-${companionId}`); return r ? JSON.parse(r) : []; }
   catch { return []; }
 }
-function saveMsgs(orderId: string, msgs: ChatMsg[]) {
-  try { localStorage.setItem(`${STORAGE_KEY}-${orderId}`, JSON.stringify(msgs.slice(-200))); } catch {}
+function saveMsgs(companionId: string, msgs: ChatMsg[]) {
+  try { localStorage.setItem(`${STORAGE_KEY}-${companionId}`, JSON.stringify(msgs.slice(-200))); } catch {}
 }
 
 const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
@@ -32,10 +32,10 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
   const partnerRef = useRef(partner);
   partnerRef.current = partner;
 
-  // Load messages when modal opens with a new orderId
+  // Load messages when modal opens with a new companionId
   useEffect(() => {
-    if (!open || !partner?.orderId) return;
-    setMsgs(loadMsgs(partner.orderId));
+    if (!open || !partner?.companionId) return;
+    setMsgs(loadMsgs(partner.companionId));
     setInput('');
     // Poll immediately, then every 3s
     let timer: any;
@@ -43,16 +43,16 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
       const p = partnerRef.current;
       if (!p) return;
       try {
-        const { data } = await http.get(`/companions/chat-pending?orderId=${p.orderId}`);
+        const { data } = await http.get(`/companions/chat-pending?companionId=${p.companionId}`);
         const d = data.data;
-        setDbg(`轮询OK orderId=${(p.orderId||'').slice(0,8)} msgs=${d?.messages?.length||0} hasNew=${d?.hasNew} ${new Date().toLocaleTimeString()}`);
+        setDbg(`轮询OK companionId=${(p.companionId||'').slice(0,8)} msgs=${d?.messages?.length||0} hasNew=${d?.hasNew} ${new Date().toLocaleTimeString()}`);
         if (d?.messages?.length) {
           setMsgs(prev => {
             const seen = new Set(prev.map(m => m.text + m.time));
             const news = d.messages.filter((m: any) => !seen.has(m.text + m.time));
             if (news.length === 0) return prev;
             const updated = [...prev, ...news.map((m: any) => ({ ...m, from: 'them' }))];
-            saveMsgs(p.orderId, updated);
+            saveMsgs(p.companionId, updated);
             return updated;
           });
         }
@@ -63,7 +63,7 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     poll();
     timer = setInterval(poll, 3000);
     return () => clearInterval(timer);
-  }, [open, partner?.orderId]);
+  }, [open, partner?.companionId]);
 
   // Auto-scroll
   useEffect(() => {
@@ -78,9 +78,9 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     const msg: ChatMsg = { text, time, from: 'me' };
     const updated = [...msgs, msg];
     setMsgs(updated);
-    saveMsgs(partner.orderId, updated);
+    saveMsgs(partner.companionId, updated);
     setInput('');
-    http.post('/companions/chat-notify', { orderId: partner.orderId, message: text, time }).catch(() => {});
+    http.post('/companions/chat-notify', { companionId: partner.companionId, message: text, time }).catch(() => {});
   };
 
   const avatarEl = (p: ChatPartner, size = 36, isMe = false) => {
@@ -99,7 +99,7 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
 
   // Current user avatar
   const myName = user?.displayName || user?.username || '我';
-  const myAvatar = { name: myName, avatar: user?.avatar || undefined, orderId: '', orderInfo: '' };
+  const myAvatar = { name: myName, avatar: user?.avatar || undefined, companionId: '', orderInfo: '' };
 
   return (
     <Modal open={open} onCancel={onClose} footer={null} width={520} closable={false}
