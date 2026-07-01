@@ -7,6 +7,28 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **工作室类型选择：** OWNER 创建工作室时增加两步式类型选择流程（线下工作室/线上俱乐部）
+- 新增 `StudioType` 共享枚举 (`DIRECT | RENTAL`)，前端标签映射为「线下工作室」/「线上俱乐部」
+- 工作室列表新增「类型」列，支持编辑时通过 `Segmented` 修改类型
+- 后端新增 `CreateStudioDto` / `UpdateStudioDto`（class-validator），全套 CRUD 支持 `type` 字段
+- **店长账号开设：** 创建工作室时同步创建店长（ADMIN）账号，含用户名/密码/显示名称，使用数据库事务保证一致性
+- **自助个人设置：** 新建 ProfilePage，所有角色可修改密码（旧密码验证）、自定义显示名字、上传头像（本地存储）
+- 新增 3 个自助接口：`PUT /auth/me/password`、`PUT /auth/me/profile`、`POST /auth/me/avatar`（multer 文件上传）
+- User 模型新增 `displayName` + `avatar` 字段，`UserInfo` / `GET /auth/me` 返回完整资料
+- AppLayout 头部展示用户头像和显示名字，点击进入个人设置页
+
+### Removed
+
+- **数据看板精简：** 从 UnifiedDashboard 移除绩效看板和收入流水两个标签页
+- 删除 `PerformancePage.tsx`、`admin/RevenuePage.tsx`、`owner/RevenuePage.tsx` 孤儿页面
+- 移除后端 `/dashboard/performance/daily`、`/dashboard/performance/monthly` 接口
+- 移除后端 `/revenue/daily`、`/revenue/monthly` 及其 CSV 导出接口
+- 清理前端 `dashboardApi.dailyPerformance/monthlyPerformance` 和 `billingApi.dailyRevenue/monthlyRevenue` 方法
+
 ## [3.0.0] — 2026-06-30
 
 ### Added

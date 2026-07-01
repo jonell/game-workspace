@@ -26,6 +26,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /** companionId -> socketId */
   private companionSockets = new Map<string, string>();
+  /** userId -> socketId (for targeted user notifications, e.g. CS grab alerts) */
+  private userSockets = new Map<string, string>();
 
   constructor(
     private readonly jwt: JwtService,
@@ -56,6 +58,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.user = user;
 
       // join rooms
+      void client.join(`user:${user.id}`);
+      this.userSockets.set(user.id, client.id);
       if (user.studioId) {
         void client.join(`studio:${user.studioId}`);
       }
@@ -89,8 +93,11 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(client: Socket): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
-    if (!user?.companionId) return;
+    if (!user) return;
 
+    this.userSockets.delete(user.id);
+
+    if (!user.companionId) return;
     this.companionSockets.delete(user.companionId);
 
     await this.prisma.companion
@@ -239,10 +246,18 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`studio:${studioId}`).emit(event, data);
   }
 
+  /** Send a targeted event to a specific user by userId. */
+  notifyUser(userId: string, event: string, data: unknown): void {
+    const socketId = this.userSockets.get(userId);
+    if (socketId) {
+      this.server.to(socketId).emit(event, data);
+    }
+  }
+
   /** Notify CS users about a new chat message from a companion. */
-  notifyChat(studioId: string, companionName: string, orderId: string): void {
+  notifyChat(studioId: string, companionName: string, orderId: string, companionId?: string): void {
     this.server.to(`studio:${studioId}`).emit('chat:notify', {
-      companionName, orderId, timestamp: new Date().toISOString(),
+      companionName, companionId, orderId, timestamp: new Date().toISOString(),
     });
   }
 }

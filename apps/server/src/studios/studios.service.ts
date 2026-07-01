@@ -12,12 +12,35 @@ export class StudiosService {
     });
   }
 
-  async create(name: string) {
-    return this.prisma.studio.create({ data: { name } });
+  async create(
+    name: string,
+    type: string,
+    managerUsername: string,
+    managerPassword: string,
+    managerDisplayName?: string,
+  ) {
+    const passwordHash = await bcrypt.hash(managerPassword, 10);
+    return this.prisma.$transaction(async (tx) => {
+      const studio = await tx.studio.create({ data: { name, type } });
+      await tx.user.create({
+        data: {
+          username: managerUsername,
+          passwordHash,
+          role: 'ADMIN',
+          studioId: studio.id,
+          isAuthorized: true,
+          displayName: managerDisplayName ?? null,
+        },
+      });
+      return studio;
+    });
   }
 
-  async update(id: string, name: string) {
-    return this.prisma.studio.update({ where: { id }, data: { name } });
+  async update(id: string, name?: string, type?: string) {
+    const data: any = {};
+    if (name !== undefined) data.name = name;
+    if (type !== undefined) data.type = type;
+    return this.prisma.studio.update({ where: { id }, data });
   }
 
   async getEmployees(studioId?: string) {

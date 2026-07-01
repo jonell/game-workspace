@@ -11,7 +11,7 @@ export class CompanionsService {
     return this.prisma.companion.findMany({
       where,
       include: {
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true, displayName: true } },
         pc: { select: { currentMode: true, isThrottled: true, lastHeartbeat: true } },
       },
     });
@@ -21,7 +21,7 @@ export class CompanionsService {
     return this.prisma.companion.findUnique({
       where: { id },
       include: {
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true, displayName: true } },
         pc: true,
         timeLogs: { take: 20, orderBy: { startedAt: 'desc' } },
       },
@@ -43,7 +43,7 @@ export class CompanionsService {
       select: {
         id: true,
         monthlyRevenue: true,
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true, displayName: true } },
       },
     });
   }
@@ -82,7 +82,7 @@ export class CompanionsService {
       this.prisma.systemConfig.findUnique({ where: { key: 'revenue.unlock_threshold' } }),
       this.prisma.systemConfig.findUnique({ where: { key: 'revenue.free_threshold' } }),
     ]);
-    const unlockThreshold = (unlockCfg?.value as number) ?? 100;
+    const unlockThreshold = (unlockCfg?.value as number) ?? 200;
     const freeThreshold = (freeCfg?.value as number) ?? 300;
 
     // Time logs for today
@@ -121,7 +121,7 @@ export class CompanionsService {
       select: {
         id: true,
         status: true,
-        user: { select: { username: true } },
+        user: { select: { username: true, avatar: true, displayName: true } },
       },
     });
 
@@ -202,7 +202,7 @@ export class CompanionsService {
   async listWorkWechats(studioId: string) {
     return this.prisma.workWechat.findMany({
       where: { studioId },
-      include: { companion: { include: { user: { select: { username: true } } } } },
+      include: { companion: { include: { user: { select: { username: true, avatar: true, displayName: true } } } } },
     });
   }
 

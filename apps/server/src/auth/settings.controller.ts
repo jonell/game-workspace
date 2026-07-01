@@ -7,7 +7,7 @@ import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
 const DEFAULT_CONFIGS: Record<string, any> = {
-  'revenue.unlock_threshold': 100,
+  'revenue.unlock_threshold': 200,
   'revenue.free_threshold': 300,
   'revenue.low_warning': 300,
   'revenue.share_tiers': [

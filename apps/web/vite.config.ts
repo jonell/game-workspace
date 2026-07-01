@@ -11,6 +11,15 @@ export default defineConfig({
         target: 'http://192.168.0.106:3001',
         changeOrigin: true,
       },
+      '/socket.io': {
+        target: 'http://192.168.0.106:3001',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/uploads': {
+        target: 'http://192.168.0.106:3001',
+        changeOrigin: true,
+      },
     },
   },
   resolve: {

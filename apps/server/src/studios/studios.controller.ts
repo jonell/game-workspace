@@ -2,6 +2,8 @@ import { Controller, Get, Post, Put, Delete, Body, Query, Param, UseGuards } fro
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { StudiosService } from './studios.service';
+import { CreateStudioDto } from './dto/create-studio.dto';
+import { UpdateStudioDto } from './dto/update-studio.dto';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
@@ -19,23 +21,25 @@ export class StudiosController {
 
   @Post('studios')
   @Roles(UserRole.OWNER)
-  async create(@Body('name') name: string): Promise<ApiResponse<unknown>> {
-    const data = await this.studiosService.create(name);
-    return { code: 200, message: 'ok', data };
+  async create(@Body() dto: CreateStudioDto): Promise<ApiResponse<unknown>> {
+    const data = await this.studiosService.create(
+      dto.name, dto.type, dto.managerUsername, dto.managerPassword, dto.managerDisplayName,
+    );
+    return { code: 200, message: '工作室及店长账号已创建', data };
   }
 
   @Put('studios/:id')
   @Roles(UserRole.OWNER)
   async update(
     @Param('id') id: string,
-    @Body('name') name: string,
+    @Body() dto: UpdateStudioDto,
   ): Promise<ApiResponse<unknown>> {
-    const data = await this.studiosService.update(id, name);
+    const data = await this.studiosService.update(id, dto.name, dto.type);
     return { code: 200, message: 'ok', data };
   }
 
   @Get('employees')
-  @Roles(UserRole.OWNER, UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.CS)
   async getEmployees(@Query('studioId') studioId: string): Promise<ApiResponse<unknown>> {
     const data = await this.studiosService.getEmployees(studioId);
     return { code: 200, message: 'ok', data };

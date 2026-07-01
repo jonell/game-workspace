@@ -100,7 +100,7 @@ export class OrdersService {
       where: { status: 'PENDING', dispatchType: 'POOL', companionId: null },
       include: {
         customer: { select: { wechatId: true, customerCode: true, platform: true } },
-        csUser: { select: { username: true } },
+        csUser: { select: { username: true, avatar: true, displayName: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -119,7 +119,7 @@ export class OrdersService {
       where,
       include: {
         customer: true,
-        companion: { include: { user: { select: { username: true } } } },
+        companion: { include: { user: { select: { username: true, avatar: true, displayName: true } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -165,8 +165,19 @@ export class OrdersService {
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: OrderStatus.GRABBED, companionId },
+      include: { csUser: { select: { username: true, avatar: true, displayName: true } }, companion: { include: { user: { select: { username: true, avatar: true, displayName: true } } } } },
     });
     this.wsGateway.broadcastToStudio(updatedOrder.studioId, 'order:pool_updated', updatedOrder);
+
+    // Notify the CS who created this order about the grab
+    if (updatedOrder.csUserId) {
+      const companionName = updatedOrder.companion?.user?.username ?? '未知';
+      this.wsGateway.notifyUser(updatedOrder.csUserId, 'order:grabbed', {
+        orderId: updatedOrder.id,
+        companionName,
+        message: `${companionName} 抢了你的订单`,
+      });
+    }
     return updatedOrder;
   }
 

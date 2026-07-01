@@ -6,7 +6,6 @@
 ## 新增功能
 
 - **统一数据看板**: 昨日/全月流水, 31天趋势图, 订单类型饼图, 陪玩收入排行+明细下钻
-- **绩效看板**: 每日/全月 KPI 排行（接单率/续单率/复购率/流水结构分析）
 - **陪玩钱包+结算**: 押金/余额/冻结/可支取 + 支取申请审核 + 阶梯分成月底结算
 - **客户画像+AI**: 19字段画像, 首单/复购检测, 活跃状态判定, AI分析+话术生成
 - **双陪搭档**: 呼叫/接受搭档 WebSocket 通知
@@ -259,8 +258,7 @@ graph TB
         A2["/admin/companions<br/>陪玩管理"]
         A3["/admin/customers<br/>客户管理"]
         A4["/admin/billing<br/>报账审核"]
-        A5["/admin/revenue<br/>收入流水"]
-        A6["/admin/pc-control<br/>远程控制"]
+        A5["/admin/pc-control<br/>远程控制"]
     end
 
     subgraph CS["💬 CS 客服"]

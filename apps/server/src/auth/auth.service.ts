@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -64,6 +65,8 @@ export class AuthService {
       role: user.role as UserRole,
       studioId: user.studioId,
       companionId: user.companion?.id,
+      displayName: user.displayName,
+      avatar: user.avatar,
     };
 
     return {
@@ -113,10 +116,49 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  async getMe(userId: string): Promise<UserInfo> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { companion: { select: { id: true } } },
+    });
+    if (!user) throw new UnauthorizedException('用户不存在');
+    return {
+      id: user.id,
+      username: user.username,
+      role: user.role as UserRole,
+      studioId: user.studioId,
+      companionId: user.companion?.id,
+      displayName: user.displayName,
+      avatar: user.avatar,
+    };
+  }
+
   async authorizeUser(userId: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
       data: { isAuthorized: true },
+    });
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('用户不存在');
+    const valid = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!valid) throw new BadRequestException('旧密码错误');
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  }
+
+  async updateProfile(userId: string, displayName?: string) {
+    const data: any = {};
+    if (displayName !== undefined) data.displayName = displayName;
+    return this.prisma.user.update({ where: { id: userId }, data });
+  }
+
+  async updateAvatar(userId: string, filename: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatar: filename },
     });
   }
 

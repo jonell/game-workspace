@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Button, Typography, Space, Spin } from 'antd';
 import type { MenuProps } from 'antd';
+import { useSocket } from '../hooks/useSocket';
 import {
   DashboardOutlined,
   DollarOutlined,
@@ -102,6 +103,18 @@ const AppLayout: React.FC = () => {
     if (!user && isAuthenticated) { fetchUser(); }
   }, []);
 
+  // WebSocket connection for real-time updates
+  useSocket({
+    onChatNotify: (data: any) => {
+      if (data?.companionId) {
+        useAuthStore.getState().addChatCompanion(data.companionId);
+      }
+      if (data?.companionName) {
+        useAuthStore.getState().setChatActive(true, data.companionName);
+      }
+    },
+  });
+
   // 轮询聊天通知
   useEffect(() => {
     if (!user?.studioId) return;
@@ -112,7 +125,10 @@ const AppLayout: React.FC = () => {
         });
         if (res.ok) {
           const { data } = await res.json();
-          if (data?.hasNew) useAuthStore.getState().setChatActive(true, data.companionName);
+          if (data?.hasNew) {
+            useAuthStore.getState().setChatActive(true, data.companionName);
+            if (data.companionId) useAuthStore.getState().addChatCompanion(data.companionId);
+          }
         }
       } catch {}
     };
@@ -288,7 +304,38 @@ const AppLayout: React.FC = () => {
           <Space size="middle">
             {user && (
               <>
-                <Text style={{ color: '#1E293B', fontWeight: 500 }}>{user.username}</Text>
+                <div
+                  onClick={() => navigate('/profile')}
+                  title="点击进入个人设置（修改头像/名字/密码）"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '2px 8px', borderRadius: 20, transition: 'background 0.2s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#f0f0f0')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      background: user.avatar ? `url(/uploads/avatars/${user.avatar}) center/cover` : '#1677ff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {!user.avatar && (
+                        <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>
+                          {(user.displayName || user.username || '?')[0].toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{
+                      position: 'absolute', bottom: -2, right: -2,
+                      width: 14, height: 14, borderRadius: '50%', background: '#1677ff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: '2px solid #fff',
+                    }}>
+                      <span style={{ color: '#fff', fontSize: 8 }}>📷</span>
+                    </div>
+                  </div>
+                  <Text style={{ color: '#1E293B', fontWeight: 500 }}>
+                    {user.displayName || user.username}
+                  </Text>
+                </div>
                 <Text style={{ color: '#00D4FF', fontSize: 12, fontWeight: 600 }}>
                   {roleLabels[user.role]}
                 </Text>

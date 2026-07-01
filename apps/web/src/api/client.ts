@@ -125,6 +125,23 @@ export const authApi = {
   authorizeUser(userId: string) {
     return http.put<ApiResponse<null>>(`/auth/users/${userId}/authorize`);
   },
+  changePassword(oldPassword: string, newPassword: string) {
+    return http.put<ApiResponse<null>>('/auth/me/password', { oldPassword, newPassword });
+  },
+  updateProfile(displayName: string) {
+    return http.put<ApiResponse<null>>('/auth/me/profile', { displayName });
+  },
+  async uploadAvatar(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    const token = sessionStorage.getItem('accessToken');
+    return axios.post<ApiResponse<{ filename: string }>>('/api/auth/me/avatar', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  },
 };
 
 export default http;

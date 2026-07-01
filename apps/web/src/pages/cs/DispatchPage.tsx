@@ -22,6 +22,16 @@ import { companionsApi } from '../../api/companions';
 import { ordersApi } from '../../api/orders';
 import http from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import { useSocket } from '../../hooks/useSocket';
+import ChatModal from '../../components/ChatModal';
+
+// Inject message pulse animation
+if (typeof document !== 'undefined' && !document.getElementById('msg-pulse-keyframes')) {
+  const s = document.createElement('style');
+  s.id = 'msg-pulse-keyframes';
+  s.textContent = '@keyframes msg-pulse{0%,100%{transform:scale(1);box-shadow:0 0 8px #FF0000,0 0 20px #FF4757,0 0 35px rgba(255,0,0,.5)}50%{transform:scale(1.15);box-shadow:0 0 15px #FF0000,0 0 35px #FF4757,0 0 55px rgba(255,0,0,.7)}}';
+  document.head.appendChild(s);
+}
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -57,19 +67,16 @@ interface PoolOrder {
 }
 
 const DispatchPage: React.FC = () => {
-  const user = useAuthStore((s) => s.user);
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [poolOrders, setPoolOrders] = useState<PoolOrder[]>([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
   const [todayNew, setTodayNew] = useState(0);
   const [todayGrabbed, setTodayGrabbed] = useState(0);
   const [loadingCompanions, setLoadingCompanions] = useState(false);
   const [loadingPool, setLoadingPool] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [chatOrder, setChatOrder] = useState<PoolOrder | null>(null);
-  const [chatMessages, setChatMessages] = useState<{ text: string; time: string; from: string }[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const chatRef = useRef<HTMLDivElement>(null);
+  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
   const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
@@ -96,6 +103,7 @@ const DispatchPage: React.FC = () => {
       ]);
       setPoolOrders(poolRes.data.data ?? []);
       const all = allRes.data.data ?? [];
+      setAllOrders(all);
       const today = new Date().toDateString();
       setTodayNew(all.filter((o: any) => new Date(o.createdAt).toDateString() === today).length);
       setTodayGrabbed(all.filter((o: any) => o.status === 'GRABBED' || o.status === 'CONFIRMED').length);
@@ -116,12 +124,24 @@ const DispatchPage: React.FC = () => {
     }).catch(() => {});
   }, [fetchCompanions, fetchPool]);
 
-  // Auto-refresh pool every 10 seconds
+  // WebSocket real-time: refresh pool on order updates
+  useSocket({
+    onOrderPoolUpdated: () => fetchPool(),
+    onOrderGrabbed: (data: any) => {
+      message.info(data?.message || '有陪玩抢了订单');
+      fetchPool();
+    },
+    onChatNotify: (data: any) => {
+      if (data?.companionId) addChatCompanion(data.companionId);
+    },
+  });
+
+  // Fallback polling every 120s
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       fetchPool();
       fetchCompanions();
-    }, 60000);
+    }, 120000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -145,26 +165,21 @@ const DispatchPage: React.FC = () => {
     }
   };
 
-  const handleChatSend = () => {
-    const val = chatInput.trim();
-    if (!val) return;
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    setChatMessages(prev => [...prev, { text: val, time, from: 'me' }]);
-    setChatInput('');
-    // 通知客服端
-    if (chatOrder?.id && user?.role === 'COMPANION') {
-      http.post('/companions/chat-notify', { orderId: chatOrder.id }).catch(() => {});
-    }
-    setTimeout(() => {
-      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }, 50);
-  };
+  // Chat notification tracking
+  const chatIds = useAuthStore((s) => s.chatCompanionIds);
+  const addChatCompanion = useAuthStore((s) => s.addChatCompanion);
+  const clearChatCompanions = useAuthStore((s) => s.clearChatCompanions);
 
-  // Stats
+  useEffect(() => { return () => { clearChatCompanions(); }; }, []);
+
+  // Stats — sort: messages first, then by status
   const sortedCompanions = useMemo(() =>
-    [...companions].sort((a, b) => (STATUS_SORT[a.status] ?? 9) - (STATUS_SORT[b.status] ?? 9)),
-    [companions]);
+    [...companions].sort((a, b) => {
+      const aMsg = chatIds.includes(a.id) ? 1 : 0;
+      const bMsg = chatIds.includes(b.id) ? 1 : 0;
+      if (aMsg !== bMsg) return bMsg - aMsg;
+      return (STATUS_SORT[a.status] ?? 9) - (STATUS_SORT[b.status] ?? 9);
+    }), [companions, chatIds]);
 
   const idleCount = companions.filter((c) => c.status === CompanionStatus.IDLE).length;
   const busyCount = companions.filter((c) => c.status === CompanionStatus.BUSY).length;
@@ -214,21 +229,57 @@ const DispatchPage: React.FC = () => {
               <List size="small" dataSource={sortedCompanions}
                 renderItem={(c) => (
                   <List.Item style={{ padding: '8px 0', display: 'block', cursor: 'pointer' }}
-                    onClick={() => setSelectedCompanion(c)}>
+                    onClick={() => {
+                      const hasMsg = chatIds.includes(c.id);
+                      if (hasMsg) {
+                        const cur = useAuthStore.getState().chatCompanionIds.filter((id: string) => id !== c.id);
+                        useAuthStore.setState({ chatCompanionIds: cur });
+                      }
+                      // Open WeChat-style chat
+                      const u = c.user as any;
+                      const activeOrder = [...poolOrders, ...allOrders].find((o: any) => o.companionId === c.id);
+                      setChatPartner({
+                        name: u?.displayName || u?.username || c.id,
+                        avatar: u?.avatar || null,
+                        orderId: activeOrder?.id || `companion-${c.id}`,
+                        orderInfo: activeOrder
+                          ? `📋 ${activeOrder.gameName} · ${(orderTypeConfig as any)[activeOrder.type]?.label || activeOrder.type} · ¥${Number(activeOrder.amount).toFixed(2)}`
+                          : (c.games?.length ? `🎮 ${c.games.map((g:any)=>g.game||g).join(',')}` : ''),
+                      });
+                    }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                       <Space size="small">
-                        <span style={{
-                          width: 10, height: 10, borderRadius: '50%', display: 'inline-block',
-                          background:
-                            c.status === CompanionStatus.BUSY ? '#FF4757' :
-                            c.status === CompanionStatus.IDLE ? '#00E676' :
-                            c.status === CompanionStatus.ONLINE ? '#FFD600' : '#94A3B8',
-                          boxShadow: c.status !== CompanionStatus.OFFLINE
-                            ? `0 0 8px ${c.status === CompanionStatus.BUSY ? '#FF4757' : c.status === CompanionStatus.IDLE ? '#00E676' : '#FFD600'}`
-                            : 'none',
-                          animation: c.status !== CompanionStatus.OFFLINE ? 'pulse-glow 2s ease-in-out infinite' : 'none',
-                        }} />
-                        <Text strong>{c.user?.username ?? c.id}</Text>
+                        {(() => {
+                          const hasMsg = chatIds.includes(c.id);
+                          const u = c.user as any;
+                          const avatarUrl = u?.avatar ? `/uploads/avatars/${u.avatar}` : null;
+                          const initial = (u?.displayName || u?.username || '?')[0].toUpperCase();
+                          return (
+                            <div style={{
+                              width: 32, height: 32, borderRadius: '50%',
+                              background: avatarUrl ? `url(${avatarUrl}) center/cover` : '#1677ff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              animation: hasMsg ? 'msg-pulse 0.8s ease-in-out infinite' : 'none',
+                              boxShadow: hasMsg ? '0 0 8px #FF0000, 0 0 20px #FF4757, 0 0 35px rgba(255,0,0,0.5)' :
+                                c.status !== CompanionStatus.OFFLINE ? `0 0 6px ${c.status === CompanionStatus.BUSY ? '#FF4757' : c.status === CompanionStatus.IDLE ? '#00E676' : '#FFD600'}` : 'none',
+                              border: hasMsg ? '2px solid #FF0000' : 'none',
+                              flexShrink: 0,
+                            }}>
+                              {!avatarUrl && (
+                                <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>{initial}</span>
+                              )}
+                            </div>
+                          );
+                        })()}
+                        <Text strong style={chatIds.includes(c.id) ? { color: '#FF0000' } : undefined}>
+                          {c.user?.username ?? c.id}
+                        </Text>
+                        {chatIds.includes(c.id) && (
+                          <span style={{
+                            background: '#FF0000', color: '#FFF', fontSize: 10,
+                            padding: '1px 5px', borderRadius: 8, fontWeight: 700,
+                          }}>新消息</span>
+                        )}
                       </Space>
                       <Tag color={
                         c.status === CompanionStatus.BUSY ? 'red' :
@@ -478,98 +529,10 @@ const DispatchPage: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* 微信风格聊天弹窗 */}
-      <Modal title={null} open={!!chatOrder} onCancel={() => {
-        setChatOrder(null); setChatMessages([]); setChatInput('');
-        useAuthStore.getState().setChatActive(false);
-      }} footer={null}
-        width={440} style={{ top: 20 }} bodyStyle={{ padding: 0 }}>
-        {chatOrder && (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '70vh', maxHeight: 600 }}>
-            {/* 顶部订单信息 */}
-            <div style={{ background: '#EDEDED', padding: '10px 16px', borderBottom: '1px solid #D9D9D9' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#1E293B', textAlign: 'center' }}>
-                💬 {chatOrder.csUser?.username}
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 10px', fontSize: 11, color: '#8E8E93', marginTop: 4, justifyContent: 'center' }}>
-                <span>📋 {chatOrder.gameName}</span>
-                <span>· {orderTypeConfig[chatOrder.type]?.label}</span>
-                <span>· ¥{Number(chatOrder.amount).toFixed(2)}</span>
-                <span>· ⏱{chatOrder.duration||'-'}h</span>
-                {chatOrder.customFields?.billingMode && <span>· {chatOrder.customFields.billingMode === 'round' ? '按局' : '按小时'}</span>}
-                {chatOrder.customFields?.deltaMode && <span>· 🎯{chatOrder.customFields.deltaMode}</span>}
-                {chatOrder.customFields?.deltaMission && <span>· {chatOrder.customFields.deltaMission}</span>}
-                {chatOrder.customFields?.deltaCount && <span>· 👥{chatOrder.customFields.deltaCount}</span>}
-                {chatOrder.customFields?.deltaNote && <span>· 📝{chatOrder.customFields.deltaNote}</span>}
-              </div>
-            </div>
-            {/* 聊天记录区 */}
-            <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#EDEDED' }}>
-              {chatMessages.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#8E8E93', fontSize: 13, marginTop: 60 }}>
-                  暂无消息，发送消息开始对话
-                </div>
-              ) : (
-                chatMessages.map((msg, i) => {
-                  const isMe = msg.from === 'me';
-                  return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16,
-                      flexDirection: isMe ? 'row-reverse' : 'row' }}>
-                      {/* 头像 */}
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 4, flexShrink: 0,
-                        background: isMe ? '#95EC69' : '#FFF',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 14, fontWeight: 700, color: isMe ? '#FFF' : '#07C160',
-                        marginLeft: isMe ? 10 : 0, marginRight: isMe ? 0 : 10,
-                      }}>
-                        {(isMe ? (user?.username||'我') : (chatOrder.csUser?.username||'?')).charAt(0).toUpperCase()}
-                      </div>
-                      {/* 气泡+时间 */}
-                      <div style={{ maxWidth: '65%', position: 'relative' }}>
-                        <div style={{ fontSize: 10, color: '#B0B0B0', marginBottom: 3, textAlign: isMe ? 'right' : 'left' }}>
-                          {msg.time}
-                        </div>
-                        <div style={{
-                          padding: '9px 12px', borderRadius: 4, fontSize: 15, lineHeight: 1.4, wordBreak: 'break-word',
-                          background: isMe ? '#95EC69' : '#FFF',
-                          color: '#1E293B',
-                          position: 'relative',
-                        }}>
-                          {/* 小三角 */}
-                          <div style={{
-                            position: 'absolute', top: 10,
-                            [isMe ? 'right' : 'left']: -5,
-                            width: 0, height: 0,
-                            borderTop: '5px solid transparent',
-                            borderBottom: '5px solid transparent',
-                            [isMe ? 'borderLeft' : 'borderRight']: `5px solid ${isMe ? '#95EC69' : '#FFF'}`,
-                          }} />
-                          {msg.text}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-            {/* 底部输入栏 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-              background: '#F7F7F7', borderTop: '1px solid #D9D9D9' }}>
-              <Input style={{ flex: 1, borderRadius: 6, background: '#FFF', border: '1px solid #E5E5E5' }}
-                placeholder="输入消息..." value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onPressEnter={() => handleChatSend()}
-              />
-              <Button type="primary" size="small" style={{ borderRadius: 6, background: '#07C160', borderColor: '#07C160' }}
-                onClick={handleChatSend}>
-                发送
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+      {/* Chat Modal */}
+      <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
 
+      {/* 陪玩详情弹窗 */}
       {/* 陪玩详情弹窗 */}
       <Modal title={null} open={!!selectedCompanion} onCancel={() => setSelectedCompanion(null)} footer={null} width={420} style={{ top: 60 }}>
         {selectedCompanion && (

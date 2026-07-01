@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Card, Button, Typography, Tag, Row, Col, Spin, message, Empty, Progress, Space, Modal, Input } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Button, Typography, Tag, Row, Col, Spin, message, Empty, Progress, Space } from 'antd';
 import { ClockCircleOutlined, MessageOutlined } from '@ant-design/icons';
 import { ordersApi } from '../../api/orders';
-import http from '../../api/client';
-import { useAuthStore } from '../../stores/authStore';
+import { useSocket } from '../../hooks/useSocket';
+import ChatModal from '../../components/ChatModal';
 
 const { Text, Title } = Typography;
 
@@ -15,19 +15,13 @@ const orderTypeConfig: Record<string, { label: string; color: string }> = {
 };
 
 const PoolPage: React.FC = () => {
-  const user = useAuthStore(s => s.user);
   const [orders, setOrders] = useState<any[]>([]);
   const [poolStatus, setPoolStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [grabbing, setGrabbing] = useState<string | null>(null);
-  const [grabbedOrder, setGrabbedOrder] = useState<any>(null);
-  const [grabbedModal, setGrabbedModal] = useState(false);
 
   // Chat state
-  const [chatOrder, setChatOrder] = useState<any>(null);
-  const [chatMessages, setChatMessages] = useState<{ text: string; time: string; from: string }[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const chatRef = useRef<HTMLDivElement>(null);
+  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -48,13 +42,14 @@ const PoolPage: React.FC = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Real-time pool updates via WebSocket
+  useSocket({ onOrderPoolUpdated: fetchData });
+
   const handleGrab = async (orderId: string) => {
     setGrabbing(orderId);
     try {
-      const { data } = await ordersApi.grab(orderId);
-      // Show grabbed order detail modal with contact info
-      setGrabbedOrder(data.data);
-      setGrabbedModal(true);
+      await ordersApi.grab(orderId);
+      message.success('抢单成功！');
       fetchData();
     } catch (e: any) {
       message.error(e?.response?.data?.message ?? '抢单失败');
@@ -65,51 +60,23 @@ const PoolPage: React.FC = () => {
 
   // Chat handlers
   const openChat = (order: any) => {
-    setChatOrder(order);
-    setChatMessages([]);
-    setChatInput('');
-    useAuthStore.getState().setChatActive(true);
+    setChatPartner({
+      name: order.csUser?.displayName || order.csUser?.username || '未知',
+      avatar: order.csUser?.avatar || null,
+      orderId: order.id,
+      orderInfo: [
+        `📋 ${order.gameName}`,
+        `${order.type === 'NEW' ? '首单' : order.type === 'RENEW' ? '续费' : order.type === 'REPURCHASE' ? '复购' : order.type}`,
+        `¥${Number(order.amount).toFixed(2)}`,
+        order.duration ? `${order.duration}h` : '',
+        order.customFields?.billingMode ? (order.customFields.billingMode === 'round' ? '按局' : '按小时') : '',
+        order.customFields?.deltaMode ? `🎯${order.customFields.deltaMode}` : '',
+        order.customer?.customerCode ? `👤${order.customer.customerCode}` : '',
+        order.csUser?.username ? `💬${order.csUser.username}` : '',
+      ].filter(Boolean).join(' · '),
+    });
   };
 
-  const closeChat = () => {
-    setChatOrder(null);
-    setChatMessages([]);
-    setChatInput('');
-    useAuthStore.getState().setChatActive(false);
-  };
-
-  const sendChat = async () => {
-    const val = chatInput.trim();
-    if (!val) return;
-    const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-    setChatMessages(prev => [...prev, { text: val, time: now, from: 'me' }]);
-    setChatInput('');
-    if (chatOrder?.id) {
-      http.post('/companions/chat-notify', { orderId: chatOrder.id, message: val }).catch(() => {});
-    }
-    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
-  };
-
-  // Poll chat from CS
-  useEffect(() => {
-    if (!chatOrder?.id) return;
-    const timer = setInterval(async () => {
-      try {
-        const { data } = await http.get(`/companions/chat-pending?orderId=${chatOrder.id}`);
-        const msgs = data.data ?? [];
-        if (Array.isArray(msgs) && msgs.length > 0) {
-          setChatMessages(prev => {
-            const existing = new Set(prev.map(m => m.text + m.time));
-            const news = msgs.filter((m: any) => !existing.has(m.text + m.time));
-            if (news.length === 0) return prev;
-            return [...prev, ...news.map((m: any) => ({ text: m.text || m.message, time: m.time || new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }), from: 'them' }))];
-          });
-          setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 50);
-        }
-      } catch {}
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [chatOrder?.id]);
 
   if (loading) return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
 
@@ -182,114 +149,7 @@ const PoolPage: React.FC = () => {
       </Card>
 
       {/* Chat Modal */}
-      <Modal title={null} open={!!chatOrder} onCancel={closeChat} footer={null}
-        width={440} style={{ top: 20 }} bodyStyle={{ padding: 0 }}>
-        {chatOrder && (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '65vh', maxHeight: 550 }}>
-            <div style={{ background: '#EDEDED', padding: '10px 16px', borderBottom: '1px solid #D9D9D9' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#1E293B', textAlign: 'center' }}>
-                💬 {chatOrder.csUser?.username || '客服'}
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 10px', fontSize: 11, color: '#8E8E93', marginTop: 4, justifyContent: 'center' }}>
-                <span>📋 {chatOrder.gameName}</span>
-                <span>· {orderTypeConfig[chatOrder.type]?.label}</span>
-                <span>· ¥{Number(chatOrder.amount).toFixed(2)}</span>
-                <span>· ⏱{chatOrder.duration || '-'}h</span>
-                {chatOrder.customFields?.deltaMode && <span>· {chatOrder.customFields.deltaMode}</span>}
-                {chatOrder.customFields?.deltaMission && <span>· {chatOrder.customFields.deltaMission}</span>}
-                {chatOrder.customFields?.deltaCount && <span>· {chatOrder.customFields.deltaCount}</span>}
-                {chatOrder.customFields?.deltaNote && <span>· 📝{chatOrder.customFields.deltaNote}</span>}
-              </div>
-            </div>
-            <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#EDEDED' }}>
-              {chatMessages.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#8E8E93', fontSize: 13, marginTop: 60 }}>
-                  发送消息开始对话
-                </div>
-              ) : (
-                chatMessages.map((msg, i) => {
-                  const isMe = msg.from === 'me';
-                  return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12,
-                      flexDirection: isMe ? 'row-reverse' : 'row' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 4, flexShrink: 0,
-                        background: isMe ? '#95EC69' : '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 13, fontWeight: 700, color: isMe ? '#FFF' : '#07C160',
-                        marginLeft: isMe ? 8 : 0, marginRight: isMe ? 0 : 8 }}>
-                        {(isMe ? (user?.username || '我') : (chatOrder.csUser?.username || '?')).charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ maxWidth: '70%' }}>
-                        <div style={{ fontSize: 10, color: '#B0B0B0', marginBottom: 2, textAlign: isMe ? 'right' : 'left' }}>{msg.time}</div>
-                        <div style={{ padding: '8px 12px', borderRadius: 4, fontSize: 14, lineHeight: 1.4, wordBreak: 'break-word',
-                          background: isMe ? '#95EC69' : '#FFF', color: '#1E293B' }}>{msg.text}</div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-            <div style={{ borderTop: '1px solid #D9D9D9', padding: '8px 12px', display: 'flex', gap: 8, background: '#F5F5F5' }}>
-              <Input value={chatInput} onChange={e => setChatInput(e.target.value)}
-                onPressEnter={sendChat} placeholder="输入消息..."
-                style={{ borderRadius: 4 }} />
-              <Button type="primary" onClick={sendChat}>发送</Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Grabbed Order Success Modal */}
-      <Modal title="✅ 抢单成功" open={grabbedModal} onCancel={() => setGrabbedModal(false)}
-        footer={<Button type="primary" size="large" onClick={() => {
-          const wechat = grabbedOrder?.customFields?.customerWechat || '暂无';
-          const info = [`微信：${wechat}`,
-            `客户编号：${grabbedOrder?.customer?.customerCode || ''}`,
-            `来源：${grabbedOrder?.customFields?.customerSource || ''} ${grabbedOrder?.customFields?.customerPlatformAccount || ''}`,
-            grabbedOrder?.customFields?.customerRoomCode ? `房间码：${grabbedOrder.customFields.customerRoomCode}` : '',
-            `游戏：${grabbedOrder?.gameName} ¥${Number(grabbedOrder?.amount).toFixed(0)}`];
-          const text = info.filter(Boolean).join('\n');
-          // Fallback copy method for all browsers
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.position = 'fixed';
-          ta.style.left = '-9999px';
-          document.body.appendChild(ta);
-          ta.select();
-          try {
-            document.execCommand('copy');
-            message.success(`已复制微信号 ${wechat} 到剪贴板，去微信粘贴添加好友 ✅`, 5);
-          } catch {
-            message.info(`微信号：${wechat}，请手动复制`, 5);
-          }
-          document.body.removeChild(ta);
-          setGrabbedModal(false);
-        }}>知道了，马上去联系</Button>} width={440}>
-        {grabbedOrder && (
-          <div style={{ fontSize: 14, lineHeight: 2.2 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#1E293B', marginBottom: 8 }}>
-              {grabbedOrder.gameName} ｜ ¥{Number(grabbedOrder.amount).toFixed(0)}
-            </div>
-            <Row gutter={8}>
-              <Col><Tag color={orderTypeConfig[grabbedOrder.type]?.color || 'blue'}>{orderTypeConfig[grabbedOrder.type]?.label || grabbedOrder.type}</Tag></Col>
-              {grabbedOrder.customFields?.deltaMode && <Col><Tag color="cyan">{grabbedOrder.customFields.deltaMode}</Tag></Col>}
-              {grabbedOrder.customFields?.deltaMission && <Col><Tag>{grabbedOrder.customFields.deltaMission}</Tag></Col>}
-              {grabbedOrder.customFields?.deltaCount && <Col><Tag>{grabbedOrder.customFields.deltaCount}</Tag></Col>}
-              {grabbedOrder.customFields?.billingMode && <Col><Text type="secondary" style={{ fontSize: 12 }}>{grabbedOrder.customFields.billingMode === 'round' ? '按局' : '按小时'}</Text></Col>}
-            </Row>
-            {grabbedOrder.customFields?.deltaNote && (
-              <div style={{ marginTop: 8 }}><Text type="warning">📝 {grabbedOrder.customFields.deltaNote}</Text></div>
-            )}
-            <div style={{ background: '#FFF7E6', padding: '10px 14px', borderRadius: 8, margin: '10px 0' }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>📱 联系方式</div>
-              <div>微信：<Text strong style={{ fontSize: 16 }}>{grabbedOrder.customFields?.customerWechat || '暂无'}</Text></div>
-              {grabbedOrder.customer?.customerCode && <div>客户编号：{grabbedOrder.customer.customerCode}</div>}
-              {grabbedOrder.customFields?.customerSource && <div>来源：{grabbedOrder.customFields.customerSource}{grabbedOrder.customFields?.customerPlatformAccount ? ` (${grabbedOrder.customFields.customerPlatformAccount})` : ''}</div>}
-              {grabbedOrder.customFields?.customerRoomCode && <div>房间码：{grabbedOrder.customFields.customerRoomCode}</div>}
-            </div>
-            <Text type="secondary">⏰ 抢单时间：{new Date().toLocaleTimeString()} ｜ 🎮 添加微信后即可开始服务</Text>
-          </div>
-        )}
-      </Modal>
+      <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
     </div>
   );
 };

@@ -30,4 +30,6 @@ export interface UserInfo {
   role: UserRole;
   studioId: string | null;
   companionId?: string;
+  displayName?: string | null;
+  avatar?: string | null;
 }

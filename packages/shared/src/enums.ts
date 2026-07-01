@@ -42,3 +42,8 @@ export enum TransactionStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
+
+export enum StudioType {
+  DIRECT = 'DIRECT',
+  RENTAL = 'RENTAL',
+}

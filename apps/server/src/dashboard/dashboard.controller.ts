@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { DashboardService } from './dashboard.service';
@@ -28,20 +28,6 @@ export class DashboardController {
   @Roles(UserRole.ADMIN, UserRole.OWNER)
   async getCompanionStatus(@Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.dashboardService.getCompanionStatus(req.user.studioId);
-    return { code: 200, message: 'ok', data };
-  }
-
-  @Get('performance/daily')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
-  async getDailyPerformance(@Req() req: any, @Query('date') date?: string): Promise<ApiResponse<unknown>> {
-    const data = await this.dashboardService.getDailyPerformance(req.user.studioId, date);
-    return { code: 200, message: 'ok', data };
-  }
-
-  @Get('performance/monthly')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
-  async getMonthlyPerformance(@Req() req: any, @Query('month') month?: string): Promise<ApiResponse<unknown>> {
-    const data = await this.dashboardService.getMonthlyPerformance(req.user.studioId, month);
     return { code: 200, message: 'ok', data };
   }
 

@@ -24,6 +24,7 @@ import CompanionOrdersPage from './pages/companion/OrdersPage';
 import DispatchOrdersPage from './pages/companion/DispatchOrdersPage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
 import TrafficPoolPage from './pages/admin/TrafficPoolPage';
+import ProfilePage from './pages/ProfilePage';
 
 export const router = createBrowserRouter([
   {
@@ -142,6 +143,10 @@ export const router = createBrowserRouter([
       {
         path: 'cs/companions',
         element: <CompanionListPage />,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
       },
       {
         path: '',

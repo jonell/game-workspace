@@ -12,6 +12,9 @@ interface AuthState {
   fetchUser: () => Promise<UserInfo | null>;
   setUser: (user: UserInfo) => void;
   setChatActive: (active: boolean, partner?: string) => void;
+  chatCompanionIds: string[];
+  addChatCompanion: (companionId: string) => void;
+  clearChatCompanions: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,6 +22,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: !!sessionStorage.getItem('accessToken'),
   chatActive: false,
   chatPartner: '',
+  chatCompanionIds: [],
 
   login: async (dto: LoginRequest) => {
     const { data } = await authApi.login(dto);
@@ -57,4 +61,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   setChatActive: (active: boolean, partner?: string) => {
     set({ chatActive: active, chatPartner: partner || '' });
   },
+  addChatCompanion: (companionId: string) => {
+    set((s) => ({
+      chatCompanionIds: s.chatCompanionIds.includes(companionId)
+        ? s.chatCompanionIds
+        : [companionId, ...s.chatCompanionIds],
+    }));
+  },
+  clearChatCompanions: () => set({ chatCompanionIds: [] }),
 }));

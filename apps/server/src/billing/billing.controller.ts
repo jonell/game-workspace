@@ -7,7 +7,6 @@ import {
   Body,
   Query,
   Req,
-  Res,
   Headers,
   UseGuards,
   UnauthorizedException,
@@ -100,121 +99,6 @@ export class BillingController {
       message: `${actionLabel}完成：成功 ${result.succeeded} 条，失败 ${result.failed} 条`,
       data: result,
     };
-  }
-
-  // ── Revenue ──
-
-  @Get('revenue/daily')
-  async getDailyRevenue(
-    @Req() req: any,
-    @Query('date') date?: string,
-  ): Promise<ApiResponse<unknown>> {
-    const data = await this.billingService.getDailyRevenue(
-      req.user.studioId,
-      date,
-    );
-    return { code: 200, message: 'ok', data };
-  }
-
-  @Get('revenue/monthly')
-  async getMonthlyRevenue(
-    @Req() req: any,
-    @Query('month') month?: string,
-  ): Promise<ApiResponse<unknown>> {
-    const data = await this.billingService.getMonthlyRevenue(
-      req.user.studioId,
-      month,
-    );
-    return { code: 200, message: 'ok', data };
-  }
-
-  @Get('revenue/daily/csv')
-  async getDailyRevenueCSV(
-    @Req() req: any,
-    @Res() res: any,
-    @Query('date') date?: string,
-  ) {
-    const data = await this.billingService.getDailyRevenue(
-      req.user.studioId,
-      date,
-    );
-
-    const BOM = '﻿';
-    const dateLabel = data.date;
-    const rows: string[][] = [
-      ['日期', '类型', '单数', '金额'],
-    ];
-
-    const orderTypeLabels: Record<string, string> = {
-      NEW: '新单',
-      RENEW: '续费',
-      REPURCHASE: '复购',
-      TIP: '打赏',
-    };
-
-    for (const type of ['NEW', 'RENEW', 'REPURCHASE', 'TIP']) {
-      const item = data.breakdown[type];
-      if (item) {
-        rows.push([
-          dateLabel,
-          orderTypeLabels[type] ?? type,
-          String(item.count),
-          item.amount.toFixed(2),
-        ]);
-      }
-    }
-
-    rows.push([dateLabel, '合计', '', data.totalAmount.toFixed(2)]);
-
-    const csv = BOM + rows.map((r) => r.join(',')).join('\n');
-
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="revenue-daily-${dateLabel}.csv"`,
-    );
-    res.send(csv);
-  }
-
-  @Get('revenue/monthly/csv')
-  async getMonthlyRevenueCSV(
-    @Req() req: any,
-    @Res() res: any,
-    @Query('month') month?: string,
-  ) {
-    const data = await this.billingService.getMonthlyRevenue(
-      req.user.studioId,
-      month,
-    );
-
-    const BOM = '﻿';
-    const monthLabel = data.month;
-    const rows: string[][] = [
-      ['排名', '陪玩', '收入', '占比'],
-    ];
-
-    const total = data.totalAmount;
-
-    data.companionRevenue.forEach((c, i) => {
-      const pct = total > 0 ? ((c.amount / total) * 100).toFixed(1) : '0.0';
-      rows.push([
-        String(i + 1),
-        c.name,
-        c.amount.toFixed(2),
-        `${pct}%`,
-      ]);
-    });
-
-    rows.push(['', '合计', total.toFixed(2), '']);
-
-    const csv = BOM + rows.map((r) => r.join(',')).join('\n');
-
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="revenue-monthly-${monthLabel}.csv"`,
-    );
-    res.send(csv);
   }
 
   @Get('revenue/stats')
