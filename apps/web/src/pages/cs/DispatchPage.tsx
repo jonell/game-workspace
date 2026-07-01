@@ -263,7 +263,7 @@ const DispatchPage: React.FC = () => {
                               `${(orderTypeConfig as any)[matchedOrder.type]?.label || matchedOrder.type}`,
                               `¥${Number(matchedOrder.amount).toFixed(2)}`,
                               matchedOrder.duration ? `${matchedOrder.duration}h` : '',
-                              matchedOrder.customFields?.billingMode ? (matchedOrder.customFields.billingMode === 'round' ? '按局' : '按小时') : '',
+                              matchedOrder.customFields?.billingMode === 'round' ? '按局' : '',
                               matchedOrder.customFields?.deltaMode ? `🎯${matchedOrder.customFields.deltaMode}` : '',
                               matchedOrder.customer?.customerCode ? `👤${matchedOrder.customer.customerCode}` : '',
                             ].filter(Boolean).join(' · ')
@@ -376,7 +376,7 @@ const DispatchPage: React.FC = () => {
                           {order.customFields?.customerWechat && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>💬{order.customFields.customerWechat}</Text></Col>}
                           {order.customFields?.customerRoomCode && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>🏠{order.customFields.customerRoomCode}</Text></Col>}
                           {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
-                          {order.customFields?.billingMode && <Col><Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{order.customFields.billingMode === 'round' ? '局' : '时'}</Text></Col>}
+                          {order.customFields?.billingMode === 'round' && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯按局</Text></Col>}
                           <Col flex="auto" />
                           <Col>
                             <Space size={6}>

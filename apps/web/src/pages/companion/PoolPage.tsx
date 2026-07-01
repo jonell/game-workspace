@@ -94,7 +94,7 @@ const PoolPage: React.FC = () => {
         `${order.type === 'NEW' ? '首单' : order.type === 'RENEW' ? '续费' : order.type === 'REPURCHASE' ? '复购' : order.type}`,
         `¥${Number(order.amount).toFixed(2)}`,
         order.duration ? `${order.duration}h` : '',
-        order.customFields?.billingMode ? (order.customFields.billingMode === 'round' ? '按局' : '按小时') : '',
+        order.customFields?.billingMode === 'round' ? '按局' : '',
         order.customFields?.deltaMode ? `🎯${order.customFields.deltaMode}` : '',
         order.customer?.customerCode ? `👤${order.customer.customerCode}` : '',
         order.csUser?.username ? `💬${order.csUser.username}` : '',
@@ -151,7 +151,7 @@ const PoolPage: React.FC = () => {
               {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
               {order.companionId && <Col><Tag color="red" style={{ margin: 0, fontWeight: 600 }}>该订单客服指定给你接</Tag></Col>}
               {order.duration && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>⏱{order.duration}h</Text></Col>}
-              {order.customFields?.billingMode && <Col><Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{order.customFields.billingMode === 'round' ? '局' : '时'}</Text></Col>}
+              {order.customFields?.billingMode === 'round' && <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯按局</Text></Col>}
               <Col flex="auto" />
               <Col>
                 <Space size={6}>
