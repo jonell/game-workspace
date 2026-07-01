@@ -15,6 +15,7 @@ import {
   message,
   List,
   Spin,
+  Badge,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { CompanionStatus, OrderType, DispatchType } from '@chunlv/shared';
@@ -78,6 +79,22 @@ const DispatchPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; companionId: string; orderInfo?: string; orderId?: string } | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
+  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
+
+  // Poll localStorage for unread badges every 2s
+  useEffect(() => {
+    const read = () => {
+      const map: Record<string, number> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k?.startsWith('unread-')) map[k.replace('unread-', '')] = parseInt(localStorage.getItem(k) || '0', 10);
+      }
+      setUnreadMap(map);
+    };
+    read();
+    const t = setInterval(read, 2000);
+    return () => clearInterval(t);
+  }, []);
   const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -235,6 +252,9 @@ const DispatchPage: React.FC = () => {
                         const cur = useAuthStore.getState().chatCompanionIds.filter((id: string) => id !== c.id);
                         useAuthStore.setState({ chatCompanionIds: cur });
                       }
+                      // Clear badge
+                      localStorage.removeItem(`unread-${c.id}`);
+                      setUnreadMap(prev => { const { [c.id]: _, ...r } = prev; return r; });
                       // Open WeChat-style chat
                       const u = c.user as any;
                       const activeOrder = [...poolOrders, ...allOrders].find((o: any) => o.companionId === c.id);
@@ -272,15 +292,11 @@ const DispatchPage: React.FC = () => {
                             </div>
                           );
                         })()}
-                        <Text strong style={chatIds.includes(c.id) ? { color: '#FF0000' } : undefined}>
-                          {c.user?.username ?? c.id}
-                        </Text>
-                        {chatIds.includes(c.id) && (
-                          <span style={{
-                            background: '#FF0000', color: '#FFF', fontSize: 10,
-                            padding: '1px 5px', borderRadius: 8, fontWeight: 700,
-                          }}>新消息</span>
-                        )}
+                        <Badge count={unreadMap[c.id] || 0} size="small" offset={[6, -2]}>
+                          <Text strong style={chatIds.includes(c.id) ? { color: '#FF0000' } : undefined}>
+                            {c.user?.username ?? c.id}
+                          </Text>
+                        </Badge>
                       </Space>
                       <Tag color={
                         c.status === CompanionStatus.BUSY ? 'red' :
