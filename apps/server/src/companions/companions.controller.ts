@@ -300,8 +300,13 @@ export class CompanionsController {
       time,
     });
 
-    // Store notification keyed by studioId:companionId
-    chatNotifications.set(`${studioId}:${chatKey}`, { companionName: username, companionId: chatKey, timestamp: Date.now(), message: msgText, orderId: body.orderId });
+    // Store notification — preserve existing orderId if new one is not provided
+    const existing = chatNotifications.get(`${studioId}:${chatKey}`);
+    chatNotifications.set(`${studioId}:${chatKey}`, {
+      companionName: username, companionId: chatKey,
+      timestamp: Date.now(), message: msgText,
+      orderId: body.orderId || existing?.orderId,
+    });
     // WebSocket broadcast
     this.wsGateway.notifyChat(studioId, username, chatKey, chatKey, body.orderId);
     return { code: 200, message: 'ok', data: null };
