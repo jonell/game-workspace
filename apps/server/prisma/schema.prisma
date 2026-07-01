@@ -113,6 +113,7 @@ model Order {
   customFields Json?
   isOnline     Boolean  @default(true)
   createdAt    DateTime @default(now())
+  grabbedAt    DateTime?
 
   studio       Studio        @relation(fields: [studioId], references: [id])
   csUser       User          @relation("CSUser", fields: [csUserId], references: [id])

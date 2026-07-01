@@ -164,7 +164,7 @@ export class OrdersService {
 
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status: OrderStatus.GRABBED, companionId },
+      data: { status: OrderStatus.GRABBED, companionId, grabbedAt: new Date() },
       include: { csUser: { select: { username: true, avatar: true, displayName: true } }, companion: { include: { user: { select: { username: true, avatar: true, displayName: true } } } } },
     });
     this.wsGateway.broadcastToStudio(updatedOrder.studioId, 'order:pool_updated', updatedOrder);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Tag, Typography, Button, message, Select, Modal, Input, InputNumber, Checkbox, Upload, Space, Divider } from 'antd';
+import { Table, Tag, Typography, Button, message, Select, Modal, Input, InputNumber, Checkbox, Upload, Space, Divider, DatePicker } from 'antd';
 import { ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import http from '../../api/client';
 import { ordersApi } from '../../api/orders';
@@ -37,6 +37,7 @@ const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<any>(null);
   const { chatActive, chatPartner, setChatActive } = useAuthStore();
   const [chatPartnerModal, setChatPartnerModal] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
 
@@ -202,10 +203,15 @@ const OrdersPage: React.FC = () => {
             onChange={(v) => setStatusFilter(v || '')} style={{ width: 120 }}>
             {Object.entries(statusConfig).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
           </Select>
+          <DatePicker placeholder="筛选日期" value={dateFilter} onChange={setDateFilter} style={{ width: 140 }} />
           <Button icon={React.createElement(ReloadOutlined)} onClick={fetch} loading={loading}>刷新</Button>
         </div>
       </div>
-      <Table size="small" dataSource={orders} rowKey="id" loading={loading}
+      <Table size="small" dataSource={orders.filter((o: any) => {
+        if (!dateFilter) return true;
+        const d = new Date(o.grabbedAt || o.createdAt).toDateString();
+        return d === dateFilter.toDate().toDateString();
+      })} rowKey="id" loading={loading}
         columns={[
           { title: '订单ID', dataIndex: 'id', width: 90, render: (v: string) => v?.slice(0, 8) },
           { title: '游戏', dataIndex: 'gameName', width: 100 },
@@ -224,7 +230,7 @@ const OrdersPage: React.FC = () => {
             ) : <Text type="secondary">-</Text>
           },
           { title: '状态', dataIndex: 'status', width: 80, render: (s: string) => <Tag color={statusConfig[s]?.color}>{statusConfig[s]?.label||s}</Tag> },
-          { title: '创建时间', dataIndex: 'createdAt', width: 130, render: (v: string) => v ? new Date(v).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-' },
+          { title: '抢单时间', dataIndex: 'grabbedAt', width: 150, render: (v: string) => v ? new Date(v).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-' },
           {
             title: '操作', key: 'action', width: 160,
             render: (_: any, r: any) => (
