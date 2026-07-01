@@ -76,7 +76,7 @@ const DispatchPage: React.FC = () => {
   const [loadingPool, setLoadingPool] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; companionId: string; orderInfo?: string } | null>(null);
+  const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; companionId: string; orderInfo?: string; orderId?: string } | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
   const [gameOptions, setGameOptions] = useState<string[]>([]);
   const [form] = Form.useForm();
@@ -242,6 +242,7 @@ const DispatchPage: React.FC = () => {
                         name: u?.displayName || u?.username || c.id,
                         avatar: u?.avatar || null,
                         companionId: c.id,
+                        orderId: activeOrder?.id,
                         orderInfo: activeOrder
                           ? `📋 ${activeOrder.gameName} · ${(orderTypeConfig as any)[activeOrder.type]?.label || activeOrder.type} · ¥${Number(activeOrder.amount).toFixed(2)}`
                           : (c.games?.length ? `🎮 ${c.games.map((g:any)=>g.game||g).join(',')}` : ''),
