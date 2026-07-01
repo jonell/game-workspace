@@ -38,7 +38,6 @@ const OrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<any>(null);
-  const { chatActive, chatPartner, setChatActive } = useAuthStore();
   const [chatPartnerModal, setChatPartnerModal] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
 
   // Settlement modal state
@@ -176,23 +175,6 @@ const OrdersPage: React.FC = () => {
 
   return (
     <div>
-      {chatActive && (
-        <div onClick={() => setChatActive(false)} style={{
-          background: 'linear-gradient(135deg, #FF4757, #FF6B81)', borderRadius: 14, padding: '14px 18px',
-          marginBottom: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
-          boxShadow: '0 4px 16px rgba(255,71,87,0.35)',
-        }}>
-          <span style={{ width: 44, height: 44, borderRadius: '50%', background: '#FFF',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, color: '#FF4757',
-            animation: 'pulse-glow 0.8s ease-in-out infinite', boxShadow: '0 0 16px rgba(255,255,255,0.6)' }}>
-            {(chatPartner || '?')[0].toUpperCase()}
-          </span>
-          <div style={{ flex: 1, color: '#FFF' }}>
-            <div style={{ fontSize: 16, fontWeight: 800 }}>{chatPartner} 发来消息</div>
-            <div style={{ fontSize: 13, opacity: 0.9, marginTop: 2 }}>💬 点击前往订单池查看并回复</div>
-          </div>
-        </div>
-      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
           <Text strong style={{ fontSize: 16 }}>接单记录</Text>
