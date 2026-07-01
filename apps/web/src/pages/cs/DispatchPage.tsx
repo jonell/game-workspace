@@ -502,6 +502,23 @@ const DispatchPage: React.FC = () => {
               <Option value={DispatchType.DIRECT}>指定派单</Option>
             </Select>
           </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.dispatchType !== cur.dispatchType}>
+            {({ getFieldValue }) => getFieldValue('dispatchType') === DispatchType.DIRECT ? (
+              <Form.Item name="companionId" label="指定陪玩" rules={[{ required: true, message: '请选择陪玩' }]}>
+                <Select placeholder="选择陪玩" showSearch optionFilterProp="label">
+                  {companions.filter(c => c.status !== 'OFFLINE').map(c => (
+                    <Option key={c.id} value={c.id} label={c.user?.username}>
+                      <span style={{ display:'flex',alignItems:'center',gap:8 }}>
+                        <span style={{ width:8,height:8,borderRadius:'50%',display:'inline-block',
+                          background: c.status==='BUSY'?'#FF4757':c.status==='IDLE'?'#00E676':'#FFD600' }} />
+                        {c.user?.username ?? c.id}
+                      </span>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            ) : null}
+          </Form.Item>
           <Form.Item label="客户预留信息" style={{ marginBottom: 8 }}>
             <Input.Group compact>
               <Form.Item name="customerSource" noStyle>
