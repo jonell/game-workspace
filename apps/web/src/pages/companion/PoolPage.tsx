@@ -148,10 +148,10 @@ const PoolPage: React.FC = () => {
               <Col>
                 <Space size={6}>
                   <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>📋{order.csUser?.username || '-'}</Text>
-                  <Badge count={chatUnread[order.companionId || ''] || 0} size="small" offset={[-4, 0]}
+                  <Badge count={chatUnread[user?.companionId || ''] || 0} size="small" offset={[-4, 0]}
                     style={{ boxShadow: '0 0 8px #FF0000' }}>
                     <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(order)}
-                      style={chatUnread[order.companionId || ''] ? { background: '#FFF1F0', borderColor: '#FF4D4F', color: '#FF4D4F', animation: 'msg-pulse 1s ease-in-out infinite' } : undefined}>
+                      style={chatUnread[user?.companionId || ''] ? { background: '#FFF1F0', borderColor: '#FF4D4F', color: '#FF4D4F', animation: 'msg-pulse 1s ease-in-out infinite' } : undefined}>
                       沟通
                     </Button>
                   </Badge>
