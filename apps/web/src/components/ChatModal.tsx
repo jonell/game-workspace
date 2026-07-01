@@ -38,8 +38,7 @@ const ChatModal: React.FC<Props> = ({ open, partner, onClose }) => {
     setInput('');
     // Mark as read — clear unread badge
     useAuthStore.getState().setChatOpen(true);
-    useAuthStore.getState().markRead(partner.orderId || partner.companionId, msgs.length);
-    if (partner.orderId) localStorage.removeItem(`unread-${partner.orderId}`);
+    useAuthStore.getState().markRead(partner.companionId, msgs.length);
     localStorage.removeItem(`unread-${partner.companionId}`);
     // Listen for new messages from global poll
     const handler = (e: any) => {

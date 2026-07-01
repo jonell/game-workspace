@@ -157,21 +157,15 @@ const AppLayout: React.FC = () => {
           }
         }
 
-        // Unread badge: increment per new notification (skip if chat open; dedup by orderId)
-        if (data?.hasNew && !useAuthStore.getState().isChatOpen) {
-          const unreadKey = data?.companionId;
-          if (unreadKey && data?.orderId) {
-            try {
-              const dedupKey = `last-notif-${unreadKey}`;
-              const lastNotif = localStorage.getItem(dedupKey) || '';
-              const thisNotif = data.orderId || '';
-              if (thisNotif !== lastNotif) {
-                localStorage.setItem(dedupKey, thisNotif);
-                const cur = parseInt(localStorage.getItem(`unread-${unreadKey}`) || '0', 10);
-                localStorage.setItem(`unread-${unreadKey}`, String(cur + 1));
-              }
-            } catch {}
-          }
+        // Unread badge: total messages minus last seen count
+        if (!useAuthStore.getState().isChatOpen && data?.companionId) {
+          const key = data.companionId;
+          try {
+            const total = data?.messages?.length || 0;
+            const lastSeen = parseInt(localStorage.getItem(`chat-lastRead-${key}`) || '0', 10);
+            const unread = Math.max(0, total - lastSeen);
+            localStorage.setItem(`unread-${key}`, String(unread));
+          } catch {}
         }
       } catch {}
     };
