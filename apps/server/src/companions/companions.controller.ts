@@ -45,7 +45,7 @@ export class CompanionsController {
       notif = chatNotifications.get(`${studioId}:${orderId}`);
     } else {
       for (const [k, v] of chatNotifications) {
-        if (k.startsWith(`${studioId}:`) && v.companionName !== req.user?.username) {
+        if (k.startsWith(`${studioId}:`) && v.companionName !== req.user?.username && (Date.now() - v.timestamp < 30000)) {
           notif = v; break;
         }
       }
