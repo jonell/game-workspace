@@ -118,7 +118,10 @@ export class OrdersService {
     const where: any = {};
     if (status) where.status = status;
     if (!showAll) {
-      if (user.role === 'COMPANION') where.companionId = user.companionId;
+      if (user.role === 'COMPANION') {
+      where.companionId = user.companionId;
+      if (!status) where.NOT = { status: 'PENDING' };
+    }
       else if (user.role === 'CS') where.csUserId = user.id;
       else if (user.role === 'ADMIN') where.studioId = user.studioId;
     }
