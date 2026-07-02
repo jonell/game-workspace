@@ -119,61 +119,56 @@ const CompanionPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Unlock progress */}
-      <Card size="small" style={{ marginTop: 16 }}>
-        <Text>🎯 流水解锁进度：¥{data.todayRevenue} / ¥{data.unlockThreshold}</Text>
-        <Progress percent={unlockPct} status={data.isUnlocked ? 'success' : 'active'} />
-        <Text type="secondary">
-          {data.isUnlocked
-            ? '订单池已解锁 ✅'
-            : `还差 ¥${data.unlockThreshold - data.todayRevenue} 解锁订单池`}
-        </Text>
-      </Card>
-
-      {/* Free threshold */}
-      <Card size="small" style={{ marginTop: 8 }}>
-        <Text>🎯 免单门槛：¥{data.freeThreshold} ｜ 还差 ¥{Math.max(0, data.freeThreshold - data.todayRevenue)} 免娱乐费</Text>
-        <Progress percent={freePct} status={data.todayRevenue >= data.freeThreshold ? 'success' : 'active'}
-          strokeColor="#eb2f96" />
-      </Card>
-
-      {/* Status durations */}
-      <Card title="📊 今日状态时长" size="small" style={{ marginTop: 16 }}>
-        <Row gutter={16}>
-          {(['entertainment', 'idle', 'work', 'rest'] as const).map(mode => {
-            const labels = { entertainment: '🎮娱乐', idle: '💼空闲', work: '🔴接单', rest: '🛏️休息' };
-            return (
-              <Col span={6} key={mode}>
-                <Card size="small" style={{ textAlign: 'center' }}>
-                  <Text type="secondary">{labels[mode]}</Text>
-                  <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>
-                    {data.statusDurations?.[mode] ?? '00:00'}
-                  </div>
-                </Card>
-              </Col>
-            );
-          })}
-        </Row>
-      </Card>
-
-      {/* Quick actions */}
-      <Card size="small" style={{ marginTop: 16, textAlign: 'center' }}>
-        <Space size="large">
-          <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('IDLE')}>娱乐中</Button>
-          <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('ONLINE')}>等单中</Button>
-          <Button type="default" icon={IconCoffee} size="large" onClick={() => switchStatus('OFFLINE')}>休息中</Button>
-        </Space>
-      </Card>
-
-      {/* Online companions */}
-      <Card title="在线陪玩" size="small" style={{ marginTop: 16 }}>
-        {data.onlineCompanions?.map((c: any) => (
-          <Tag key={c.id} color={c.status === 'BUSY' ? 'red' : 'green'} style={{ marginBottom: 8, padding: '4px 12px', fontSize: 14 }}>
-            {c.user?.username} {c.status === 'BUSY' ? '接单中' : '等单中'}
-          </Tag>
-        ))}
-        {(!data.onlineCompanions || data.onlineCompanions.length === 0) && <Text type="secondary">暂无在线陪玩</Text>}
-      </Card>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col span={16}>
+          <Row gutter={[16, 16]}>
+            <Col span={12}>
+              <Card size="small">
+                <Text>🎯 流水解锁进度：¥{data.todayRevenue} / ¥{data.unlockThreshold}</Text>
+                <Progress percent={unlockPct} status={data.isUnlocked ? 'success' : 'active'} />
+                <Text type="secondary">{data.isUnlocked ? '订单池已解锁 ✅' : `还差 ¥${data.unlockThreshold - data.todayRevenue} 解锁订单池`}</Text>
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card size="small">
+                <Text>🎯 免单门槛：¥{data.freeThreshold}</Text>
+                <Progress percent={freePct} status={data.todayRevenue >= data.freeThreshold ? 'success' : 'active'} strokeColor="#eb2f96" />
+                <Text type="secondary">还差 ¥{Math.max(0, data.freeThreshold - data.todayRevenue)} 免娱乐费</Text>
+              </Card>
+            </Col>
+          </Row>
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            {(['entertainment', 'idle', 'work', 'rest'] as const).map(mode => {
+              const labels = { entertainment: '🎮娱乐', idle: '💼空闲', work: '🔴接单', rest: '🛏️休息' };
+              return (
+                <Col span={6} key={mode}>
+                  <Card size="small" style={{ textAlign: 'center' }}>
+                    <Text type="secondary">{labels[mode]}</Text>
+                    <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>{data.statusDurations?.[mode] ?? '00:00'}</div>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </Col>
+        <Col span={8}>
+          <Card size="small" style={{ textAlign: 'center', marginBottom: 16 }}>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('IDLE')} block>娱乐中</Button>
+              <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('ONLINE')} block>等单中</Button>
+              <Button type="default" icon={IconCoffee} size="large" onClick={() => switchStatus('OFFLINE')} block>休息中</Button>
+            </Space>
+          </Card>
+          <Card title="在线陪玩" size="small">
+            {data.onlineCompanions?.map((c: any) => (
+              <Tag key={c.id} color={c.status === 'BUSY' ? 'red' : 'green'} style={{ marginBottom: 8, padding: '4px 12px', fontSize: 14 }}>
+                {c.user?.username} {c.status === 'BUSY' ? '接单中' : '等单中'}
+              </Tag>
+            ))}
+            {(!data.onlineCompanions || data.onlineCompanions.length === 0) && <Text type="secondary">暂无在线陪玩</Text>}
+          </Card>
+        </Col>
+      </Row>
 
       {/* Wallet */}
       <Title level={4} style={{ marginTop: 24 }}>💰 我的钱包</Title>
