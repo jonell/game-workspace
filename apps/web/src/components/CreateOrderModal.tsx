@@ -36,16 +36,12 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId })
           <Select>{Object.entries(orderTypeConfig).map(([k,v]) => <Option key={k} value={k}>{v}</Option>)}</Select></Form.Item>
         <Form.Item name="gameName" label="游戏名称" rules={[{ required: true }]}>
           <Select showSearch>{gameList.map(g => <Option key={g} value={g}>{g}</Option>)}</Select></Form.Item>
-        <Form.Item noStyle shouldUpdate={(p,c) => p.gameName !== c.gameName}>
-          {({ getFieldValue }) => getFieldValue('gameName') === '三角洲行动' ? <>
-            <Form.Item name="deltaMode" label="模式" initialValue="陪玩" rules={[{ required: true }]}>
-              <Select onChange={(val: string) => { if (val === '护航') form.setFieldsValue({ deltaCount: '双' }); }}>
-                <Option value="护航">护航</Option><Option value="陪玩">陪玩</Option></Select></Form.Item>
-            <Form.Item name="deltaMission" label="任务类型"><Select placeholder="可选" allowClear><Option value="机密">机密</Option><Option value="绝密">绝密</Option></Select></Form.Item>
-            <Form.Item name="deltaCount" label="陪陪数量" initialValue="单"><Select><Option value="单">单</Option><Option value="双">双</Option></Select></Form.Item>
-            <Form.Item name="deltaNote" label="备注"><Input.TextArea rows={2} placeholder="补充说明" /></Form.Item>
-          </> : null}
-        </Form.Item>
+        <Form.Item name="deltaMode" label="模式" initialValue="陪玩">
+          <Select onChange={(val: string) => { if (val === '护航') form.setFieldsValue({ deltaCount: '双' }); }}>
+            <Option value="护航">护航</Option><Option value="陪玩">陪玩</Option></Select></Form.Item>
+        <Form.Item name="deltaMission" label="任务类型"><Select placeholder="可选" allowClear><Option value="机密">机密</Option><Option value="绝密">绝密</Option></Select></Form.Item>
+        <Form.Item name="deltaCount" label="陪陪数量" initialValue="单"><Select><Option value="单">单</Option><Option value="双">双</Option></Select></Form.Item>
+        <Form.Item name="deltaNote" label="备注"><Input.TextArea rows={2} placeholder="补充说明" /></Form.Item>
         <Form.Item name="amount" label="金额" rules={[{ required: true }]}>
           <InputNumber min={0} style={{ width: '100%' }} placeholder="单价" prefix="¥" /></Form.Item>
         <Form.Item name="dispatchType" label="派单方式" initialValue={DispatchType.POOL} rules={[{ required: true }]}>
