@@ -195,14 +195,14 @@ const PoolPage: React.FC = () => {
       <CreateOrderModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={fetchData} userId={(user as any)?.id} defaultDeltaCount="双" />
       {/* Grab Success Modal */}
       <Modal title="抢单成功" open={!!grabbedOrder} onCancel={() => setGrabbedOrder(null)} footer={null} width={400}>
-        {grabbedOrder && <>
-          <p>游戏：<Text strong>{grabbedOrder.gameName}</Text> ｜ ¥{grabbedOrder.amount} ｜ {grabbedOrder.duration}h</p>
-          {grabbedOrder.customer?.customerCode && <p>客户编号：<Text copyable>{grabbedOrder.customer.customerCode}</Text></p>}
-          {grabbedOrder.customFields?.customerSource && <p>来源：{grabbedOrder.customFields.customerSource}</p>}
-          {grabbedOrder.customFields?.customerRoomCode && <p>房间码：<Text copyable>{grabbedOrder.customFields.customerRoomCode}</Text></p>}
-          {grabbedOrder.customFields?.customerPlatformAccount && <p>平台账号：<Text copyable>{grabbedOrder.customFields.customerPlatformAccount}</Text></p>}
-          {grabbedOrder.customFields?.deltaMode && <p>模式：{grabbedOrder.customFields.deltaMode} {grabbedOrder.customFields.deltaMission||''} {grabbedOrder.customFields.deltaCount||''}</p>}
-        </>}
+        {grabbedOrder && <div style={{ fontSize: 14, lineHeight: 2 }}>
+          <div>游戏：<Text strong>{grabbedOrder.gameName}</Text> ｜ ¥{grabbedOrder.amount} ｜ {grabbedOrder.duration}h</div>
+          {grabbedOrder.customer?.customerCode && <div>客户编号：<Text copyable>{grabbedOrder.customer.customerCode}</Text></div>}
+          {grabbedOrder.customFields?.customerSource && <div>来源：<Text copyable>{grabbedOrder.customFields.customerSource}</Text></div>}
+          {grabbedOrder.customFields?.customerRoomCode && <div>房间码：<Text copyable>{grabbedOrder.customFields.customerRoomCode}</Text></div>}
+          {grabbedOrder.customFields?.customerPlatformAccount && <div>平台账号：<Text copyable>{grabbedOrder.customFields.customerPlatformAccount}</Text></div>}
+          {grabbedOrder.customFields?.deltaMode && <div>模式：<Text copyable>{grabbedOrder.customFields.deltaMode} {grabbedOrder.customFields.deltaMission||''} {grabbedOrder.customFields.deltaCount||''}</Text></div>}
+        </div>}
       </Modal>
       {/* Chat Modal */}
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
