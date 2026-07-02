@@ -191,7 +191,7 @@ const PoolPage: React.FC = () => {
         <Text type="secondary">💡 抢单后可见客户联系方式和来源账号ID</Text>
       </Card>
 
-      <CreateOrderModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={fetchData} userId={(user as any)?.id} />
+      <CreateOrderModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={fetchData} userId={(user as any)?.id} defaultDeltaCount="双" />
       {/* Chat Modal */}
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
     </div>
