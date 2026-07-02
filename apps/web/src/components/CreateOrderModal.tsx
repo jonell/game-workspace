@@ -31,7 +31,7 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId })
   return (
     <Modal title="创建订单" open={open} onOk={handleOk} onCancel={() => { form.resetFields(); onClose(); }}
       confirmLoading={loading} okText="发布" cancelText="取消" destroyOnClose width={520}>
-      <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
+      <Form form={form} layout="vertical" style={{ marginTop: 16 }} initialValues={{ type:'NEW', dispatchType:DispatchType.POOL, urgency:'now', billingMode:'hour', duration:1, deltaMode:'陪玩', deltaCount:'单' }}>
         <Form.Item name="type" label="订单类型" initialValue="NEW" rules={[{ required: true }]}>
           <Select>{Object.entries(orderTypeConfig).map(([k,v]) => <Option key={k} value={k}>{v}</Option>)}</Select></Form.Item>
         <Form.Item name="gameName" label="游戏名称" rules={[{ required: true }]}>
