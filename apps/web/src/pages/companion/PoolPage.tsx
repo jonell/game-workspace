@@ -111,7 +111,7 @@ const PoolPage: React.FC = () => {
     try {
       const values = await createForm.validateFields();
       setCreateLoading(true);
-      await ordersApi.create({ ...values, dispatchType: 'POOL' });
+      await ordersApi.create({ ...values, dispatchType: 'POOL', csUserId: (user as any)?.id });
       message.success('订单已发布到抢单池');
       setCreateOpen(false); createForm.resetFields(); fetchData();
     } catch (e: any) { if (!e?.errorFields) message.error(e?.response?.data?.message||'发布失败'); }
@@ -170,6 +170,7 @@ const PoolPage: React.FC = () => {
               {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
               {order.customFields?.urgency === 'later' && <Col><Tag color="purple" style={{ margin: 0 }}>📅预约</Tag></Col>}
               {order.customFields?.urgency !== 'later' && <Col><Tag color="green" style={{ margin: 0 }}>⚡立即打</Tag></Col>}
+              <Col><Text type="secondary" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>发布:{order.csUser?.username || order.customFields?.createdBy || '未知'}</Text></Col>
               {order.companionId && <Col><Tag color="red" style={{ margin: 0, fontWeight: 600 }}>该订单客服指定给你接</Tag></Col>}
               {order.customFields?.billingMode === 'round'
                 ? <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯{order.duration || order.customFields?.deltaCount || '?'}局</Text></Col>
