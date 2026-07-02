@@ -375,6 +375,8 @@ const DispatchPage: React.FC = () => {
                           {order.customFields?.customerSource && <Col><Tag color="orange" style={{ margin: 0 }}>📡{order.customFields.customerSource}</Tag></Col>}
                           {order.customFields?.customerWechat && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>💬{order.customFields.customerWechat}</Text></Col>}
                           {order.customFields?.customerRoomCode && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>🏠{order.customFields.customerRoomCode}</Text></Col>}
+                          {order.customFields?.urgency === 'later' && <Col><Tag color="purple" style={{ margin: 0 }}>📅预约</Tag></Col>}
+                          {order.customFields?.urgency !== 'later' && <Col><Tag color="green" style={{ margin: 0 }}>⚡立即打</Tag></Col>}
                           {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
                           {order.customFields?.billingMode === 'round'
                             ? <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯{order.duration || order.customFields?.deltaCount || '?'}局</Text></Col>
@@ -521,6 +523,12 @@ const DispatchPage: React.FC = () => {
                 </Select>
               </Form.Item>
             ) : null}
+          </Form.Item>
+          <Form.Item name="urgency" label="打单时间" initialValue="now" style={{ marginBottom: 8 }}>
+            <Select>
+              <Option value="now">⚡立即打</Option>
+              <Option value="later">📅预约</Option>
+            </Select>
           </Form.Item>
           <Form.Item label="客户预留信息" style={{ marginBottom: 8 }}>
             <Input.Group compact>

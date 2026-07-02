@@ -149,6 +149,8 @@ const PoolPage: React.FC = () => {
               {order.customer?.customerCode && <Col><Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>👤{order.customer.customerCode}</Text></Col>}
               {(order.customFields?.customerSource || order.customer?.platform) && <Col><Tag color="orange" style={{ margin: 0 }}>📡{order.customFields?.customerSource || order.customer?.platform}</Tag></Col>}
               {order.customFields?.deltaNote && <Col><Text type="warning" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>📝{order.customFields.deltaNote}</Text></Col>}
+              {order.customFields?.urgency === 'later' && <Col><Tag color="purple" style={{ margin: 0 }}>📅预约</Tag></Col>}
+              {order.customFields?.urgency !== 'later' && <Col><Tag color="green" style={{ margin: 0 }}>⚡立即打</Tag></Col>}
               {order.companionId && <Col><Tag color="red" style={{ margin: 0, fontWeight: 600 }}>该订单客服指定给你接</Tag></Col>}
               {order.customFields?.billingMode === 'round'
                 ? <Col><Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>🎯{order.duration || order.customFields?.deltaCount || '?'}局</Text></Col>
