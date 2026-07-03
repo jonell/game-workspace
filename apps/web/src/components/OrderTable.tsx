@@ -1,17 +1,11 @@
 import React from 'react';
-import { Table, Tag, Typography, Space, Badge } from 'antd';
+import { Table, Tag, Typography, Space } from 'antd';
+import { orderTypeConfig, orderStatusConfig } from '../constants';
 
 const { Text } = Typography;
 
-const typeConfig: Record<string, { color: string; label: string }> = {
-  NEW: { color: 'blue', label: '首单' }, RENEW: { color: 'cyan', label: '续费' },
-  REPURCHASE: { color: 'purple', label: '复购' }, TIP: { color: 'orange', label: '打赏' },
-};
-const statusConfig: Record<string, { color: string; label: string }> = {
-  PENDING: { color: 'gold', label: '待派' }, GRABBED: { color: 'blue', label: '已抢' },
-  CONFIRMED: { color: 'green', label: '进行中' }, DONE: { color: 'green', label: '已完成' },
-  CANCELLED: { color: 'default', label: '已取消' },
-};
+const typeConfig = orderTypeConfig;
+const statusConfig = orderStatusConfig;
 
 interface Props {
   dataSource: any[]; loading?: boolean;
@@ -20,7 +14,7 @@ interface Props {
   showCompanion?: boolean;
 }
 
-const OrderTable: React.FC<Props> = ({ dataSource, loading, unreadMap = {}, renderActions, showCompanion }) => (
+const OrderTable: React.FC<Props> = ({ dataSource, loading, renderActions, showCompanion }) => (
   <Table size="small" dataSource={dataSource} rowKey="id" loading={loading}
     pagination={{ pageSize: 20, showTotal: (t: number) => `共 ${t} 条` }}
     columns={[
@@ -34,8 +28,8 @@ const OrderTable: React.FC<Props> = ({ dataSource, loading, unreadMap = {}, rend
       </>)},
       { title: '客户信息', key: 'customer', width: 130, render: (_: any, r: any) => (<>
         <Text style={{ fontSize: 12 }}>{r.customFields?.customerWechat || r.customer?.wechatId || '-'}</Text>
-        {r.customer?.customerCode && <br /><Text type="secondary" style={{ fontSize: 10 }}>{r.customer.customerCode}</Text>}
-        {r.customFields?.customerSource && <br /><Tag color="orange" style={{fontSize:10,margin:0}}>{r.customFields.customerSource}</Tag>}
+        {r.customer?.customerCode && <><br /><Text type="secondary" style={{ fontSize: 10 }}>{r.customer.customerCode}</Text></>}
+        {r.customFields?.customerSource && <><br /><Tag color="orange" style={{fontSize:10,margin:0}}>{r.customFields.customerSource}</Tag></>}
       </>)},
       { title: '标注', key: 'tags', width: 90, render: (_: any, r: any) => (<>
         {r.customFields?.urgency === 'later' ? <Tag color="purple" style={{fontSize:10,margin:'2px 0'}}>📅预约</Tag> : <Tag color="green" style={{fontSize:10,margin:'2px 0'}}>⚡立即打</Tag>}

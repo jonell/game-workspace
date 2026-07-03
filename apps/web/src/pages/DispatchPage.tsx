@@ -5,6 +5,8 @@ import {
   Card,
   Button,
   Modal,
+  Form,
+  Select,
   Tag,
   Typography,
   Space,
@@ -12,26 +14,37 @@ import {
   List,
   Spin,
   Badge,
+  Statistic,
+  Table,
+  Popconfirm,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { CompanionStatus, OrderType } from '@chunlv/shared';
-import { companionsApi } from '../../api/companions';
-import { ordersApi } from '../../api/orders';
-import { useAuthStore } from '../../stores/authStore';
-import { useSocket } from '../../hooks/useSocket';
-import ChatModal from '../../components/ChatModal';
-import CreateOrderModal from '../../components/CreateOrderModal';
+import {
+  PlusOutlined,
+  ReloadOutlined,
+  UserOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
+import { CompanionStatus, OrderType, OrderStatus, DispatchType, UserRole } from '@chunlv/shared';
+import { companionsApi } from '../api/companions';
+import { ordersApi } from '../api/orders';
+import { useAuthStore } from '../stores/authStore';
+import { useSocket } from '../hooks/useSocket';
+import ChatModal from '../components/ChatModal';
+import CreateOrderModal from '../components/CreateOrderModal';
+import {
+  orderTypeConfig,
+  orderStatusConfig,
+  companionStatusConfig,
+  dispatchTypeConfig,
+  STATUS_SORT,
+} from '../constants';
 
 const { Text } = Typography;
+const { Option } = Select;
 
-const STATUS_SORT: Record<string, number> = { IDLE: 0, ONLINE: 1, BUSY: 2, OFFLINE: 9 };
-
-const orderTypeConfig: Record<OrderType, { color: string; label: string }> = {
-  [OrderType.NEW]: { color: 'blue', label: '首单' },
-  [OrderType.RENEW]: { color: 'cyan', label: '续费' },
-  [OrderType.REPURCHASE]: { color: 'purple', label: '复购' },
-  [OrderType.TIP]: { color: 'orange', label: '打赏' },
-};
+// ──────────────────────────────────── Types ────────────────────────────────────
 
 interface Companion {
   id: string;
@@ -54,7 +67,27 @@ interface PoolOrder {
   csUser?: { username: string };
 }
 
-const DispatchPage: React.FC = () => {
+interface AdminOrder {
+  id: string;
+  gameName: string;
+  amount: number;
+  orderType: OrderType;
+  status: OrderStatus;
+  dispatchType: DispatchType;
+  createdAt: string;
+  customer?: { wechatId: string };
+  companion?: { id: string; username: string };
+}
+
+interface AdminCompanion {
+  id: string;
+  username: string;
+  status: CompanionStatus;
+}
+
+// ──────────────────────────────────── CS View ────────────────────────────────────
+
+const CSView: React.FC = () => {
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [poolOrders, setPoolOrders] = useState<PoolOrder[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
@@ -144,7 +177,6 @@ const DispatchPage: React.FC = () => {
     };
   }, [fetchPool, fetchCompanions]);
 
-
   // Chat notification tracking
   const chatIds = useAuthStore((s) => s.chatCompanionIds);
   const addChatCompanion = useAuthStore((s) => s.addChatCompanion);
@@ -188,7 +220,7 @@ const DispatchPage: React.FC = () => {
       </div>
 
       <Row gutter={12}>
-        {/* Left */}
+        {/* Left: Companion sidebar (3/24) */}
         <Col span={3}>
           <Card
             title="陪玩管理"
@@ -259,17 +291,11 @@ const DispatchPage: React.FC = () => {
                           <Text strong className={(unreadMap[c.id] || 0) > 0 ? 'pulse-badge' : ''}>{c.user?.username ?? c.id}</Text>
                         </Badge>
                       </Space>
-                      <Tag color={
-                        c.status === CompanionStatus.BUSY ? 'red' :
-                        c.status === CompanionStatus.IDLE ? 'green' :
-                        c.status === CompanionStatus.ONLINE ? 'gold' : 'default'
-                      }>
-                        {c.status === CompanionStatus.BUSY ? '接单中' :
-                         c.status === CompanionStatus.IDLE ? '空闲' :
-                         c.status === CompanionStatus.ONLINE ? '娱乐中' : '离线'}
+                      <Tag color={companionStatusConfig[c.status]?.color || 'default'}>
+                        {companionStatusConfig[c.status]?.label || c.status}
                       </Tag>
                     </div>
-                    {/* 游戏资料 */}
+                    {/* Game profile */}
                     {c.games && c.games.length > 0 && typeof c.games[0] === 'object' && (
                       <div style={{ marginTop: 4, marginLeft: 22, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                         {c.games.map((g: any, i: number) => (
@@ -286,7 +312,7 @@ const DispatchPage: React.FC = () => {
           </Card>
         </Col>
 
-        {/* Center: Order Pool (17/24) */}
+        {/* Center: Order Pool (18/24) */}
         <Col span={18}>
           <div style={{ position: 'relative', marginBottom: 16 }}>
             {/* Water wave header */}
@@ -368,7 +394,7 @@ const DispatchPage: React.FC = () => {
 
         {/* Right: Quick Stats (3/24) */}
         <Col span={3}>
-<Card title="统计" size="small" style={{ marginBottom: 16 }}>
+          <Card title="统计" size="small" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟢 空闲</span><b style={{ color: '#00E676' }}>{idleCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🔴 接单中</span><b style={{ color: '#FF4757' }}>{busyCount}</b></div>
@@ -385,8 +411,7 @@ const DispatchPage: React.FC = () => {
       {/* Chat Modal */}
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
 
-      {/* 陪玩详情弹窗 */}
-      {/* 陪玩详情弹窗 */}
+      {/* Companion detail modal */}
       <Modal title={null} open={!!selectedCompanion} onCancel={() => setSelectedCompanion(null)} footer={null} width={420} style={{ top: 60 }}>
         {selectedCompanion && (
           <div style={{ textAlign: 'center' }}>
@@ -400,14 +425,8 @@ const DispatchPage: React.FC = () => {
               animation: selectedCompanion.status !== CompanionStatus.OFFLINE ? 'pulse-glow 2s ease-in-out infinite' : 'none',
             }} />
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{selectedCompanion.user?.username ?? selectedCompanion.id}</div>
-            <Tag color={
-              selectedCompanion.status === CompanionStatus.BUSY ? 'red' :
-              selectedCompanion.status === CompanionStatus.IDLE ? 'green' :
-              selectedCompanion.status === CompanionStatus.ONLINE ? 'gold' : 'default'
-            }>
-              {selectedCompanion.status === CompanionStatus.BUSY ? '接单中' :
-               selectedCompanion.status === CompanionStatus.IDLE ? '空闲' :
-               selectedCompanion.status === CompanionStatus.ONLINE ? '娱乐中' : '离线'}
+            <Tag color={companionStatusConfig[selectedCompanion.status]?.color || 'default'}>
+              {companionStatusConfig[selectedCompanion.status]?.label || selectedCompanion.status}
             </Tag>
             <div style={{ marginTop: 16, textAlign: 'left', background: '#F8FAFC', borderRadius: 10, padding: 14 }}>
               {selectedCompanion.games && selectedCompanion.games.length > 0 && typeof selectedCompanion.games[0] === 'object' ? (
@@ -425,7 +444,448 @@ const DispatchPage: React.FC = () => {
           </div>
         )}
       </Modal>
+    </div>
+  );
+};
 
+// ──────────────────────────────────── Admin View ────────────────────────────────────
+
+const AdminView: React.FC = () => {
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>();
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedCompanionId, setSelectedCompanionId] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
+  const [adminCompanions, setAdminCompanions] = useState<AdminCompanion[]>([]);
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: any = {};
+      if (statusFilter) params.status = statusFilter;
+      const { data } = await ordersApi.list(params);
+      setOrders(data.data?.items ?? data.data ?? []);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '加载订单失败';
+      message.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter]);
+
+  const fetchAdminCompanions = useCallback(async () => {
+    try {
+      const { data } = await companionsApi.list();
+      setAdminCompanions(data.data ?? []);
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const openAssignModal = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setSelectedCompanionId('');
+    fetchAdminCompanions();
+    setAssignModalOpen(true);
+  };
+
+  const handleAssign = async () => {
+    if (!selectedOrderId || !selectedCompanionId) return;
+    setAssigning(true);
+    try {
+      await ordersApi.assign(selectedOrderId, selectedCompanionId);
+      message.success('派单成功');
+      setAssignModalOpen(false);
+      setSelectedOrderId(null);
+      setSelectedCompanionId('');
+      fetchOrders();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '派单失败';
+      message.error(msg);
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    try {
+      await ordersApi.cancel(id);
+      message.success('订单已取消');
+      fetchOrders();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || '取消失败';
+      message.error(msg);
+    }
+  };
+
+  // Stats
+  const pendingCount = orders.filter((o) => o.status === OrderStatus.PENDING).length;
+  const activeCount = orders.filter(
+    (o) => o.status === OrderStatus.GRABBED || o.status === OrderStatus.CONFIRMED
+  ).length;
+  const doneCount = orders.filter((o) => o.status === OrderStatus.DONE).length;
+  const cancelledCount = orders.filter((o) => o.status === OrderStatus.CANCELLED).length;
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 160,
+      ellipsis: true,
+    },
+    {
+      title: '游戏',
+      dataIndex: 'gameName',
+      key: 'gameName',
+      width: 120,
+    },
+    {
+      title: '客户',
+      key: 'customer',
+      width: 140,
+      render: (_: unknown, record: AdminOrder) => (
+        <Text>{record.customer?.wechatId ?? '-'}</Text>
+      ),
+    },
+    {
+      title: '金额',
+      dataIndex: 'amount',
+      key: 'amount',
+      width: 100,
+      render: (val: number) => `¥${val.toFixed(2)}`,
+    },
+    {
+      title: '类型',
+      dataIndex: 'orderType',
+      key: 'orderType',
+      width: 80,
+      render: (type: OrderType) => {
+        const cfg = orderTypeConfig[type];
+        return <Tag color={cfg?.color}>{cfg?.label ?? type}</Tag>;
+      },
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 90,
+      render: (status: OrderStatus) => {
+        const cfg = orderStatusConfig[status];
+        return <Tag color={cfg?.color}>{cfg?.label ?? status}</Tag>;
+      },
+    },
+    {
+      title: '派单方式',
+      dataIndex: 'dispatchType',
+      key: 'dispatchType',
+      width: 110,
+      render: (type: DispatchType) => {
+        const cfg = dispatchTypeConfig[type];
+        return <Tag color={cfg?.color}>{cfg?.label ?? type}</Tag>;
+      },
+    },
+    {
+      title: '陪玩',
+      key: 'companion',
+      width: 100,
+      render: (_: unknown, record: AdminOrder) => (
+        <Text>{record.companion?.username ?? <Text type="secondary">未分配</Text>}</Text>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 180,
+      render: (_: unknown, record: AdminOrder) => (
+        <Space size="small">
+          <Button
+            type="link"
+            size="small"
+            onClick={() => openAssignModal(record.id)}
+          >
+            指定陪玩
+          </Button>
+          {record.status !== OrderStatus.CANCELLED && (
+            <Popconfirm
+              title="确定取消该订单？"
+              onConfirm={() => handleCancel(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="link" size="small" danger>
+                取消
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {/* Stats Cards */}
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="待派"
+              value={pendingCount}
+              prefix={React.createElement(ClockCircleOutlined)}
+              valueStyle={{ color: '#1677ff' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="进行中"
+              value={activeCount}
+              prefix={React.createElement(UserOutlined)}
+              valueStyle={{ color: '#faad14' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="已完成"
+              value={doneCount}
+              prefix={React.createElement(CheckCircleOutlined)}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small">
+            <Statistic
+              title="已取消"
+              value={cancelledCount}
+              prefix={React.createElement(CloseCircleOutlined)}
+              valueStyle={{ color: '#ff4d4f' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Toolbar */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <div />
+        <Space>
+          <Select
+            allowClear
+            placeholder="全部状态"
+            style={{ width: 140 }}
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val)}
+          >
+            {Object.entries(orderStatusConfig).map(([key, cfg]) => (
+              <Option key={key} value={key}>
+                {cfg.label}
+              </Option>
+            ))}
+          </Select>
+          <Button
+            icon={React.createElement(ReloadOutlined)}
+            onClick={fetchOrders}
+            loading={loading}
+          >
+            刷新
+          </Button>
+        </Space>
+      </div>
+
+      {/* Orders Table */}
+      <Table
+        columns={columns}
+        dataSource={orders}
+        rowKey="id"
+        loading={loading}
+        locale={{ emptyText: '暂无订单数据' }}
+        pagination={{
+          pageSize: 20,
+          showSizeChanger: true,
+          showTotal: (total) => `共 ${total} 条订单`,
+        }}
+      />
+
+      {/* Assign Companion Modal */}
+      <Modal
+        title="指定陪玩"
+        open={assignModalOpen}
+        onOk={handleAssign}
+        onCancel={() => {
+          setAssignModalOpen(false);
+          setSelectedOrderId(null);
+          setSelectedCompanionId('');
+        }}
+        confirmLoading={assigning}
+        okText="确认派单"
+        cancelText="取消"
+        okButtonProps={{ disabled: !selectedCompanionId }}
+        destroyOnClose
+      >
+        <Form layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item label="选择陪玩">
+            <Select
+              showSearch
+              placeholder="请搜索陪玩"
+              value={selectedCompanionId || undefined}
+              onChange={(val) => setSelectedCompanionId(val)}
+              style={{ width: '100%' }}
+              filterOption={(input, option) => {
+                const label = option?.label ?? option?.children;
+                return String(label ?? '').toLowerCase().includes(input.toLowerCase());
+              }}
+            >
+              {adminCompanions
+                .filter(
+                  (c) =>
+                    c.status === CompanionStatus.IDLE ||
+                    c.status === CompanionStatus.ONLINE
+                )
+                .map((c) => (
+                  <Option key={c.id} value={c.id}>
+                    {c.username} ({companionStatusConfig[c.status]?.label})
+                  </Option>
+                ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
+
+// ──────────────────────────────────── Companion View ────────────────────────────────────
+
+const CompanionView: React.FC = () => {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: any = { all: 'true' };
+      if (statusFilter) params.status = statusFilter;
+      const { data } = await ordersApi.list(params);
+      setOrders(data.data?.items ?? data.data ?? []);
+    } catch {
+      message.error('加载失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div>
+          <Text strong style={{ fontSize: 16 }}>派单记录</Text>
+          <br /><Text type="secondary">查看全部派单历史</Text>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Select placeholder="全部状态" allowClear value={statusFilter || undefined}
+            onChange={(v) => setStatusFilter(v || '')} style={{ width: 120 }}>
+            {Object.entries(orderStatusConfig).map(([k, v]) => <Option key={k} value={k}>{v.label}</Option>)}
+          </Select>
+          <Button icon={React.createElement(ReloadOutlined)} onClick={fetch} loading={loading}>刷新</Button>
+        </div>
+      </div>
+      <Table size="small" dataSource={orders} rowKey="id" loading={loading}
+        columns={[
+          { title: '游戏', dataIndex: 'gameName', width: 120 },
+          { title: '类型', dataIndex: 'type', width: 80, render: (t: string) => <Tag color={orderTypeConfig[t]?.color}>{orderTypeConfig[t]?.label || t}</Tag> },
+          { title: '接单人', key: 'companion', width: 100,
+            render: (_: any, r: any) => r.companion?.user?.username ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B61FF', color: '#FFF',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+                  {r.companion.user.username[0].toUpperCase()}
+                </span>
+                <Text>{r.companion.user.username}</Text>
+              </span>
+            ) : <Text type="secondary">-</Text>
+          },
+          { title: '状态', dataIndex: 'status', width: 80, render: (s: string) => <Tag color={orderStatusConfig[s]?.color}>{orderStatusConfig[s]?.label || s}</Tag> },
+          { title: '金额', dataIndex: 'amount', width: 100, render: (v: number) => <span style={{ color: '#FF4757', fontWeight: 600 }}>¥{v?.toFixed(2)}</span> },
+          { title: '客户', key: 'wx', width: 130, render: (_: any, r: any) => r.customFields?.customerWechat || r.customer?.wechatId || '-' },
+          { title: '时间', dataIndex: 'createdAt', render: (v: string) => v ? new Date(v).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-' },
+        ]}
+        pagination={{ pageSize: 20, showTotal: (t: number) => `共 ${t} 条` }}
+      />
+    </div>
+  );
+};
+
+// ──────────────────────────────────── Unified DispatchPage ────────────────────────────────────
+
+const DispatchPage: React.FC = () => {
+  const user = useAuthStore((s) => s.user);
+  const role = user?.role;
+
+  const getHeaderTitle = () => {
+    switch (role) {
+      case UserRole.COMPANION:
+        return '派单记录';
+      case UserRole.CS:
+      case UserRole.ADMIN:
+      case UserRole.OWNER:
+      default:
+        return '派单管理';
+    }
+  };
+
+  const renderView = () => {
+    switch (role) {
+      case UserRole.COMPANION:
+        return <CompanionView />;
+      case UserRole.CS:
+        return <CSView />;
+      case UserRole.ADMIN:
+      case UserRole.OWNER:
+        return <AdminView />;
+      default:
+        return (
+          <div style={{ textAlign: 'center', padding: 48 }}>
+            <Text type="secondary">无法加载派单页面</Text>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <Text strong style={{ fontSize: 16 }}>
+          {getHeaderTitle()}
+        </Text>
+      </div>
+      {renderView()}
     </div>
   );
 };
