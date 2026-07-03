@@ -4,11 +4,16 @@ import {
 } from 'antd';
 import {
   PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, SwapOutlined,
+  MessageOutlined, CalendarOutlined, PlayCircleOutlined, SendOutlined,
 } from '@ant-design/icons';
 import { customersApi } from '../api/customers';
 import { companionsApi } from '../api/companions';
+import { ordersApi } from '../api/orders';
+import http from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import { platformOptions, customerStatusConfig, orderTypeConfig, urgencyConfig, billingModeConfig } from '../constants';
+import ChatModal from '../components/ChatModal';
+import CreateOrderModal from '../components/CreateOrderModal';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -23,6 +28,7 @@ interface Customer {
   totalSpent: number;
   status: string;
   companion?: { id: string; username: string };
+  orders?: Array<{ id: string; gameName: string; type: string; amount: number; duration: number; customFields: any }>;
 }
 
 interface CompanionOption { id: string; username: string }
@@ -39,6 +45,36 @@ const CustomersPage: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Companion: chat, create order, schedule
+  const [chatPartner, setChatPartner] = useState<{ name: string; orderId: string; orderInfo?: string } | null>(null);
+  const [createOrderOpen, setCreateOrderOpen] = useState(false);
+
+  const openChat = (record: Customer) => {
+    const o = record.orders?.[0];
+    setChatPartner({ name: record.wechatId || record.customerCode, orderId: o?.id || '',
+      orderInfo: o ? `👤${record.customerCode} · ${o.gameName}` : `👤${record.customerCode}` });
+  };
+  const startService = async (record: Customer) => {
+    if (!user?.companionId) { message.warning('未绑定陪玩身份'); return; }
+    try {
+      await ordersApi.create({ type: 'NEW', gameName: record.orders?.[0]?.gameName || '三角洲行动',
+        amount: record.orders?.[0]?.amount || 0, dispatchType: 'DIRECT', companionId: user.companionId,
+        customerId: record.id, customerWechat: record.wechatId, csUserId: user.id, urgency: 'now' });
+      message.success('已创建订单并指定给你'); fetchCustomers();
+    } catch (e: any) { message.error(e?.response?.data?.message || '创建失败'); }
+  };
+  const scheduleReminder = async (record: Customer) => {
+    const dt = prompt('预约时间 (YYYY-MM-DD HH:mm)', '');
+    if (!dt) return;
+    try { await http.put(`/orders/${record.orders?.[0]?.id}/contact`, { scheduledAt: new Date(dt).toISOString() });
+      message.success(`已设置预约: ${dt}`); fetchCustomers(); } catch (e: any) { message.error(e?.response?.data?.message || '设置失败'); }
+  };
+  const editNotes = (record: Customer) => {
+    const notes = prompt('备注', record.notes || '');
+    if (notes === null) return;
+    customersApi.update(record.id, { notes }).then(() => { message.success('备注已更新'); fetchCustomers(); }).catch((e: any) => message.error(e?.response?.data?.message || '更新失败'));
+  };
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -152,7 +188,22 @@ const CustomersPage: React.FC = () => {
     { title: '备注', dataIndex: 'notes', key: 'notes', render: (v: string) => v || '-' },
   ];
 
-  if (!isCompanion) {
+  if (isCompanion) {
+    columns.push({
+      title: '操作', key: 'actions', width: 280,
+      render: (_: unknown, record: Customer) => (
+        <Space size="small" wrap>
+          {record.orders?.[0]?.id && (
+            <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(record)}>沟通</Button>
+          )}
+          <Button type="primary" size="small" icon={React.createElement(PlayCircleOutlined)} onClick={() => startService(record)}>开始服务</Button>
+          <Button size="small" icon={React.createElement(SendOutlined)} onClick={() => setCreateOrderOpen(true)}>发布订单</Button>
+          <Button size="small" icon={React.createElement(CalendarOutlined)} onClick={() => scheduleReminder(record)}>预约时间</Button>
+          <Button size="small" icon={React.createElement(EditOutlined)} onClick={() => editNotes(record)}>备注</Button>
+        </Space>
+      ),
+    });
+  } else {
     columns.push({
       title: '操作', key: 'actions', width: canReassign ? 260 : 160,
       render: (_: unknown, record: Customer) => (
@@ -203,6 +254,8 @@ const CustomersPage: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+      <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
+      <CreateOrderModal open={createOrderOpen} onClose={() => setCreateOrderOpen(false)} onCreated={fetchCustomers} userId={user?.id} defaultDeltaCount="单" />
     </div>
   );
 };
