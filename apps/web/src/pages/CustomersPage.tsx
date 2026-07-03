@@ -152,9 +152,6 @@ const CustomersPage: React.FC = () => {
   const columns: any[] = [
     { title: '客户编号', dataIndex: 'customerCode', key: 'customerCode', width: 140 },
     { title: '微信号', dataIndex: 'wechatId', key: 'wechatId' },
-    { title: '平台', dataIndex: 'platform', key: 'platform', width: 90,
-      render: (platform: string) => { const found = platformOptions.find((o) => o.value === platform); return <Tag>{found?.label ?? platform}</Tag>; } },
-    { title: '平台账号', dataIndex: 'platformAccount', key: 'platformAccount', width: 120, render: (v: string) => v || '-' },
     { title: '最近订单', key: 'lastOrder', width: 220, render: (_: any, r: any) => {
       const o = r.orders?.[0];
       if (!o) return <Text type="secondary">-</Text>;
