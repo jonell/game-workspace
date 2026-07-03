@@ -82,6 +82,7 @@ export class OrdersService {
           deltaCount: (dto as any).deltaCount,
           deltaNote: (dto as any).deltaNote,
           billingMode: (dto as any).billingMode,
+          urgency: (dto as any).urgency,
         },
         isOnline: dto.isOnline ?? true,
       },
