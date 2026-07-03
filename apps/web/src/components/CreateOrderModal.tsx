@@ -78,8 +78,10 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, d
             </Form.Item>
           </>) : null}
         </Form.Item>
+        {!customerPreFill?.companionSelfId && (
         <Form.Item name="urgency" label="打单时间" initialValue="now">
           <Select><Option value="now">⚡立即打</Option><Option value="later">📅预约</Option></Select></Form.Item>
+        )}
         <Form.Item label="客户来源">
           <Form.Item name="customerSource" noStyle><Select placeholder="来源"><Option value="小红书">小红书</Option><Option value="抖音">抖音</Option><Option value="快手">快手</Option><Option value="转介绍">转介绍</Option></Select></Form.Item>
         </Form.Item>
