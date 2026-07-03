@@ -111,6 +111,7 @@ const AppLayout: React.FC = () => {
 
   // ── Assignment invite popup ──
   const [invitePopup, setInvitePopup] = React.useState<any>(null);
+  const [inviteDetail, setInviteDetail] = React.useState<any>(null);
   const inviteTRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -442,9 +443,31 @@ const AppLayout: React.FC = () => {
         </div>
         <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
           <Button danger size="small" onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.declineAssignment(invitePopup.id); message.success('已拒绝'); setInvitePopup(null); } catch(e:any) { message.error(e?.response?.data?.message); } }} style={{ flex: 1 }}>拒绝</Button>
-          <Button type="primary" size="small" onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.acceptAssignment(invitePopup.id); message.success('已接单'); setInvitePopup(null); } catch(e:any) { message.error(e?.response?.data?.message); } }} style={{ flex: 1 }}>接单</Button>
+          <Button type="primary" size="small" onClick={async () => { try { const { ordersApi } = await import('../api/orders'); const r = await ordersApi.acceptAssignment(invitePopup.id); setInvitePopup(null); setInviteDetail(r.data.data || invitePopup); } catch(e:any) { message.error(e?.response?.data?.message); } }} style={{ flex: 1 }}>接单</Button>
         </div>
         <Typography.Text type="secondary" style={{ fontSize: 10, display: 'block', marginTop: 6 }}>⏱ 15 秒后自动消失</Typography.Text>
+      </div>
+    )}
+    {/* Accepted invite detail modal */}
+    {inviteDetail && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setInviteDetail(null)}>
+        <div style={{ background: '#FFF', borderRadius: 16, padding: 28, maxWidth: 440, width: '90%', boxShadow: '0 16px 48px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
+          <Typography.Title level={4} style={{ marginBottom: 16 }}>📋 订单详情</Typography.Title>
+          <div style={{ lineHeight: 2.2 }}>
+            <div>🎮 游戏：<Typography.Text strong>{inviteDetail.gameName}</Typography.Text></div>
+            <div>💰 金额：<Typography.Text strong style={{ color: '#FF4757' }}>¥{Number(inviteDetail.amount).toFixed(0)}</Typography.Text></div>
+            {inviteDetail.customFields?.deltaMode && <div>🎯 模式：{inviteDetail.customFields.deltaMode} {inviteDetail.customFields.deltaMission||''} {inviteDetail.customFields.deltaCount||''}</div>}
+            {inviteDetail.customFields?.customerWechat && <div>💬 微信：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerWechat}</Typography.Text></div>}
+            {inviteDetail.customFields?.customerRoomCode && <div>🏠 房间码：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerRoomCode}</Typography.Text></div>}
+            {inviteDetail.customFields?.customerYy && <div>📞 YY号：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerYy}</Typography.Text></div>}
+            {inviteDetail.customFields?.customerPlatformAccount && <div>🎙 KOOK号：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerPlatformAccount}</Typography.Text></div>}
+          </div>
+          <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
+            <Button size="large" onClick={() => setInviteDetail(null)} style={{ flex: 1 }}>关闭</Button>
+            <Button type="primary" size="large" style={{ flex: 1, background: '#52c41a', borderColor: '#52c41a' }}
+              onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.confirm(inviteDetail.id); message.success('已开始服务'); setInviteDetail(null); } catch(e:any) { message.error(e?.response?.data?.message); } }}>开始服务</Button>
+          </div>
+        </div>
       </div>
     )}
     </>
