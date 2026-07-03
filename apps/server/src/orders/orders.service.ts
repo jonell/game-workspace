@@ -193,6 +193,26 @@ export class OrdersService {
     return updatedOrder;
   }
 
+  async republish(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new (require('@nestjs/common').NotFoundException)('订单不存在');
+    return this.prisma.order.create({
+      data: {
+        type: order.type,
+        studioId: order.studioId,
+        csUserId: userId,
+        customerId: order.customerId,
+        dispatchType: 'POOL',
+        amount: order.amount,
+        gameName: order.gameName,
+        duration: order.duration,
+        customFields: order.customFields as any,
+        status: 'PENDING',
+      },
+      include: { csUser: { select: { username: true, avatar: true, displayName: true, role: true } } },
+    });
+  }
+
   async assign(orderId: string, companionId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('订单不存在');

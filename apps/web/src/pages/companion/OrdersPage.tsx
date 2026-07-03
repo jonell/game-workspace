@@ -252,14 +252,20 @@ const OrdersPage: React.FC = () => {
                     沟通
                   </Button>
                 </Badge>
-                {r.status === 'GRABBED' && (
+                {r.status === 'GRABBED' && (<>
+                  <Button size="small" onClick={async () => {
+                    try { await http.post(`/orders/${r.id}/republish`); message.success('已发布到抢单池'); fetch(); }
+                    catch(e:any) { message.error(e?.response?.data?.message||'发布失败'); }
+                  }}>
+                    发布到抢单池
+                  </Button>
                   <Button type="primary" size="small" onClick={async () => {
                     try { await http.post(`/orders/${r.id}/confirm`); message.success('已开始服务'); fetch(); }
                     catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
                   }}>
                     开始服务
                   </Button>
-                )}
+                </>)}
                 {r.status === 'CONFIRMED' && (
                   <Button type="primary" size="small" onClick={() => openSettleModal(r)}>
                     结束服务

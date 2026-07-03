@@ -60,6 +60,16 @@ export class OrdersController {
     return { code: 200, message: '抢单成功', data };
   }
 
+  @Post('orders/:id/republish')
+  @Roles(UserRole.COMPANION)
+  async republish(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.republish(id, req.user.id);
+    return { code: 200, message: '已发布到抢单池', data };
+  }
+
   @Get('orders/pool/status')
   @Roles(UserRole.COMPANION)
   async getPoolStatus(@Req() req: any): Promise<ApiResponse<unknown>> {
