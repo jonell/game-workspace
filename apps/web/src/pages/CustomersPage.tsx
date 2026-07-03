@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag, DatePicker,
+  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag, DatePicker, ConfigProvider,
 } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import {
@@ -276,15 +276,17 @@ const CustomersPage: React.FC = () => {
       </Modal>
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
       <CreateOrderModal open={createOrderOpen} onClose={() => setCreateOrderOpen(false)} onCreated={fetchCustomers} userId={user?.id} defaultDeltaCount="单" />
-      <Modal title="预约时间" open={scheduleModalOpen} onOk={handleSchedule} onCancel={() => setScheduleModalOpen(false)}
-        okText="确认预约" cancelText="取消" destroyOnClose>
-        <div style={{ marginTop: 16 }}>
-          <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
-          <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
-            locale={zhCN.DatePicker as any} value={scheduleTime} onChange={(v) => setScheduleTime(v)}
-            style={{ width: '100%' }} />
-        </div>
-      </Modal>
+      <ConfigProvider locale={zhCN}>
+        <Modal title="预约时间" open={scheduleModalOpen} onOk={handleSchedule} onCancel={() => setScheduleModalOpen(false)}
+          okText="确认预约" cancelText="取消" destroyOnClose>
+          <div style={{ marginTop: 16 }}>
+            <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
+            <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
+              value={scheduleTime} onChange={(v) => setScheduleTime(v)}
+              style={{ width: '100%' }} />
+          </div>
+        </Modal>
+      </ConfigProvider>
     </div>
   );
 };
