@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Tag, Typography, Button, message, Select, Modal, Input, InputNumber, Checkbox, Upload, Space, Divider, DatePicker, Badge, Popconfirm } from 'antd';
+import { Table, Tag, Typography, Button, message, Select, Modal, Input, InputNumber, Checkbox, Upload, Space, Divider, DatePicker, Badge } from 'antd';
 import { ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import http from '../../api/client';
 import { ordersApi } from '../../api/orders';
-import { useAuthStore } from '../../stores/authStore';
 import ChatModal from '../../components/ChatModal';
 
 const { Text } = Typography;
@@ -229,7 +228,12 @@ const OrdersPage: React.FC = () => {
               </span>
             ) : <Text type="secondary">-</Text>
           },
-          { title: '状态', dataIndex: 'status', width: 80, render: (s: string) => <Tag color={statusConfig[s]?.color}>{statusConfig[s]?.label||s}</Tag> },
+          { title: '状态', key: 'contact', width: 130, render: (_: any, r: any) => (<>
+            <Tag color={statusConfig[r.status]?.color}>{statusConfig[r.status]?.label||r.status}</Tag>
+            {r.contactStatus === 'added' && <Tag color="green">已添加</Tag>}
+            {r.contactStatus === 'not_accepted' && <Tag color="orange">未同意</Tag>}
+            {r.scheduledAt && <div><Text type="secondary" style={{ fontSize: 11 }}>📅{new Date(r.scheduledAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</Text></div>}
+          </>)},
           { title: '创建时间', dataIndex: 'createdAt', width: 150, render: (v: string) => v ? new Date(v).toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-' },
           { title: '抢单时间', dataIndex: 'grabbedAt', width: 150, render: (v: string, r: any) => {
             const t = v || r.createdAt;
@@ -252,20 +256,43 @@ const OrdersPage: React.FC = () => {
                     沟通
                   </Button>
                 </Badge>
-                {r.status === 'GRABBED' && (<>
-                  <Button size="small" onClick={async () => {
-                    try { await http.post(`/orders/${r.id}/republish`); message.success('已发布到抢单池'); fetch(); }
-                    catch(e:any) { message.error(e?.response?.data?.message||'发布失败'); }
+                {r.status === 'GRABBED' && !r.contactStatus && (<>
+                  <Button type="primary" size="small" onClick={async () => {
+                    try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'added' }); message.success('已标记'); fetch(); }
+                    catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
                   }}>
-                    发布到抢单池
+                    已添加联系方式
                   </Button>
+                  <Button size="small" onClick={async () => {
+                    try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'not_accepted' }); message.success('已标记'); fetch(); }
+                    catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
+                  }}>
+                    已添加未同意
+                  </Button>
+                </>)}
+                {r.status === 'GRABBED' && r.contactStatus === 'added' && (<>
                   <Button type="primary" size="small" onClick={async () => {
                     try { await http.post(`/orders/${r.id}/confirm`); message.success('已开始服务'); fetch(); }
                     catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
                   }}>
                     开始服务
                   </Button>
+                  <Button size="small" onClick={async () => {
+                    try { await http.post(`/orders/${r.id}/republish`); message.success('已发布到抢单池'); fetch(); }
+                    catch(e:any) { message.error(e?.response?.data?.message||'发布失败'); }
+                  }}>
+                    发布到抢单池
+                  </Button>
+                  <Button size="small" onClick={() => {
+                    const dt = prompt('预约时间 (YYYY-MM-DD HH:mm)', '');
+                    if (dt) http.put(`/orders/${r.id}/contact`, { scheduledAt: new Date(dt).toISOString() }).then(()=>{message.success('已预约'); fetch();}).catch((e:any)=>message.error(e?.response?.data?.message||'失败'));
+                  }}>
+                    预约时间
+                  </Button>
                 </>)}
+                {r.status === 'GRABBED' && r.contactStatus === 'not_accepted' && (
+                  <Tag color="orange">待客户同意</Tag>
+                )}
                 {r.status === 'CONFIRMED' && (<>
                   <Button size="small" onClick={async () => {
                     try { await http.post(`/orders/${r.id}/renew`); message.success('已续单'); fetch(); }

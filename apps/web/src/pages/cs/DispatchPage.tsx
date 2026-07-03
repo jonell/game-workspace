@@ -5,10 +5,6 @@ import {
   Card,
   Button,
   Modal,
-  Form,
-  Input,
-  Select,
-  InputNumber,
   Tag,
   Typography,
   Space,
@@ -18,17 +14,15 @@ import {
   Badge,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { CompanionStatus, OrderType, DispatchType } from '@chunlv/shared';
+import { CompanionStatus, OrderType } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
 import { ordersApi } from '../../api/orders';
-import http from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import { useSocket } from '../../hooks/useSocket';
 import ChatModal from '../../components/ChatModal';
 import CreateOrderModal from '../../components/CreateOrderModal';
 
 const { Text } = Typography;
-const { Option } = Select;
 
 const STATUS_SORT: Record<string, number> = { IDLE: 0, ONLINE: 1, BUSY: 2, OFFLINE: 9 };
 
@@ -69,7 +63,6 @@ const DispatchPage: React.FC = () => {
   const [loadingCompanions, setLoadingCompanions] = useState(false);
   const [loadingPool, setLoadingPool] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
@@ -88,8 +81,6 @@ const DispatchPage: React.FC = () => {
     const t = setInterval(read, 2000);
     return () => clearInterval(t);
   }, []);
-  const [gameOptions, setGameOptions] = useState<string[]>([]);
-  const [form] = Form.useForm();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchCompanions = useCallback(async () => {
@@ -128,10 +119,6 @@ const DispatchPage: React.FC = () => {
   useEffect(() => {
     fetchCompanions();
     fetchPool();
-    http.get('/settings').then(({ data }) => {
-      const games = (data.data?.games ?? []);
-      setGameOptions(['三角洲行动', ...games.filter((g: string) => g !== '三角洲行动')]);
-    }).catch(() => {});
   }, [fetchCompanions, fetchPool]);
 
   // WebSocket real-time: refresh pool on order updates
@@ -157,23 +144,6 @@ const DispatchPage: React.FC = () => {
     };
   }, [fetchPool, fetchCompanions]);
 
-  const handleCreateOrder = async () => {
-    try {
-      const values = await form.validateFields();
-      setSubmitting(true);
-      await ordersApi.create(values);
-      message.success('订单已创建');
-      setModalOpen(false);
-      form.resetFields();
-      fetchPool();
-    } catch (err: any) {
-      if (err?.errorFields) return;
-      const msg = err?.response?.data?.message || err?.message || '创建失败';
-      message.error(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   // Chat notification tracking
   const chatIds = useAuthStore((s) => s.chatCompanionIds);
@@ -211,13 +181,7 @@ const DispatchPage: React.FC = () => {
         <Button
           type="primary"
           icon={React.createElement(PlusOutlined)}
-          onClick={() => {
-            form.setFieldsValue({
-              type: 'NEW', gameName: '三角洲行动', dispatchType: DispatchType.POOL,
-              billingMode: 'hour', duration: 1, deltaMode: '陪玩', deltaCount: '单',
-            });
-            setModalOpen(true);
-          }}
+          onClick={() => setModalOpen(true)}
         >
           创建订单
         </Button>

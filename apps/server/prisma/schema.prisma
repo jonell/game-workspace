@@ -112,8 +112,12 @@ model Order {
   duration     Float?
   customFields Json?
   isOnline     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  grabbedAt    DateTime?
+  createdAt       DateTime @default(now())
+  grabbedAt       DateTime?
+  contactStatus   String?
+  screenshotUrl   String?
+  scheduledAt     DateTime?
+  notes           String?
 
   studio       Studio        @relation(fields: [studioId], references: [id])
   csUser       User          @relation("CSUser", fields: [csUserId], references: [id])

@@ -68,6 +68,13 @@ export class OrdersController {
     return { code: 200, message: '已改价', data };
   }
 
+  @Put('orders/:id/contact')
+  @Roles(UserRole.COMPANION)
+  async updateContact(@Param('id') id: string, @Body() body: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.updateContact(id, body);
+    return { code: 200, message: '已更新', data };
+  }
+
   @Post('orders/:id/renew')
   @Roles(UserRole.COMPANION)
   async renew(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {

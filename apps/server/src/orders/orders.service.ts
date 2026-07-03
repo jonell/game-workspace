@@ -193,6 +193,15 @@ export class OrdersService {
     return updatedOrder;
   }
 
+  async updateContact(orderId: string, body: any) {
+    const data: any = {};
+    if (body.contactStatus !== undefined) data.contactStatus = body.contactStatus;
+    if (body.scheduledAt !== undefined) data.scheduledAt = new Date(body.scheduledAt);
+    if (body.notes !== undefined) data.notes = body.notes;
+    if (body.screenshotUrl !== undefined) data.screenshotUrl = body.screenshotUrl;
+    return this.prisma.order.update({ where: { id: orderId }, data });
+  }
+
   async updateAmount(orderId: string, amount: number) {
     return this.prisma.order.update({ where: { id: orderId }, data: { amount } });
   }
