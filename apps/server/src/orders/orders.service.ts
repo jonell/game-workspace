@@ -193,6 +193,26 @@ export class OrdersService {
     return updatedOrder;
   }
 
+  async renew(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new (require('@nestjs/common').NotFoundException)('订单不存在');
+    return this.prisma.order.create({
+      data: {
+        type: 'RENEW',
+        studioId: order.studioId,
+        csUserId: userId,
+        customerId: order.customerId,
+        companionId: order.companionId,
+        dispatchType: 'DIRECT',
+        amount: order.amount,
+        gameName: order.gameName,
+        duration: order.duration,
+        customFields: { ...(order.customFields as any || {}), renewedFrom: orderId },
+        status: 'CONFIRMED',
+      },
+    });
+  }
+
   async republish(orderId: string, userId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new (require('@nestjs/common').NotFoundException)('订单不存在');

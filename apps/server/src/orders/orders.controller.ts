@@ -60,6 +60,13 @@ export class OrdersController {
     return { code: 200, message: '抢单成功', data };
   }
 
+  @Post('orders/:id/renew')
+  @Roles(UserRole.COMPANION)
+  async renew(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.renew(id, req.user.id);
+    return { code: 200, message: '已续单', data };
+  }
+
   @Post('orders/:id/republish')
   @Roles(UserRole.COMPANION)
   async republish(

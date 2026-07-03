@@ -266,11 +266,17 @@ const OrdersPage: React.FC = () => {
                     开始服务
                   </Button>
                 </>)}
-                {r.status === 'CONFIRMED' && (
+                {r.status === 'CONFIRMED' && (<>
+                  <Button size="small" onClick={async () => {
+                    try { await http.post(`/orders/${r.id}/renew`); message.success('已续单'); fetch(); }
+                    catch(e:any) { message.error(e?.response?.data?.message||'续单失败'); }
+                  }}>
+                    续单
+                  </Button>
                   <Button type="primary" size="small" onClick={() => openSettleModal(r)}>
                     结束服务
                   </Button>
-                )}
+                </>)}
               </Space>
             ),
           },
