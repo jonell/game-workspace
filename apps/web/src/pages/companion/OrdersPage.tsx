@@ -257,13 +257,13 @@ const OrdersPage: React.FC = () => {
                   </Button>
                 </Badge>
                 {r.status === 'GRABBED' && !r.contactStatus && (<>
-                  <Button type="primary" size="small" onClick={async () => {
+                  <Button type="primary" size="small" style={{ background: '#52c41a', borderColor: '#52c41a' }} onClick={async () => {
                     try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'added' }); message.success('已标记'); fetch(); }
                     catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
                   }}>
-                    已添加联系方式
+                    联系方式添加成功
                   </Button>
-                  <Button size="small" onClick={async () => {
+                  <Button danger size="small" onClick={async () => {
                     try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'not_accepted' }); message.success('已标记'); fetch(); }
                     catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
                   }}>
