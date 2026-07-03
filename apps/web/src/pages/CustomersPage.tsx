@@ -193,17 +193,23 @@ const CustomersPage: React.FC = () => {
 
   if (isCompanion) {
     columns.push({
-      title: '备注', key: 'actions', width: 470, align: 'center',
+      title: '备注', key: 'notes', width: 280,
       render: (_: unknown, record: Customer) => (
-        <Space size={4} align="center">
+        <Input size="small" placeholder="输入备注"
+          style={{ width: '100%', maxWidth: 260 }}
+          value={notesEditing[record.id] ?? record.notes ?? ''}
+          onChange={(e) => setNotesEditing(prev => ({ ...prev, [record.id]: e.target.value }))}
+          onBlur={() => { const v = notesEditing[record.id]; if (v !== undefined && v !== record.notes) saveNotes(record.id, v); }}
+          onPressEnter={(e: any) => { e.target.blur(); }} />
+      ),
+    });
+    columns.push({
+      title: '操作', key: 'actions', width: 280,
+      render: (_: unknown, record: Customer) => (
+        <Space size={4}>
           {record.orders?.[0]?.id && (
             <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(record)}>沟通</Button>
           )}
-          <Input size="small" placeholder="备注" style={{ width: 260 }}
-            value={notesEditing[record.id] ?? record.notes ?? ''}
-            onChange={(e) => setNotesEditing(prev => ({ ...prev, [record.id]: e.target.value }))}
-            onBlur={() => { const v = notesEditing[record.id]; if (v !== undefined && v !== record.notes) saveNotes(record.id, v); }}
-            onPressEnter={(e: any) => { e.target.blur(); }} />
           <Button type="primary" size="small" icon={React.createElement(PlayCircleOutlined)} onClick={() => startService(record)}>开始服务</Button>
           <Button size="small" icon={React.createElement(SendOutlined)} onClick={() => setCreateOrderOpen(true)}>发布订单</Button>
           <Button size="small" icon={React.createElement(CalendarOutlined)} onClick={() => openScheduleModal(record)}>预约</Button>
