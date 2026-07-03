@@ -29,4 +29,7 @@ export class CreateOrderDto {
 
   // Billing
   @IsOptional() @IsString() billingMode?: string;
+
+  // Urgency
+  @IsOptional() @IsString() urgency?: string;
 }
