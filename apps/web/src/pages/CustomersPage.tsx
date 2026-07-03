@@ -285,7 +285,7 @@ const CustomersPage: React.FC = () => {
         okText="确认预约" cancelText="取消" destroyOnClose>
         <div style={{ marginTop: 16 }}>
           <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
-          <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="选择预约时间"
+          <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
             locale={locale} value={scheduleTime} onChange={(v) => setScheduleTime(v)}
             style={{ width: '100%' }} />
         </div>
