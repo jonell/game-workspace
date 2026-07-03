@@ -607,7 +607,6 @@ const OrderPoolPage: React.FC = () => {
             <p>📋 游戏：<Text strong>{inviteOrder.gameName}</Text></p>
             <p>💰 金额：<Text strong style={{ color: '#FF4757' }}>¥{Number(inviteOrder.amount).toFixed(0)}</Text></p>
             {inviteOrder.customFields?.deltaMode && <p>🎯 模式：{inviteOrder.customFields.deltaMode} {inviteOrder.customFields.deltaMission || ''} {inviteOrder.customFields.deltaCount || ''}</p>}
-            {inviteOrder.customFields?.customerWechat && <p>💬 客户微信：{inviteOrder.customFields.customerWechat}</p>}
             <p style={{ color: '#94A3B8', fontSize: 12 }}>⏱ 15 秒后自动消失</p>
           </div>
         )}
