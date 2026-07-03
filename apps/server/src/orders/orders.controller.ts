@@ -1,13 +1,5 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Param,
-  Body,
-  Query,
-  Req,
-  UseGuards,
+  Controller, Get, Post, Put, Param, Body, Query, Req, UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard, Roles } from '../auth/roles.guard';
@@ -23,14 +15,8 @@ export class OrdersController {
 
   @Post('orders')
   @Roles(UserRole.CS, UserRole.ADMIN, UserRole.OWNER, UserRole.COMPANION)
-  async create(
-    @Body() dto: CreateOrderDto,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.create({
-      ...dto,
-      csUserId: req.user.id,
-    });
+  async create(@Body() dto: CreateOrderDto, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.create({ ...dto, csUserId: req.user.id });
     return { code: 201, message: '创建成功', data };
   }
 
@@ -42,21 +28,14 @@ export class OrdersController {
 
   @Get('orders')
   @Roles(UserRole.CS, UserRole.ADMIN, UserRole.COMPANION, UserRole.OWNER)
-  async findAll(
-    @Req() req: any,
-    @Query('status') status?: string,
-    @Query('all') all?: string,
-  ): Promise<ApiResponse<unknown>> {
+  async findAll(@Req() req: any, @Query('status') status?: string, @Query('all') all?: string): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.findAll(req.user, status, all === 'true');
     return { code: 200, message: 'ok', data };
   }
 
   @Post('orders/:id/grab')
   @Roles(UserRole.COMPANION)
-  async grab(
-    @Param('id') id: string,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
+  async grab(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.grab(id, req.user.companionId);
     return { code: 200, message: '抢单成功', data };
   }
@@ -84,10 +63,7 @@ export class OrdersController {
 
   @Post('orders/:id/republish')
   @Roles(UserRole.COMPANION)
-  async republish(
-    @Param('id') id: string,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
+  async republish(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.republish(id, req.user.id);
     return { code: 200, message: '已发布到抢单池', data };
   }
@@ -100,70 +76,65 @@ export class OrdersController {
   }
 
   @Post('orders/:id/assign')
-  @Roles(UserRole.CS, UserRole.ADMIN)
-  async assign(
-    @Param('id') id: string,
-    @Body('companionId') companionId: string,
-  ): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.assign(id, companionId);
-    return { code: 200, message: '指派成功', data };
+  @Roles(UserRole.CS, UserRole.ADMIN, UserRole.COMPANION)
+  async assign(@Param('id') id: string, @Body('companionId') companionId: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const inviterName = req.user?.username;
+    const data = await this.ordersService.assign(id, companionId, inviterName);
+    return { code: 200, message: '已发送邀请', data };
+  }
+
+  @Post('orders/:id/accept-assignment')
+  @Roles(UserRole.COMPANION)
+  async acceptAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.acceptAssignment(id, req.user.companionId);
+    return { code: 200, message: '已接单', data };
+  }
+
+  @Post('orders/:id/decline-assignment')
+  @Roles(UserRole.COMPANION)
+  async declineAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.declineAssignment(id, req.user.companionId);
+    return { code: 200, message: '已拒绝', data };
   }
 
   @Post('orders/:id/confirm')
   @Roles(UserRole.COMPANION)
-  async confirm(
-    @Param('id') id: string,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
+  async confirm(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.confirm(id, req.user.companionId);
     return { code: 200, message: '确认成功', data };
   }
 
   @Post('orders/:id/complete')
   @Roles(UserRole.CS, UserRole.ADMIN, UserRole.COMPANION)
-  async complete(
-    @Param('id') id: string,
-  ): Promise<ApiResponse<unknown>> {
+  async complete(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.complete(id);
     return { code: 200, message: '完成成功', data };
   }
 
   @Post('orders/:id/complete-billing')
   @Roles(UserRole.COMPANION)
-  async completeWithBilling(
-    @Param('id') id: string,
-    @Req() req: any,
-    @Body() dto: any,
-  ): Promise<ApiResponse<unknown>> {
+  async completeWithBilling(@Param('id') id: string, @Req() req: any, @Body() dto: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.completeWithBilling(id, req.user.companionId, dto);
     return { code: 200, message: '服务结算完成', data };
   }
 
   @Post('orders/:id/cancel')
   @Roles(UserRole.CS, UserRole.ADMIN)
-  async cancel(
-    @Param('id') id: string,
-  ): Promise<ApiResponse<unknown>> {
+  async cancel(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.cancel(id);
     return { code: 200, message: '取消成功', data };
   }
 
   @Post('orders/:id/call-partner')
   @Roles(UserRole.COMPANION)
-  async callPartner(
-    @Param('id') id: string,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
+  async callPartner(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.callPartner(id, req.user.companionId);
     return { code: 200, message: 'ok', data };
   }
 
   @Post('orders/:id/accept-partner')
   @Roles(UserRole.COMPANION)
-  async acceptPartner(
-    @Param('id') id: string,
-    @Req() req: any,
-  ): Promise<ApiResponse<unknown>> {
+  async acceptPartner(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.acceptPartner(id, req.user.companionId);
     return { code: 200, message: 'ok', data };
   }

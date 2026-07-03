@@ -93,6 +93,16 @@ export class OrdersService {
       this.wsGateway.broadcastToStudio(studioId, 'order:pool_updated', newOrder);
     }
 
+    // DIRECT dispatch: notify the assigned companion
+    if (newOrder.dispatchType === 'DIRECT' && dto.companionId) {
+      const csUser = await this.prisma.user.findUnique({ where: { id: dto.csUserId }, select: { username: true } });
+      this.wsGateway.pushOrder(dto.companionId, {
+        ...newOrder,
+        _inviterName: csUser?.username || '系统',
+        _isAssignment: true,
+      });
+    }
+
     return newOrder;
   }
 
@@ -269,7 +279,7 @@ export class OrdersService {
     });
   }
 
-  async assign(orderId: string, companionId: string) {
+  async assign(orderId: string, companionId: string, inviterName?: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new NotFoundException('订单不存在');
     if (order.status !== OrderStatus.PENDING) {
@@ -281,9 +291,45 @@ export class OrdersService {
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { dispatchType: 'DIRECT', companionId },
+      include: { csUser: { select: { username: true } } },
     });
-    this.wsGateway.pushOrder(companionId, updatedOrder);
+    this.wsGateway.pushOrder(companionId, {
+      ...updatedOrder,
+      _inviterName: inviterName || updatedOrder.csUser?.username || '客服',
+      _isAssignment: true,
+    });
     return updatedOrder;
+  }
+
+  async acceptAssignment(orderId: string, companionId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.companionId !== companionId) throw new ForbiddenException('该订单未指派给你');
+    if (order.status !== OrderStatus.PENDING) throw new ForbiddenException('订单状态不正确');
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.GRABBED, grabbedAt: new Date() },
+      include: { csUser: { select: { username: true, avatar: true, displayName: true } }, companion: { include: { user: { select: { username: true } } } } },
+    });
+    if (updated.studioId) {
+      this.wsGateway.broadcastToStudio(updated.studioId, 'order:pool_updated', updated);
+    }
+    return updated;
+  }
+
+  async declineAssignment(orderId: string, companionId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.companionId !== companionId) throw new ForbiddenException('该订单未指派给你');
+    if (order.status !== OrderStatus.PENDING) throw new ForbiddenException('订单状态不正确');
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { companionId: null, dispatchType: 'POOL' },
+    });
+    if (updated.studioId) {
+      this.wsGateway.broadcastToStudio(updated.studioId, 'order:pool_updated', updated);
+    }
+    return updated;
   }
 
   async confirm(orderId: string, companionId: string) {
