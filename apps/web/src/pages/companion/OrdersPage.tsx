@@ -4,6 +4,7 @@ import { ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import http from '../../api/client';
 import { ordersApi } from '../../api/orders';
 import ChatModal from '../../components/ChatModal';
+import OrderTable from '../../components/OrderTable';
 
 const { Text } = Typography;
 const { Option } = Select;
