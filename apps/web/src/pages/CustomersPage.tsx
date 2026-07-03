@@ -240,6 +240,7 @@ const CustomersPage: React.FC = () => {
   }
 
   return (
+    <ConfigProvider locale={zhCN}>
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div><Text strong style={{ fontSize: 16 }}>客户管理</Text>{isCompanion && <><br /><Text type="secondary">管理我的客户信息</Text></>}</div>
@@ -276,18 +277,17 @@ const CustomersPage: React.FC = () => {
       </Modal>
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
       <CreateOrderModal open={createOrderOpen} onClose={() => setCreateOrderOpen(false)} onCreated={fetchCustomers} userId={user?.id} defaultDeltaCount="单" />
-      <ConfigProvider locale={zhCN}>
-        <Modal title="预约时间" open={scheduleModalOpen} onOk={handleSchedule} onCancel={() => setScheduleModalOpen(false)}
-          okText="确认预约" cancelText="取消" destroyOnClose>
-          <div style={{ marginTop: 16 }}>
-            <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
-            <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
-              value={scheduleTime} onChange={(v) => setScheduleTime(v)}
-              style={{ width: '100%' }} />
-          </div>
-        </Modal>
-      </ConfigProvider>
+      <Modal title="预约时间" open={scheduleModalOpen} onOk={handleSchedule} onCancel={() => setScheduleModalOpen(false)}
+        okText="确认预约" cancelText="取消" destroyOnClose>
+        <div style={{ marginTop: 16 }}>
+          <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
+          <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
+            value={scheduleTime} onChange={(v) => setScheduleTime(v)}
+            style={{ width: '100%' }} />
+        </div>
+      </Modal>
     </div>
+    </ConfigProvider>
   );
 };
 
