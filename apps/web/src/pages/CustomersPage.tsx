@@ -201,10 +201,10 @@ const CustomersPage: React.FC = () => {
           {record.orders?.[0]?.id && (
             <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(record)}>沟通</Button>
           )}
+          <Button size="small" icon={React.createElement(EditOutlined)} onClick={() => editNotes(record)}>备注</Button>
           <Button type="primary" size="small" icon={React.createElement(PlayCircleOutlined)} onClick={() => startService(record)}>开始服务</Button>
           <Button size="small" icon={React.createElement(SendOutlined)} onClick={() => setCreateOrderOpen(true)}>发布订单</Button>
           <Button size="small" icon={React.createElement(CalendarOutlined)} onClick={() => openScheduleModal(record)}>预约</Button>
-          <Button size="small" icon={React.createElement(EditOutlined)} onClick={() => editNotes(record)}>备注</Button>
         </Space>
       ),
     });
