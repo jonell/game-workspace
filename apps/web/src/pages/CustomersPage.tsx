@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag,
+  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag, DatePicker,
 } from 'antd';
 import {
   PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, SwapOutlined,
@@ -64,11 +64,20 @@ const CustomersPage: React.FC = () => {
       message.success('已创建订单并指定给你'); fetchCustomers();
     } catch (e: any) { message.error(e?.response?.data?.message || '创建失败'); }
   };
-  const scheduleReminder = async (record: Customer) => {
-    const dt = prompt('预约时间 (YYYY-MM-DD HH:mm)', '');
-    if (!dt) return;
-    try { await http.put(`/orders/${record.orders?.[0]?.id}/contact`, { scheduledAt: new Date(dt).toISOString() });
-      message.success(`已设置预约: ${dt}`); fetchCustomers(); } catch (e: any) { message.error(e?.response?.data?.message || '设置失败'); }
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleCustomer, setScheduleCustomer] = useState<Customer | null>(null);
+  const [scheduleTime, setScheduleTime] = useState<any>(null);
+
+  const openScheduleModal = (record: Customer) => {
+    setScheduleCustomer(record); setScheduleTime(null); setScheduleModalOpen(true);
+  };
+  const handleSchedule = async () => {
+    if (!scheduleTime || !scheduleCustomer) { message.warning('请选择预约时间'); return; }
+    try {
+      await http.put(`/orders/${scheduleCustomer.orders?.[0]?.id}/contact`, { scheduledAt: scheduleTime.toISOString() });
+      message.success(`已设置预约: ${scheduleTime.format('YYYY-MM-DD HH:mm')}`);
+      setScheduleModalOpen(false); fetchCustomers();
+    } catch (e: any) { message.error(e?.response?.data?.message || '设置失败'); }
   };
   const editNotes = (record: Customer) => {
     const notes = prompt('备注', record.notes || '');
@@ -195,7 +204,7 @@ const CustomersPage: React.FC = () => {
           )}
           <Button type="primary" size="small" icon={React.createElement(PlayCircleOutlined)} onClick={() => startService(record)}>开始服务</Button>
           <Button size="small" icon={React.createElement(SendOutlined)} onClick={() => setCreateOrderOpen(true)}>发布订单</Button>
-          <Button size="small" icon={React.createElement(CalendarOutlined)} onClick={() => scheduleReminder(record)}>预约</Button>
+          <Button size="small" icon={React.createElement(CalendarOutlined)} onClick={() => openScheduleModal(record)}>预约</Button>
           <Button size="small" icon={React.createElement(EditOutlined)} onClick={() => editNotes(record)}>备注</Button>
         </Space>
       ),
@@ -253,6 +262,15 @@ const CustomersPage: React.FC = () => {
       </Modal>
       <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
       <CreateOrderModal open={createOrderOpen} onClose={() => setCreateOrderOpen(false)} onCreated={fetchCustomers} userId={user?.id} defaultDeltaCount="单" />
+      <Modal title="预约时间" open={scheduleModalOpen} onOk={handleSchedule} onCancel={() => setScheduleModalOpen(false)}
+        okText="确认预约" cancelText="取消" destroyOnClose>
+        <div style={{ marginTop: 16 }}>
+          <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
+          <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="选择预约时间"
+            value={scheduleTime} onChange={(v) => setScheduleTime(v)}
+            style={{ width: '100%' }} />
+        </div>
+      </Modal>
     </div>
   );
 };
