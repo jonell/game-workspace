@@ -9,7 +9,7 @@ const { Option } = Select;
 const orderTypeConfig: Record<string,string> = { NEW:'首单', RENEW:'续单', REPURCHASE:'复购' };
 const gameList = ['王者荣耀','三角洲行动','英雄联盟','永劫无间','无畏契约','CS2','绝地求生'];
 
-interface Props { open: boolean; onClose: () => void; onCreated: () => void; userId?: string; defaultDeltaCount?: string; customerPreFill?: { customerId?: string; customerWechat?: string; companionId?: string; companionSelfId?: string; gameName?: string; amount?: number; dispatchType?: string }; }
+interface Props { open: boolean; onClose: () => void; onCreated: () => void; userId?: string; defaultDeltaCount?: string; customerPreFill?: { customerId?: string; customerWechat?: string; gameName?: string; amount?: number; }; }
 
 const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, defaultDeltaCount, customerPreFill }) => {
   const [loading, setLoading] = useState(false);
@@ -18,17 +18,16 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, d
 
   useEffect(() => {
     if (open) companionsApi.list().then(({data}:any) => setCompanions(data.data||[])).catch(()=>{});
-  }, [open, customerPreFill]);
+  }, [open]);
 
   useEffect(() => {
     if (open && customerPreFill) {
       form.setFieldsValue({
         type: 'NEW', gameName: customerPreFill.gameName || '三角洲行动',
-        dispatchType: customerPreFill.dispatchType || DispatchType.POOL,
-        urgency: 'now', billingMode: 'hour', duration: 1,
+        dispatchType: DispatchType.POOL, urgency: 'now', billingMode: 'hour', duration: 1,
         deltaMode: '陪玩', deltaCount: defaultDeltaCount || '单',
         customerId: customerPreFill.customerId, customerWechat: customerPreFill.customerWechat,
-        companionId: customerPreFill.companionId, amount: customerPreFill.amount || 0,
+        amount: customerPreFill.amount || 0,
       });
     }
   }, [open, customerPreFill, form, defaultDeltaCount]);
@@ -37,11 +36,6 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, d
     try {
       const v = await form.validateFields();
       setLoading(true);
-      // 单陪 → 自己打，不需要派单
-      if (v.deltaCount === '单' && customerPreFill?.companionSelfId) {
-        v.dispatchType = DispatchType.DIRECT;
-        v.companionId = customerPreFill.companionSelfId;
-      }
       await ordersApi.create({ ...v, csUserId: userId });
       message.success('订单已发布'); form.resetFields(); onClose(); onCreated();
     } catch (e: any) { if (!e?.errorFields) message.error(e?.response?.data?.message||'创建失败'); }
@@ -78,10 +72,8 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, d
             </Form.Item>
           </>) : null}
         </Form.Item>
-        {!customerPreFill?.companionSelfId && (
         <Form.Item name="urgency" label="打单时间" initialValue="now">
           <Select><Option value="now">⚡立即打</Option><Option value="later">📅预约</Option></Select></Form.Item>
-        )}
         <Form.Item label="客户来源">
           <Form.Item name="customerSource" noStyle><Select placeholder="来源"><Option value="小红书">小红书</Option><Option value="抖音">抖音</Option><Option value="快手">快手</Option><Option value="转介绍">转介绍</Option></Select></Form.Item>
         </Form.Item>

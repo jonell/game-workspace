@@ -76,25 +76,10 @@ export class OrdersController {
   }
 
   @Post('orders/:id/assign')
-  @Roles(UserRole.CS, UserRole.ADMIN, UserRole.COMPANION)
-  async assign(@Param('id') id: string, @Body('companionId') companionId: string, @Req() req: any): Promise<ApiResponse<unknown>> {
-    const inviterName = req.user?.username;
-    const data = await this.ordersService.assign(id, companionId, inviterName);
-    return { code: 200, message: '已发送邀请', data };
-  }
-
-  @Post('orders/:id/accept-assignment')
-  @Roles(UserRole.COMPANION)
-  async acceptAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.acceptAssignment(id, req.user.companionId);
-    return { code: 200, message: '已接单', data };
-  }
-
-  @Post('orders/:id/decline-assignment')
-  @Roles(UserRole.COMPANION)
-  async declineAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
-    const data = await this.ordersService.declineAssignment(id, req.user.companionId);
-    return { code: 200, message: '已拒绝', data };
+  @Roles(UserRole.CS, UserRole.ADMIN)
+  async assign(@Param('id') id: string, @Body('companionId') companionId: string): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.assign(id, companionId);
+    return { code: 200, message: '指派成功', data };
   }
 
   @Post('orders/:id/confirm')

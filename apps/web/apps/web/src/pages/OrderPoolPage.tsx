@@ -568,8 +568,11 @@ const OrderPoolPage: React.FC = () => {
       </Modal>
 
       {/* Chat Modal */}
-      <ChatModal open={!!chatPartner} partner={chatPartner} onClose={() => setChatPartner(null)} />
-
+      <ChatModal
+        open={!!chatPartner}
+        partner={chatPartner}
+        onClose={() => setChatPartner(null)}
+      />
     </div>
   );
 };
