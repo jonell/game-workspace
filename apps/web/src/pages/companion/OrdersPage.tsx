@@ -212,21 +212,20 @@ const OrdersPage: React.FC = () => {
         return d === dateFilter.toDate().toDateString();
       })} rowKey="id" loading={loading}
         columns={[
-          { title: '订单ID', dataIndex: 'id', width: 90, render: (v: string) => v?.slice(0, 8) },
-          { title: '游戏', dataIndex: 'gameName', width: 100 },
-          { title: '客户', key: 'wx', width: 120, render: (_: any, r: any) => r.customFields?.customerWechat || r.customer?.wechatId || '-' },
-          { title: '金额', dataIndex: 'amount', width: 100, render: (v: number) => <span style={{ color: '#FF4757', fontWeight: 600 }}>¥{Number(v).toFixed(0)}</span> },
-          { title: '类型', dataIndex: 'type', width: 70, render: (t: string) => <Tag color={typeConfig[t]?.color}>{typeConfig[t]?.label || t}</Tag> },
-          { title: '接单人', key: 'companion', width: 100,
-            render: (_: any, r: any) => r.companion?.user?.username ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 20, height: 20, borderRadius: '50%', background: '#7B61FF', color: '#FFF',
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
-                  {r.companion.user.username[0].toUpperCase()}
-                </span>
-                <Text>{r.companion.user.username}</Text>
-              </span>
-            ) : <Text type="secondary">-</Text>
+          { title: '订单', key: 'info', width: 200, render: (_: any, r: any) => (<>
+            <Text strong>{r.gameName}</Text>
+            <br /><Text type="secondary" style={{ fontSize: 11 }}>{typeConfig[r.type]?.label || r.type} · ¥{Number(r.amount).toFixed(0)} · {r.duration}h · 发布:{r.csUser?.username || '?'}</Text>
+          </>)},
+          { title: '客户', key: 'customer', width: 120, render: (_: any, r: any) => (<>
+            <Text style={{ fontSize: 12 }}>{r.customFields?.customerWechat || r.customer?.wechatId || '-'}</Text>
+            {r.customer?.customerCode && <><br /><Text type="secondary" style={{ fontSize: 11 }}>{r.customer.customerCode}</Text></>}
+          </>)},
+          { title: '标注', key: 'tags', width: 100, render: (_: any, r: any) => (<>
+            {r.customFields?.urgency === 'later' ? <Tag color="purple" style={{fontSize:11}}>📅预约</Tag> : <Tag color="green" style={{fontSize:11}}>⚡立即打</Tag>}
+            {r.customFields?.deltaMode && <Tag style={{fontSize:10}}>{r.customFields.deltaMode}{r.customFields.deltaCount||''}</Tag>}
+          </>)},
+          { title: '联系人', key: 'companion', width: 80,
+            render: (_: any, r: any) => r.companion?.user?.username || <Text type="secondary">-</Text>
           },
           { title: '状态', key: 'contact', width: 130, render: (_: any, r: any) => (<>
             <Tag color={statusConfig[r.status]?.color}>{statusConfig[r.status]?.label||r.status}</Tag>
