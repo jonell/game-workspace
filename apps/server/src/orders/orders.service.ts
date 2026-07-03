@@ -94,6 +94,14 @@ export class OrdersService {
       this.wsGateway.broadcastToStudio(studioId, 'order:pool_updated', newOrder);
     }
 
+    // DIRECT dispatch: notify target companion via WS
+    if (dto.dispatchType === 'DIRECT' && dto.companionId) {
+      const csUser = await this.prisma.user.findUnique({ where: { id: dto.csUserId }, select: { username: true } });
+      this.wsGateway.pushOrder(dto.companionId, {
+        ...newOrder, _inviterName: csUser?.username || '系统', _isAssignment: true,
+      });
+    }
+
     return newOrder;
   }
 
@@ -285,6 +293,21 @@ export class OrdersService {
     });
     this.wsGateway.pushOrder(companionId, updatedOrder);
     return updatedOrder;
+  }
+
+  async acceptAssignment(orderId: string, companionId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.companionId !== companionId) throw new ForbiddenException('该订单未指派给你');
+    if (order.status !== OrderStatus.PENDING) throw new ForbiddenException('订单状态不正确');
+    return this.prisma.order.update({ where: { id: orderId }, data: { status: OrderStatus.GRABBED, grabbedAt: new Date() } });
+  }
+
+  async declineAssignment(orderId: string, companionId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.companionId !== companionId) throw new ForbiddenException('该订单未指派给你');
+    return this.prisma.order.update({ where: { id: orderId }, data: { companionId: null, dispatchType: 'POOL' } });
   }
 
   async confirm(orderId: string, companionId: string) {

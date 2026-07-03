@@ -123,4 +123,18 @@ export class OrdersController {
     const data = await this.ordersService.acceptPartner(id, req.user.companionId);
     return { code: 200, message: 'ok', data };
   }
+
+  @Post('orders/:id/accept-assignment')
+  @Roles(UserRole.COMPANION)
+  async acceptAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.acceptAssignment(id, req.user.companionId);
+    return { code: 200, message: '已接单', data };
+  }
+
+  @Post('orders/:id/decline-assignment')
+  @Roles(UserRole.COMPANION)
+  async declineAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.declineAssignment(id, req.user.companionId);
+    return { code: 200, message: '已拒绝', data };
+  }
 }
