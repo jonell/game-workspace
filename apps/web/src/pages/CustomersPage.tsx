@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag, DatePicker, ConfigProvider,
+  Table, Button, Modal, Form, Input, Select, Space, Typography, message, Popconfirm, Tag, DatePicker,
 } from 'antd';
-import locale from 'antd/locale/zh_CN';
+import zhCN from 'antd/locale/zh_CN';
 import {
   PlusOutlined, ReloadOutlined, EditOutlined, DeleteOutlined, SwapOutlined,
   MessageOutlined, CalendarOutlined, PlayCircleOutlined, SendOutlined,
@@ -12,7 +12,6 @@ import { companionsApi } from '../api/companions';
 import { ordersApi } from '../api/orders';
 import { useAuthStore } from '../stores/authStore';
 import { platformOptions, customerStatusConfig, orderTypeConfig, urgencyConfig, billingModeConfig } from '../constants';
-import dayjs from 'dayjs';
 import ChatModal from '../components/ChatModal';
 import CreateOrderModal from '../components/CreateOrderModal';
 
@@ -163,11 +162,7 @@ const CustomersPage: React.FC = () => {
     { title: '客户编号', dataIndex: 'customerCode', key: 'customerCode', width: 150,
       render: (code: string, record: Customer) => (<>
         <Text>{code}</Text>
-        {record.scheduledAt && (
-          <><br /><Tag color="purple" style={{ fontSize: 10, marginTop: 2 }}>
-            📅{dayjs(record.scheduledAt).format('M月D日 HH:mm')}
-          </Tag></>
-        )}
+        {record.scheduledAt && (() => { const d=new Date(record.scheduledAt); return <><br /><Tag color="purple" style={{ fontSize: 10, marginTop: 2 }}>📅{d.getMonth()+1}月{d.getDate()}日 {String(d.getHours()).padStart(2,'0')}:{String(d.getMinutes()).padStart(2,'0')}</Tag></>; })()}
       </>)},
     { title: '微信号', dataIndex: 'wechatId', key: 'wechatId' },
     { title: '最近订单', key: 'lastOrder', width: 220, render: (_: any, r: any) => {
@@ -286,7 +281,7 @@ const CustomersPage: React.FC = () => {
         <div style={{ marginTop: 16 }}>
           <p>为客户 <Text strong>{scheduleCustomer?.customerCode}</Text> 设置预约提醒：</p>
           <DatePicker showTime format="YYYY年M月D日 HH:mm" placeholder="选择预约时间"
-            locale={locale} value={scheduleTime} onChange={(v) => setScheduleTime(v)}
+            locale={zhCN.DatePicker as any} value={scheduleTime} onChange={(v) => setScheduleTime(v)}
             style={{ width: '100%' }} />
         </div>
       </Modal>
