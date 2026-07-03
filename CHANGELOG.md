@@ -9,6 +9,18 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **全角色页面统一化：** 6 个功能页面的 12 个 per-role 版本合并为统一的共享组件
+  - CustomersPage: 合并 owner/admin/companion 三个客户管理页面
+  - OrdersPage: 合并 companion 订单工作流与 CS 订单卡片视图
+  - DispatchPage: 合并 CS 派单工作区 + admin 表格视图 + companion 历史记录
+  - BillingPage: 合并 admin 报账审核流程 + companion 报账提交
+  - CompanionsPage: 合并 admin/CS/companion 三个员工管理页面
+  - OrderPoolPage: 合并 companion 抢单池 + admin 订单池查看器
+- **共享常量提取：** 统一 orderType/status/companion/customer 等状态配置至 `constants/`，替换 10+ 页面中的内联重复定义
+- **12 项不一致修复：** 状态标签冲突(已抢/已接单)、颜色交换(ONLINE/BUSY)、客户状态列缺失、布局不统一、API 客户端不一致、分页文本等
+
 ### Added
 
 - **工作室类型选择：** OWNER 创建工作室时增加两步式类型选择流程（线下工作室/线上俱乐部）
