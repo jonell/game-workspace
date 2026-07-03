@@ -199,7 +199,7 @@ const CustomersPage: React.FC = () => {
           {record.orders?.[0]?.id && (
             <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(record)}>沟通</Button>
           )}
-          <Input size="small" placeholder="备注" style={{ width: 80 }}
+          <Input size="small" placeholder="备注" style={{ width: 130 }}
             value={notesEditing[record.id] ?? record.notes ?? ''}
             onChange={(e) => setNotesEditing(prev => ({ ...prev, [record.id]: e.target.value }))}
             onBlur={() => { const v = notesEditing[record.id]; if (v !== undefined && v !== record.notes) saveNotes(record.id, v); }}
