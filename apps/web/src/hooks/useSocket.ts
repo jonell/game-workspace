@@ -5,6 +5,7 @@ interface UseSocketOptions {
   onOrderPoolUpdated?: (data: any) => void;
   onOrderGrabbed?: (data: any) => void;
   onOrderNew?: (data: any) => void;
+  onOrderUrgent?: (data: any) => void;
   onStatusBroadcast?: (data: any) => void;
   onChatNotify?: (data: any) => void;
 }
@@ -44,6 +45,10 @@ export function useSocket(opts: UseSocketOptions = {}) {
 
     socket.on('order:new', (data: any) => {
       optsRef.current.onOrderNew?.(data);
+    });
+
+    socket.on('order:urgent', (data: any) => {
+      optsRef.current.onOrderUrgent?.(data);
     });
 
     return () => {

@@ -137,4 +137,18 @@ export class OrdersController {
     const data = await this.ordersService.declineAssignment(id, req.user.companionId);
     return { code: 200, message: '已拒绝', data };
   }
+
+  @Post('orders/:id/quick-grab')
+  @Roles(UserRole.COMPANION)
+  async quickGrab(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.quickGrab(id, req.user.companionId);
+    return { code: 200, message: '抢单成功', data };
+  }
+
+  @Post('orders/:id/mark-ready')
+  @Roles(UserRole.COMPANION)
+  async markReady(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
+    const data = await this.ordersService.markReady(id, req.user.companionId);
+    return { code: 200, message: '已准备就绪', data };
+  }
 }

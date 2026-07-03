@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Typography, Space, Spin, message } from 'antd';
+import { Layout, Menu, Button, Typography, Space, Spin, message, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSocket } from '../hooks/useSocket';
 
@@ -109,10 +109,10 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ── Assignment invite popup ──
-  const [invitePopup, setInvitePopup] = React.useState<any>(null);
-  const [inviteDetail, setInviteDetail] = React.useState<any>(null);
-  const inviteTRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ── Urgent order + dual-companion popup ──
+  const [urgentOrder, setUrgentOrder] = React.useState<any>(null);
+  const [urgentGrabbed, setUrgentGrabbed] = React.useState<any>(null);
+  const [dualReady, setDualReady] = React.useState<any>(null);
 
   useEffect(() => {
     if (!user && isAuthenticated) { fetchUser(); }
@@ -128,12 +128,8 @@ const AppLayout: React.FC = () => {
         useAuthStore.getState().setChatActive(true, data.companionName);
       }
     },
-    onOrderNew: (data: any) => {
-      if (user?.role === 'COMPANION' && data._isAssignment) {
-        setInvitePopup(data);
-        if (inviteTRef.current) clearTimeout(inviteTRef.current);
-        inviteTRef.current = setTimeout(() => setInvitePopup(null), 15000);
-      }
+    onOrderUrgent: (data: any) => {
+      if (user?.role === 'COMPANION') setUrgentOrder(data);
     },
   });
 
@@ -433,40 +429,83 @@ const AppLayout: React.FC = () => {
       </Layout>
     </Layout>
 
-    {/* Assignment invite — bottom-right popup */}
-    {invitePopup && (
-      <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999, background: '#FFF', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', padding: 20, minWidth: 320, borderLeft: '4px solid #7B61FF' }}>
-        <Typography.Text strong style={{ fontSize: 15 }}>📋 {invitePopup._inviterName || '客服'} 邀请你共同接单</Typography.Text>
+    {/* Urgent order — idle companion popup */}
+    {urgentOrder && !urgentGrabbed && (
+      <div style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 9999, background: '#FFF', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', padding: 20, minWidth: 320, borderLeft: '4px solid #FF4757' }}>
+        <Typography.Text strong style={{ fontSize: 15 }}>⚡ 新订单！{urgentOrder._createdBy || '系统'} 发布</Typography.Text>
         <div style={{ marginTop: 10, lineHeight: 1.8 }}>
-          <div>🎮 {invitePopup.gameName} · <Typography.Text strong style={{ color: '#FF4757' }}>¥{Number(invitePopup.amount).toFixed(0)}</Typography.Text></div>
-          {invitePopup.customFields?.deltaMode && <div>🎯 {invitePopup.customFields.deltaMode} {invitePopup.customFields.deltaMission||''} {invitePopup.customFields.deltaCount||''}</div>}
+          <div>🎮 {urgentOrder.gameName} · <Typography.Text strong style={{ color: '#FF4757' }}>¥{Number(urgentOrder.amount).toFixed(0)}</Typography.Text></div>
+          {urgentOrder.customFields?.deltaMode && <div>🎯 {urgentOrder.customFields.deltaMode} {urgentOrder.customFields.deltaMission||''} {urgentOrder.customFields.deltaCount||''}</div>}
         </div>
-        <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
-          <Button danger size="small" onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.declineAssignment(invitePopup.id); message.success('已拒绝'); setInvitePopup(null); } catch(e:any) { message.error(e?.response?.data?.message); } }} style={{ flex: 1 }}>拒绝</Button>
-          <Button type="primary" size="small" onClick={async () => { try { const { ordersApi } = await import('../api/orders'); const r = await ordersApi.acceptAssignment(invitePopup.id); setInvitePopup(null); setInviteDetail(r.data.data || invitePopup); } catch(e:any) { message.error(e?.response?.data?.message); } }} style={{ flex: 1 }}>接单</Button>
+        <div style={{ marginTop: 14 }}>
+          <Button type="primary" size="large" block onClick={async () => {
+            try { const { ordersApi } = await import('../api/orders'); const r = await ordersApi.quickGrab(urgentOrder.id); setUrgentGrabbed(r.data.data || urgentOrder); setUrgentOrder(null);
+            } catch(e:any) { message.error(e?.response?.data?.message || '已被其他陪玩抢先'); setUrgentOrder(null); }
+          }}>同意</Button>
         </div>
-        <Typography.Text type="secondary" style={{ fontSize: 10, display: 'block', marginTop: 6 }}>⏱ 15 秒后自动消失</Typography.Text>
       </div>
     )}
-    {/* Accepted invite detail modal */}
-    {inviteDetail && (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setInviteDetail(null)}>
-        <div style={{ background: '#FFF', borderRadius: 16, padding: 28, maxWidth: 440, width: '90%', boxShadow: '0 16px 48px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
-          <Typography.Title level={4} style={{ marginBottom: 16 }}>📋 订单详情</Typography.Title>
-          <div style={{ lineHeight: 2.2 }}>
-            <div>🎮 游戏：<Typography.Text strong>{inviteDetail.gameName}</Typography.Text></div>
-            <div>💰 金额：<Typography.Text strong style={{ color: '#FF4757' }}>¥{Number(inviteDetail.amount).toFixed(0)}</Typography.Text></div>
-            {inviteDetail.customFields?.deltaMode && <div>🎯 模式：{inviteDetail.customFields.deltaMode} {inviteDetail.customFields.deltaMission||''} {inviteDetail.customFields.deltaCount||''}</div>}
-            {inviteDetail.customFields?.customerWechat && <div>💬 微信：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerWechat}</Typography.Text></div>}
-            {inviteDetail.customFields?.customerRoomCode && <div>🏠 房间码：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerRoomCode}</Typography.Text></div>}
-            {inviteDetail.customFields?.customerYy && <div>📞 YY号：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerYy}</Typography.Text></div>}
-            {inviteDetail.customFields?.customerPlatformAccount && <div>🎙 KOOK号：<Typography.Text copyable style={{ color: '#1677ff' }}>{inviteDetail.customFields.customerPlatformAccount}</Typography.Text></div>}
+
+    {/* Urgent grab success — solo (non-companion creator) */}
+    {urgentGrabbed && urgentGrabbed._creatorRole !== 'COMPANION' && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#FFF', borderRadius: 16, padding: 28, maxWidth: 440, width: '90%' }}>
+          <Typography.Title level={4}>🎉 恭喜抢单成功</Typography.Title>
+          <div style={{ lineHeight: 2.2, marginTop: 12 }}>
+            <div>🎮 {urgentGrabbed.gameName} · ¥{Number(urgentGrabbed.amount).toFixed(0)}</div>
+            {urgentGrabbed.customFields?.customerWechat && <div>💬 微信：<Typography.Text copyable>{urgentGrabbed.customFields.customerWechat}</Typography.Text></div>}
+            {urgentGrabbed.customFields?.customerRoomCode && <div>🏠 房间码：<Typography.Text copyable>{urgentGrabbed.customFields.customerRoomCode}</Typography.Text></div>}
           </div>
           <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
-            <Button size="large" onClick={() => setInviteDetail(null)} style={{ flex: 1 }}>关闭</Button>
-            <Button type="primary" size="large" style={{ flex: 1, background: '#52c41a', borderColor: '#52c41a' }}
-              onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.confirm(inviteDetail.id); message.success('已开始服务'); setInviteDetail(null); } catch(e:any) { message.error(e?.response?.data?.message); } }}>开始服务</Button>
+            <Button size="large" onClick={() => setUrgentGrabbed(null)} style={{ flex: 1 }}>关闭</Button>
+            <Button type="primary" size="large" style={{ flex: 1, background: '#52c41a' }} onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.confirm(urgentGrabbed.id); message.success('已开始服务'); setUrgentGrabbed(null); } catch(e:any) { message.error(e?.response?.data?.message); } }}>开始服务</Button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {/* Dual-companion: grabber view (zhangsan) */}
+    {urgentGrabbed && urgentGrabbed._creatorRole === 'COMPANION' && user?.id !== urgentGrabbed.csUserId && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#FFF', borderRadius: 16, padding: 28, maxWidth: 460, width: '90%' }}>
+          <Typography.Title level={4}>🎉 恭喜抢单成功</Typography.Title>
+          <div style={{ lineHeight: 2.2, marginTop: 12 }}>
+            <div>🎮 {urgentGrabbed.gameName} · ¥{Number(urgentGrabbed.amount).toFixed(0)}</div>
+            {urgentGrabbed.customFields?.customerWechat && <div>💬 微信：<Typography.Text copyable>{urgentGrabbed.customFields.customerWechat}</Typography.Text></div>}
+            {urgentGrabbed.customFields?.customerRoomCode && <div>🏠 房间码：<Typography.Text copyable>{urgentGrabbed.customFields.customerRoomCode}</Typography.Text></div>}
+          </div>
+          <div style={{ marginTop: 16, background: '#f6ffed', borderRadius: 8, padding: 12 }}>
+            <Typography.Text strong>🤝 你将与 {urgentGrabbed._createdBy} 一起服务老板</Typography.Text>
+            <div style={{ marginTop: 8 }}>
+              <Button type="primary" size="large" block onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.markReady(urgentGrabbed.id); message.success('我已准备好'); setDualReady(true); } catch(e:any) { message.error(e?.response?.data?.message); } }}>我已准备好</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Dual-companion: creator view (peiwana) — shows when partner is ready */}
+    {urgentGrabbed && urgentGrabbed._creatorRole === 'COMPANION' && user?.id === urgentGrabbed.csUserId && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#FFF', borderRadius: 16, padding: 28, maxWidth: 480, width: '90%' }}>
+          <Typography.Title level={4}>🤝 本单将由抢单陪玩跟你一起服务老板</Typography.Title>
+          <div style={{ lineHeight: 2.2, marginTop: 12 }}>
+            <div>🎮 {urgentGrabbed.gameName} · ¥{Number(urgentGrabbed.amount).toFixed(0)}</div>
+            {urgentGrabbed.customFields?.customerWechat && <div>💬 微信：<Typography.Text copyable>{urgentGrabbed.customFields.customerWechat}</Typography.Text></div>}
+            {urgentGrabbed.customFields?.customerRoomCode && <div>🏠 房间码：<Typography.Text copyable>{urgentGrabbed.customFields.customerRoomCode}</Typography.Text></div>}
+          </div>
+          {dualReady ? (
+            <div style={{ marginTop: 16 }}>
+              <Tag color="green">✅ 合作陪玩已准备就绪</Tag>
+              <div style={{ marginTop: 8 }}>
+                <Button type="primary" size="large" block style={{ background: '#52c41a' }} onClick={async () => { try { const { ordersApi } = await import('../api/orders'); await ordersApi.confirm(urgentGrabbed.id); message.success('已开始服务'); setUrgentGrabbed(null); setDualReady(null); } catch(e:any) { message.error(e?.response?.data?.message); } }}>开始服务</Button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 16 }}>
+              <Typography.Text type="secondary">⏳ 等待合作陪玩准备就绪...</Typography.Text>
+            </div>
+          )}
         </div>
       </div>
     )}

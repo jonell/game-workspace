@@ -90,6 +90,17 @@ export class OrdersService {
       include: { customer: true },
     });
 
+    // Urgent orders: broadcast to all IDLE companions (first-come-first-served)
+    const isUrgent = (dto as any).urgency === 'now';
+    if (studioId && isUrgent) {
+      const csUser = await this.prisma.user.findUnique({ where: { id: dto.csUserId }, select: { username: true, role: true } });
+      this.wsGateway.broadcastToIdleCompanions(studioId, 'order:urgent', {
+        ...newOrder,
+        _createdBy: csUser?.username || '未知',
+        _creatorRole: csUser?.role || 'CS',
+      });
+    }
+
     if (studioId && newOrder.dispatchType === 'POOL') {
       this.wsGateway.broadcastToStudio(studioId, 'order:pool_updated', newOrder);
     }
@@ -308,6 +319,24 @@ export class OrdersService {
     if (!order) throw new NotFoundException('订单不存在');
     if (order.companionId !== companionId) throw new ForbiddenException('该订单未指派给你');
     return this.prisma.order.update({ where: { id: orderId }, data: { companionId: null, dispatchType: 'POOL' } });
+  }
+
+  async quickGrab(orderId: string, companionId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.companionId) throw new ForbiddenException('已被其他陪玩抢先');
+    if (order.status !== OrderStatus.PENDING) throw new ForbiddenException('订单状态不正确');
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.GRABBED, companionId, grabbedAt: new Date() },
+    });
+  }
+
+  async markReady(orderId: string, companionId: string) {
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { customFields: { partnerReady: true, partnerId: companionId } as any },
+    });
   }
 
   async confirm(orderId: string, companionId: string) {
