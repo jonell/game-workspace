@@ -193,13 +193,13 @@ const CustomersPage: React.FC = () => {
 
   if (isCompanion) {
     columns.push({
-      title: '操作', key: 'actions', width: 400,
+      title: '备注', key: 'actions', width: 470, align: 'center',
       render: (_: unknown, record: Customer) => (
-        <Space size={4}>
+        <Space size={4} align="center">
           {record.orders?.[0]?.id && (
             <Button size="small" icon={React.createElement(MessageOutlined)} onClick={() => openChat(record)}>沟通</Button>
           )}
-          <Input size="small" placeholder="备注" style={{ width: 130 }}
+          <Input size="small" placeholder="备注" style={{ width: 260 }}
             value={notesEditing[record.id] ?? record.notes ?? ''}
             onChange={(e) => setNotesEditing(prev => ({ ...prev, [record.id]: e.target.value }))}
             onBlur={() => { const v = notesEditing[record.id]; if (v !== undefined && v !== record.notes) saveNotes(record.id, v); }}
