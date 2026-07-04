@@ -7,10 +7,12 @@ import {
   Tag,
   message,
   Segmented,
+  Input,
 } from 'antd';
 import {
   CheckOutlined,
   ReloadOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { UserRole } from '@chunlv/shared';
 import { employeesApi } from '../../api/employees';
@@ -44,6 +46,7 @@ const AuthorizationsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('pending');
+  const [searchText, setSearchText] = useState('');
   const [approvingIds, setApprovingIds] = useState<Set<string>>(new Set());
 
   const fetchEmployees = useCallback(async () => {
@@ -84,9 +87,14 @@ const AuthorizationsPage: React.FC = () => {
     }
   };
 
-  const filteredEmployees = employees.filter((e) =>
-    filter === 'pending' ? !e.isAuthorized : e.isAuthorized,
-  );
+  const filteredEmployees = employees.filter((e) => {
+    const matchAuth = filter === 'pending' ? !e.isAuthorized : e.isAuthorized;
+    const matchSearch = !searchText
+      || (e.username || '').toLowerCase().includes(searchText.toLowerCase())
+      || (roleLabel[e.role] || '').includes(searchText)
+      || (e.studio?.name || '').toLowerCase().includes(searchText.toLowerCase());
+    return matchAuth && matchSearch;
+  });
 
   const columns = [
     {
@@ -154,6 +162,14 @@ const AuthorizationsPage: React.FC = () => {
           客户端授权
         </Text>
         <Space>
+          <Input.Search
+            placeholder="搜索用户名/角色/工作室"
+            allowClear
+            style={{ width: 220 }}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            prefix={React.createElement(SearchOutlined)}
+          />
           <Segmented
             options={[
               { label: '待审核', value: 'pending' },
