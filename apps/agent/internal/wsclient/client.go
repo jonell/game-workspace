@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chunlv/agent/internal/config"
+	"github.com/chunlv/agent/internal/logger"
 	"github.com/chunlv/agent/internal/engine"
 	"github.com/gorilla/websocket"
 )
@@ -134,7 +135,7 @@ func (c *Client) Login() error {
 	c.token = result.Data.AccessToken
 	c.password = "" // 登录成功后清除明文密码，仅保留 Token
 	config.SetToken(c.token)
-	log.Printf("Login OK — welcome %s", c.username)
+	logger.Infof("Login OK: username=%s", c.username)
 	return nil
 }
 
@@ -196,7 +197,7 @@ func (c *Client) connectWebSocket() {
 			continue
 		}
 		c.conn = conn
-		log.Println("WebSocket connected")
+		logger.Infof("WebSocket connected")
 
 		go c.heartbeatLoop(c.cancel)
 		c.readLoop()
@@ -242,6 +243,7 @@ func (c *Client) heartbeatLoop(cancel <-chan struct{}) {
 				"timestamp":     time.Now().Unix(),
 			}
 			c.emit("companion:heartbeat", data)
+			logger.Debugf("WS heartbeat: mode=%s workSec=%d", string(mode), workSec)
 		}
 	}
 }
@@ -335,6 +337,7 @@ func (c *Client) SendAck(command string, success bool) {
 }
 
 func (c *Client) SendStatus(status string, mode engine.Mode) {
+	logger.Infof("SendStatus: status=%s mode=%s", status, string(mode))
 	c.emit("companion:status", map[string]interface{}{
 		"status": status,
 		"mode":   string(mode),

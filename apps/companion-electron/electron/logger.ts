@@ -47,7 +47,8 @@ function write(level: LogLevel, message: string, extra?: Record<string, unknown>
   const label = LEVEL_LABELS[level];
   const extraStr = extra ? ' ' + JSON.stringify(extra) : '';
   const line = `[${ts}] [${label}] ${message}${extraStr}\n`;
-  try { fs.appendFileSync(getLogFile(), line); } catch { /* ignore */ }
+  try { fs.appendFileSync(getLogFile(), line); } catch (e: any) { process.stderr.write(`[LOGGER] Failed to write log: ${e.message}
+`); }
   (level >= LogLevel.WARN ? process.stderr : process.stdout).write(line);
 }
 

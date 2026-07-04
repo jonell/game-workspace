@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"path/filepath"
 
 	"github.com/chunlv/agent/internal/config"
 	"github.com/chunlv/agent/internal/engine"
 	"github.com/chunlv/agent/internal/httplocal"
+	"github.com/chunlv/agent/internal/logger"
 	"github.com/chunlv/agent/internal/tray"
 	"github.com/chunlv/agent/internal/wsclient"
 )
@@ -14,8 +16,11 @@ func main() {
 	cfg := config.Load()
 	config.Update(cfg)
 
-	log.Printf("Chunlv Agent starting...")
-	log.Printf("  Server: %s", cfg.ServerURL)
+	execDir, _ := filepath.Abs(".")
+	logger.Init(filepath.Join(execDir, "logs"))
+
+	logger.Infof("Chunlv Agent starting...")
+	logger.Infof("Server: %s", cfg.ServerURL)
 
 	tracker := engine.NewTimeTracker()
 	wsClient := wsclient.NewClient(cfg.ServerURL, cfg.Username, cfg.Password, tracker)
