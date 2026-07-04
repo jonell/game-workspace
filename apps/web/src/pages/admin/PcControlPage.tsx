@@ -8,6 +8,8 @@ import {
   Popconfirm,
   message,
   Tooltip,
+  Input,
+  Select,
 } from 'antd';
 import {
   ReloadOutlined,
@@ -17,6 +19,7 @@ import {
   ThunderboltOutlined,
   StopOutlined,
   LogoutOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { CompanionStatus } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
@@ -68,6 +71,8 @@ const PcControlPage: React.FC = () => {
   const [companions, setCompanions] = useState<Companion[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingCommands, setSendingCommands] = useState<Record<string, boolean>>({});
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>();
 
   const fetchCompanions = useCallback(async () => {
     setLoading(true);
@@ -110,6 +115,12 @@ const PcControlPage: React.FC = () => {
     },
     [fetchCompanions],
   );
+
+  const filtered = companions.filter((c) => {
+    const matchName = !searchText || (c.user?.username || '').toLowerCase().includes(searchText.toLowerCase());
+    const matchStatus = !statusFilter || c.status === statusFilter;
+    return matchName && matchStatus;
+  });
 
   const columns = [
     {
@@ -307,6 +318,29 @@ const PcControlPage: React.FC = () => {
           PC 远程控制
         </Text>
         <Space>
+          <Input.Search
+            placeholder="搜索陪玩姓名"
+            allowClear
+            style={{ width: 180 }}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            prefix={React.createElement(SearchOutlined)}
+          />
+          <Select
+            placeholder="状态筛选"
+            allowClear
+            style={{ width: 120 }}
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: '在线', value: 'ONLINE' },
+              { label: '接单中', value: 'BUSY' },
+              { label: '空闲', value: 'IDLE' },
+              { label: '娱乐中', value: 'ENTERTAINMENT' },
+              { label: '休息中', value: 'REST' },
+              { label: '离线', value: 'OFFLINE' },
+            ]}
+          />
           <Button
             icon={React.createElement(ReloadOutlined)}
             onClick={fetchCompanions}
@@ -319,7 +353,7 @@ const PcControlPage: React.FC = () => {
 
       <Table
         columns={columns}
-        dataSource={companions}
+        dataSource={filtered}
         rowKey="id"
         loading={loading}
         locale={{ emptyText: '暂无陪玩数据' }}
