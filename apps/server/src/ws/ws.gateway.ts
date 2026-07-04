@@ -37,6 +37,22 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── lifecycle ──────────────────────────────────────────────────────
 
+  afterInit(): void {
+    // Log ALL incoming Socket.IO events for debugging
+    this.server.use((socket, next) => {
+      const originalOnEvent = (socket as any).onevent;
+      (socket as any).onevent = (packet: any) => {
+        const [event, ...args] = packet.data || [];
+        // Skip noisy heartbeat to keep logs clean
+        if (event !== 'companion:heartbeat') {
+          logger.debug('Socket.IO event received', { event, args: JSON.stringify(args).slice(0, 200) });
+        }
+        originalOnEvent.call(socket, packet);
+      };
+      next();
+    });
+  }
+
   async handleConnection(client: Socket): Promise<void> {
     try {
       const token = (client.handshake.auth?.token || client.handshake.query?.token) as string | undefined;
