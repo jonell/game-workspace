@@ -177,6 +177,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
+    logger.info('RECV pc:command_ack', { companionId: user.companionId, command: data.command, success: data.success });
+    if (!data.success) logger.warn('Remote command failed', { companionId: user.companionId, command: data.command });
 
     const pc = await this.prisma.companionPC.findUnique({ where: { companionId: user.companionId } });
     if (!pc) return;
@@ -195,6 +197,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
+    logger.info('RECV blacklist:report', { companionId: user.companionId, totalCount: data.totalCount });
 
     await this.prisma.companionProcessReport.create({
       data: { companionId: user.companionId, processes: data.processes as any, totalCount: data.totalCount, reportTime: new Date() },
@@ -208,6 +211,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
+    logger.info('RECV blacklist:kill_result', { companionId: user.companionId, processName: data.processName, pid: data.pid, success: data.success });
+    if (!data.success) logger.warn('Kill failed', { companionId: user.companionId, processName: data.processName, resultText: data.resultText });
 
     await this.prisma.processKillLog.create({
       data: {
@@ -224,20 +229,22 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
-    console.log(`[Blacklist] Companion ${user.companionId} ack'd version ${data.version}`);
+    logger.info('RECV blacklist:update_ack', { companionId: user.companionId, version: data.version });
   }
 
   // ── outbound ───────────────────────────────────────────────────────
 
   sendCommand(companionId: string, command: string, params?: unknown): void {
     const socketId = this.companionSockets.get(companionId);
-    if (!socketId) return;
+    if (!socketId) { logger.warn('SEND pc:command FAILED (offline)', { companionId, command }); return; }
+    logger.info('SEND pc:command', { companionId, command, params });
     this.server.to(socketId).emit('pc:command', { command, params });
   }
 
   pushOrder(companionId: string, order: unknown): void {
     const socketId = this.companionSockets.get(companionId);
-    if (!socketId) return;
+    if (!socketId) { logger.warn('SEND order:new FAILED (offline)', { companionId }); return; }
+    logger.info('SEND order:new', { companionId, orderId: (order as any)?.id });
     this.server.to(socketId).emit('order:new', order);
   }
 
@@ -273,7 +280,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     version: number,
   ): void {
     const socketId = this.companionSockets.get(companionId);
-    if (!socketId) return;
+    if (!socketId) { logger.warn('SEND blacklist:update FAILED (offline)', { companionId, version }); return; }
+    logger.info('SEND blacklist:update', { companionId, blacklistCount: blacklist.length, whitelistCount: whitelist.length, version });
     this.server.to(socketId).emit('blacklist:update', { blacklist, whitelist, version });
   }
 
@@ -284,9 +292,12 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const companions = await this.prisma.companion.findMany({ where: { studioId }, select: { id: true } });
     const version = Date.now();
+    let pushed = 0, skipped = 0;
     for (const c of companions) {
       const socketId = this.companionSockets.get(c.id);
-      if (socketId) { this.server.to(socketId).emit('blacklist:update', { blacklist, whitelist, version }); }
+      if (socketId) { this.server.to(socketId).emit('blacklist:update', { blacklist, whitelist, version }); pushed++; }
+      else { skipped++; }
     }
+    logger.info('SEND blacklist:update (broadcast)', { studioId, total: companions.length, pushed, skipped, version });
   }
 }
