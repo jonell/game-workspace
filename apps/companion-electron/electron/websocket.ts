@@ -19,6 +19,20 @@ function emitEvent(event: string, data: any): void {
   }
 }
 
+// Wrapper: log all outgoing Socket.IO events
+function wsEmit(event: string, data: any): void {
+  logger.info(`WS SEND ${event}`, data);
+  socket?.emit(event, data);
+}
+
+// Wrapper: log all incoming Socket.IO events
+function wsOn(event: string, handler: (data: any) => void): void {
+  socket?.on(event, (data: any) => {
+    logger.info(`WS RECV ${event}`, data);
+    handler(data);
+  });
+}
+
 export function connectWebSocket(serverUrl: string, token: string, companionId: string): void {
   disconnectWebSocket();
 
@@ -33,11 +47,10 @@ export function connectWebSocket(serverUrl: string, token: string, companionId: 
   });
 
   socket.on('connect', () => {
-    logger.info('WebSocket connected');
+    logger.info('WS CONNECTED', { serverUrl: wsUrl });
 
-    // Heartbeat every 30s
     heartbeatTimer = setInterval(() => {
-      socket?.emit('companion:heartbeat', {
+      wsEmit('companion:heartbeat', {
         agentVersion: '3.0.0',
         currentMode: 'WORK',
         companionId,
@@ -46,61 +59,44 @@ export function connectWebSocket(serverUrl: string, token: string, companionId: 
   });
 
   socket.on('connect_error', (err: any) => {
-    logger.error('WebSocket connect error', { message: err?.message || String(err) });
+    logger.error('WS CONNECT_ERROR', { message: err?.message || String(err) });
   });
 
-  socket.on('disconnect', () => {
-    logger.warn('WebSocket disconnected');
+  socket.on('disconnect', (reason: any) => {
+    logger.warn('WS DISCONNECTED', { reason: reason?.toString() || String(reason) });
     if (heartbeatTimer) {
       clearInterval(heartbeatTimer);
       heartbeatTimer = null;
     }
   });
 
-  // Listen for orders
-  socket.on('order:new', (data: any) => {
+  wsOn('order:new', (data: any) => {
     emitEvent('order:new', data);
   });
 
-  // Blacklist process management
-  socket.on('blacklist:update', (data: any) => {
-    emitEvent('blacklist:update', data);
-  });
-
-  socket.on('blacklist:recheck', (data: any) => {
-    emitEvent('blacklist:recheck', data);
-  });
-
-
-  socket.on('order:urgent', (data: any) => {
+  wsOn('order:urgent', (data: any) => {
     emitEvent('order:urgent', data);
   });
 
-  socket.on('order:pool_updated', (data: any) => {
+  wsOn('order:pool_updated', (data: any) => {
     emitEvent('order:pool_updated', data);
   });
 
-  socket.on('status:broadcast', (data: any) => {
+  wsOn('status:broadcast', (data: any) => {
     emitEvent('status:broadcast', data);
   });
 
-  socket.on('pc:command', (data: any) => {
+  wsOn('pc:command', (data: any) => {
     emitEvent('pc:command', data);
   });
 
-  socket.on('order:new', (data: any) => {
-    emitEvent('order:new', data);
-  });
-
-  // Blacklist process management
-  socket.on('blacklist:update', (data: any) => {
+  wsOn('blacklist:update', (data: any) => {
     emitEvent('blacklist:update', data);
   });
 
-  socket.on('blacklist:recheck', (data: any) => {
+  wsOn('blacklist:recheck', (data: any) => {
     emitEvent('blacklist:recheck', data);
   });
-
 }
 
 export function disconnectWebSocket(): void {
@@ -115,19 +111,15 @@ export function disconnectWebSocket(): void {
 }
 
 export function emitStatus(status: string, mode?: string): void {
-  logger.info('Electron emit companion:status', { status, mode, connected: socket?.connected });
-  socket?.emit('companion:status', { status, mode });
+  wsEmit('companion:status', { status, mode });
 }
 
-
-/** Emit a process report to the server. */
 export function emitBlacklistReport(processes: any[], totalCount: number): void {
-  socket?.emit('blacklist:report', { processes, totalCount });
+  wsEmit('blacklist:report', { processes, totalCount });
 }
 
-/** Emit a kill result to the server. */
 export function emitKillResult(result: { processName: string; pid: number; success: boolean; resultText: string }): void {
-  socket?.emit('blacklist:kill_result', {
+  wsEmit('blacklist:kill_result', {
     processName: result.processName,
     pid: result.pid,
     success: result.success,
@@ -135,6 +127,7 @@ export function emitKillResult(result: { processName: string; pid: number; succe
     triggeredBy: 'PERIODIC',
   });
 }
+
 export function isConnected(): boolean {
   return socket?.connected ?? false;
 }

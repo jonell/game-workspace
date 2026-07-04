@@ -23,32 +23,47 @@ const CURRENT_LEVEL: LogLevel =
   raw === 'ERROR' ? LogLevel.ERROR :
   LogLevel.DEBUG;
 
+function getExeDir(): string {
+  try { return path.dirname(app.getPath('exe')); } catch {}
+  return process.cwd();
+}
+
 function getLogDir(): string {
+  // Primary: userData/logs (persists across updates)
   try { return path.join(app.getPath('userData'), 'logs'); } catch {}
   try { return path.join(app.getPath('appData'), 'logs'); } catch {}
   try { return path.join(process.cwd(), 'logs'); } catch {}
   return path.join(__dirname, '..', 'logs');
 }
 
-function ensureLogDir(): void {
-  const dir = getLogDir();
+function ensureLogDir(dir: string): void {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function getLogFile(): string {
+function getLogFile(ext: string): string {
   const date = new Date().toISOString().slice(0, 10);
-  return path.join(getLogDir(), `companion-${date}.log`);
+  return path.join(ext, `companion-${date}.log`);
 }
 
 function write(level: LogLevel, message: string, extra?: Record<string, unknown>): void {
   if (level < CURRENT_LEVEL) return;
-  ensureLogDir();
   const ts = new Date().toISOString();
   const label = LEVEL_LABELS[level];
   const extraStr = extra ? ' ' + JSON.stringify(extra) : '';
   const line = `[${ts}] [${label}] ${message}${extraStr}\n`;
-  try { fs.appendFileSync(getLogFile(), line); } catch (e: any) { process.stderr.write(`[LOGGER] Failed to write log: ${e.message}
-`); }
+
+  // Write to userData (primary)
+  const dir = getLogDir();
+  ensureLogDir(dir);
+  try { fs.appendFileSync(getLogFile(dir), line); } catch (e: any) { /* ignore */ }
+
+  // Also write to EXE directory for easy access
+  try {
+    const exeDir = path.join(getExeDir(), 'logs');
+    ensureLogDir(exeDir);
+    fs.appendFileSync(getLogFile(exeDir), line);
+  } catch (e: any) { /* ignore */ }
+
   (level >= LogLevel.WARN ? process.stderr : process.stdout).write(line);
 }
 

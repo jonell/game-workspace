@@ -229,8 +229,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - feat: add companion status page with colored badges
 - feat: add axios client with automatic token refresh interceptor and zustand auth store
 
-#### Go Agent (Desktop Client)
-- feat: add Go Agent with time tracker engine (WORK/ENTERTAINMENT mode switching)
+#### Electron 客户端 (Desktop Client)
+- feat: add Electron 客户端 with time tracker engine (WORK/ENTERTAINMENT mode switching)
 - feat: add WebSocket client with auto-reconnect and 30s heartbeat with timing data
 - feat: add Windows network throttling via QoS Policy and remote shutdown/restart
 - feat: add local HTTP server on :9876 with REST API and WebView-ready UI

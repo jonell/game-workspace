@@ -12,7 +12,7 @@
 - [4. 应用部署](#4-应用部署)
   - [4.1 后端部署](#41-后端部署)
   - [4.2 前端部署](#42-前端部署)
-- [5. Go Agent 部署](#5-go-agent-部署)
+- [5. Electron 客户端 部署](#5-go-agent-部署)
 - [6. 健康检查](#6-健康检查)
 - [7. 备份策略](#7-备份策略)
 - [8. 故障排查](#8-故障排查)
@@ -450,9 +450,9 @@ sudo certbot renew --dry-run   # 测试续期是否正常
 
 ---
 
-## 5. Go Agent 部署
+## 5. Electron 客户端 部署
 
-Go Agent 是运行在陪玩师电脑上的桌面客户端，通过 WebSocket 连接后端。
+Electron 客户端 是运行在陪玩师电脑上的桌面客户端，通过 WebSocket 连接后端。
 
 ### 5.1 编译 Agent
 
@@ -816,7 +816,7 @@ ls -la /etc/nginx/sites-enabled/
 sudo systemctl reload nginx
 ```
 
-### 8.5 Go Agent WebSocket 连接失败
+### 8.5 Electron 客户端 WebSocket 连接失败
 
 **症状**：Agent 端日志显示 `WebSocket connection failed` 或无法连接。
 

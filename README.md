@@ -35,7 +35,6 @@
 - [WebSocket Events](#websocket-events)
 - [User Roles and Permissions](#user-roles-and-permissions)
 - [Security](#security)
-- [Go Agent](#go-agent)
 - [Environment Variables](#environment-variables)
 - [Documents](#documents)
 
@@ -56,8 +55,6 @@ The system serves companion studios with distinct interfaces for each role:
 
 ```
 Browser (React SPA) ──HTTP──▶ Nest.js (Express) ──▶ PostgreSQL 16 + Redis 7
-                                       △
-        Go Agent (WebSocket) ──────────┘
 ```
 
 ### Screenshots
@@ -86,9 +83,6 @@ Browser (React SPA) ──HTTP──▶ Nest.js (Express) ──▶ PostgreSQL 1
 | | class-validator (validation) | 0.14 |
 | **Database** | PostgreSQL | 16 (Alpine) |
 | **Cache** | Redis | 7 (Alpine) |
-| **Agent** | Go | 1.22 |
-| | gorilla/websocket | 1.5 |
-| | gorilla/mux | 1.8 |
 | **Infra** | Docker Compose | -- |
 | | pnpm Workspaces (monorepo) | 8+ |
 | **Shared** | TypeScript (types + enums) | 5.5 |
@@ -170,15 +164,7 @@ chunlv-esports/
 │   │       └── common/
 │   │           └── http-exception.filter.ts  # Global exception filter
 │   │
-│   └── agent/                        # Go desktop agent for companion PCs
-│       ├── cmd/agent/main.go         # Entry point -- WebSocket + local HTTP + command loop
-│       └── internal/
-│           ├── engine/tracker.go     # Time tracking engine (ENTERTAINMENT / WORK modes)
-│           ├── wsclient/client.go    # Socket.IO WebSocket client
-│           ├── httplocal/server.go   # Local HTTP server (:9876) for WebView2 UI
-│           ├── netctrl/              # Network throttling (Linux QoS)
-│           └── sysctrl/             # System commands (shutdown / restart)
-│
+│   └── companion-electron/            # Electron desktop app for companions
 ├── packages/shared/                  # Shared TypeScript package
 │   └── src/
 │       ├── enums.ts                 # 7 enums (UserRole, OrderType, OrderStatus, DispatchType,
@@ -212,7 +198,6 @@ chunlv-esports/
 | Node.js | >= 18 | Backend + Frontend |
 | pnpm | >= 8 | Package management |
 | Docker Desktop | Any recent | PostgreSQL + Redis |
-| Go | >= 1.22 | Agent compilation only |
 
 ### 1. Install Dependencies
 
@@ -266,13 +251,6 @@ pnpm build
 #   packages/shared/dist/
 #   apps/server/dist/
 #   apps/web/dist/
-```
-
-### 7. (Optional) Compile Go Agent
-
-```bash
-cd apps/agent && go build ./cmd/agent/
-# Binary: agent (~10 MB)
 ```
 
 ---
@@ -514,7 +492,7 @@ Every endpoint returns a standard JSON envelope:
 | **Owner** | `OWNER` | Web Browser | Auto-authorized |
 | **Admin** | `ADMIN` | Web Browser | Auto-authorized |
 | **CS** | `CS` | Web Browser | Requires owner approval |
-| **Companion** | `COMPANION` | Go Agent / Browser | Requires owner approval |
+| **Companion** | `COMPANION` | Electron Desktop App | Requires owner approval |
 
 ### Permission Matrix
 
@@ -617,69 +595,6 @@ Every endpoint returns a standard JSON envelope:
 
 ---
 
-## Go Agent
-
-The Go Agent is a desktop application that runs on companion PCs. It connects to the backend via WebSocket and provides a local web UI.
-
-### Architecture
-
-```
-Go Agent (agent.exe)
-├── WebSocket Client ────▶ Nest.js Server (port 3001)
-├── Local HTTP Server ───▶ WebView2 Browser (port 9876)
-├── Time Tracker ─────────▶ ENTERTAINMENT / WORK mode tracking
-├── Network Control ──────▶ Linux QoS (tc) bandwidth throttling
-└── System Control ───────▶ shutdown / restart commands
-```
-
-### Configuration
-
-```bash
-# Required: JWT token of the companion user
-export AGENT_TOKEN="<companion_jwt_access_token>"
-
-# Optional: Backend server URL (default: http://localhost:3001)
-export AGENT_SERVER_URL="http://localhost:3001"
-```
-
-### Build and Run
-
-```bash
-cd apps/agent
-go build ./cmd/agent/
-./agent
-# Output:
-#   Chunlv Agent started
-#     Server: http://localhost:3001
-#     Local UI: http://localhost:9876
-```
-
-### Features
-
-| Feature | Description |
-|---------|-------------|
-| **Auto-reconnect** | WebSocket client retries every 5 seconds on disconnect |
-| **Heartbeat** | Sends `companion:heartbeat` every 30 seconds with mode, work/entertainment seconds, and total time |
-| **Mode switching** | Toggle between ENTERTAINMENT (free time) and WORK (serving customer) modes |
-| **Order notifications** | Receives `order:new` push events; latest order accessible at local API `/api/orders/latest` |
-| **Remote commands** | Executes `shutdown`, `restart`, `throttle <KB>`, `unthrottle` from admin commands |
-| **Command acknowledgment** | Reports execution success/failure back to server via `pc:command_ack` |
-| **Local Web UI** | Serves a WebView2-compatible HTML interface on `http://localhost:9876` |
-
-### Local HTTP API (Agent)
-
-The agent exposes a local API on port 9876 for its WebView2 UI:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/tracker` | GET | Get current time tracker state (mode, workSec, entertainSec, totalSec) |
-| `/api/tracker/mode` | POST | Switch mode. Body: `{ mode: "ENTERTAINMENT" \| "WORK" }`. Also emits `companion:status` to server. |
-| `/api/orders/latest` | GET | Get the latest order pushed to this agent |
-| `/api/orders/confirm` | POST | Confirm the current order (emits order:confirm) |
-| `/api/orders/complete` | POST | Complete the current order (emits order:complete) |
-
----
-
 ## Environment Variables
 
 ### Backend (`apps/server/.env`)
@@ -691,13 +606,6 @@ The agent exposes a local API on port 9876 for its WebView2 UI:
 | `JWT_SECRET` | Secret for signing access tokens | _Required_ |
 | `JWT_REFRESH_SECRET` | Secret for signing refresh tokens | _Required_ |
 | `PORT` | HTTP server port | `3001` |
-
-### Go Agent (`apps/agent/`)
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AGENT_TOKEN` | JWT access token for the companion user | _Required_ |
-| `AGENT_SERVER_URL` | Backend server base URL | `http://localhost:3001` |
 
 ### Docker Compose (`docker/docker-compose.yaml`)
 

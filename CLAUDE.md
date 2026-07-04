@@ -11,18 +11,15 @@ pnpm db:migrate              # Run Prisma migrations
 pnpm db:seed                 # Seed database with test data
 docker compose -f docker/docker-compose.yaml up -d   # Start PostgreSQL + Redis
 docker compose -f docker/docker-compose.yaml down    # Stop services
-cd apps/agent && go build ./cmd/agent/               # Build Go Agent
 ```
 
 ## Architecture
 
 ```
 Browser (React) ──HTTP──▶ Nest.js (Express) ──▶ PostgreSQL + Redis
-                                  △
-Go Agent (WebSocket) ─────────────┘
 ```
 
-- **Monorepo:** pnpm workspaces (`apps/web`, `apps/server`, `apps/agent`, `packages/shared`)
+- **Monorepo:** pnpm workspaces (`apps/web`, `apps/server`, `packages/shared`)
 - **Auth:** JWT dual-token (access 15min / refresh 7d), 4 roles (OWNER/ADMIN/CS/COMPANION), `RolesGuard`
 - **Real-time:** Socket.IO gateway with JWT auth on connect, studio-based room grouping
 - **API:** Nest.js on port 3001, `/api/*` prefix, CORS for localhost:8000/5173

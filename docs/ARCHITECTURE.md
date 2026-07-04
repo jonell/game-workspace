@@ -19,7 +19,7 @@
 graph TB
     subgraph 客户端层
         BROWSER["🖥️ 浏览器<br/>管理端 / 客服端"]
-        AGENT["🤖 Go Agent<br/>陪玩桌面端"]
+        AGENT["🤖 Electron 客户端<br/>陪玩桌面端"]
     end
 
     subgraph 网关层
@@ -65,7 +65,7 @@ graph TB
 graph LR
     subgraph 公网
         USER["👤 老板/管理员/客服<br/>任意浏览器"]
-        CP["🖥️ 陪玩电脑<br/>Go Agent 客户端"]
+        CP["🖥️ 陪玩电脑<br/>Electron 客户端 客户端"]
     end
 
     subgraph 服务器
@@ -278,7 +278,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant AGENT as Go Agent
+    participant AGENT as Electron 客户端
     participant GW as Socket.IO Gateway
     participant DB as PostgreSQL
     participant BROWSER as 浏览器 (CS/Admin)
@@ -326,7 +326,7 @@ sequenceDiagram
 老板创建陪玩(自动授权) → 陪玩输入账号密码 → Agent自动登录 → 在线
 ```
 
-## 8. Go Agent 内部架构
+## 8. Electron 客户端 内部架构
 
 ```mermaid
 graph TB
