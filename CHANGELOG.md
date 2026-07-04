@@ -23,6 +23,15 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **进程黑名单管理：** 完整的黑名单/白名单进程管控功能（详见下方）
+  - 陪玩 Electron 客户端进程采集（PowerShell）、OS 过滤、5 分钟定时上报
+  - 服务端黑名单/白名单 CRUD，工作室级规则 + 陪玩个人覆盖
+  - WebSocket 实时推送黑名单更新，陪玩终端即时杀进程
+  - 杀进程前 5 秒倒计时右下角弹窗 + 杀后确认 toast
+  - taskkill 速率限制保护（5次/10秒）
+  - 管理端：BlacklistPage、WhitelistPage、ProcessKillLogPage
+  - 22 个内置白名单进程（微信、浏览器、开发工具等）自动对接
+
 - **工作室类型选择：** OWNER 创建工作室时增加两步式类型选择流程（线下工作室/线上俱乐部）
 - 新增 `StudioType` 共享枚举 (`DIRECT | RENTAL`)，前端标签映射为「线下工作室」/「线上俱乐部」
 - 工作室列表新增「类型」列，支持编辑时通过 `Segmented` 修改类型
