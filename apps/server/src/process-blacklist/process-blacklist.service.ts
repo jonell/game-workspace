@@ -179,6 +179,24 @@ export class ProcessBlacklistService {
     });
   }
 
+  
+  /** Extract unique process names from a companion latest report. */
+  async getUniqueProcessNames(companionId: string): Promise<string[]> {
+    const report = await this.prisma.companionProcessReport.findFirst({
+      where: { companionId },
+      orderBy: { createdAt: "desc" },
+      select: { processes: true },
+    });
+    if (!report) return [];
+    const processes = report.processes as Array<{ name?: string }> | null;
+    if (!processes || !Array.isArray(processes)) return [];
+    const names = new Set<string>();
+    for (const p of processes) {
+      if (p.name && typeof p.name === "string") names.add(p.name);
+    }
+    return Array.from(names).sort();
+  }
+
   async getLatestReport(companionId: string) {
     return this.prisma.companionProcessReport.findFirst({
       where: { companionId },

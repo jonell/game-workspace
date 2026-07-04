@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, createElement } from 'react';
-import { Table, Button, Space, Modal, Input, Popconfirm, message, Tag, Typography } from 'antd';
+import { Table, Button, Space, Modal, Input, Popconfirm, message, Tag, Typography, Select, Radio } from 'antd';
 import { ReloadOutlined, PlusOutlined, DeleteOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { blacklistApi } from '../../api/blacklist';
 
@@ -19,6 +19,12 @@ const WhitelistPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [processName, setProcessName] = useState('');
   const [processPath, setProcessPath] = useState('');
+  const [addMode, setAddMode] = useState<'select' | 'manual'>('select');
+  const [selectedCompanionForAdd, setSelectedCompanionForAdd] = useState<string | undefined>();
+  const [selectedProcess, setSelectedProcess] = useState<string | undefined>();
+  const [reportedProcesses, setReportedProcesses] = useState<string[]>([]);
+  const [loadingProcesses, setLoadingProcesses] = useState(false);
+  const [companions, setCompanions] = useState<any[]>([]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -30,17 +36,30 @@ const WhitelistPage: React.FC = () => {
     } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => { fetchItems(); import('../../api/companions').then(m => m.companionsApi.list().then(({ data }: any) => setCompanions(data.data ?? [])).catch(() => {})); }, [fetchItems]);
+
+  const loadReportedProcesses = async (companionId: string) => {
+    setLoadingProcesses(true);
+    try {
+      const { data } = await blacklistApi.getUniqueNames(companionId);
+      setReportedProcesses(data.data ?? []);
+    } catch { setReportedProcesses([]); }
+    finally { setLoadingProcesses(false); }
+  };
 
   const handleAdd = async () => {
-    if (!processName.trim()) { message.warning('请输入进程名称'); return; }
+    const name = addMode === 'select' ? selectedProcess : processName.trim();
+    if (!name) { message.warning(addMode === 'select' ? '请选择进程' : '请输入进程名称'); return; }
     setSubmitting(true);
     try {
-      await blacklistApi.addWhitelist({ processName: processName.trim(), processPath: processPath.trim() || undefined });
+      await blacklistApi.addWhitelist({ processName: name, processPath: addMode === 'manual' ? (processPath.trim() || undefined) : undefined });
       message.success('已添加到白名单');
       setModalOpen(false);
       setProcessName('');
       setProcessPath('');
+      setSelectedCompanionForAdd(undefined);
+      setSelectedProcess(undefined);
+      setAddMode('select');
       fetchItems();
     } catch (err: any) {
       message.error(err?.response?.data?.message || '添加失败');
@@ -103,19 +122,46 @@ const WhitelistPage: React.FC = () => {
         pagination={{ pageSize: 50, showTotal: (t) => `共 ${t} 条` }} />
 
       <Modal title="添加白名单进程" open={modalOpen} onOk={handleAdd}
-        onCancel={() => setModalOpen(false)} confirmLoading={submitting}
-        okText="添加" cancelText="取消" destroyOnClose>
+        onCancel={() => { setModalOpen(false); setAddMode('select'); setSelectedCompanionForAdd(undefined); setSelectedProcess(undefined); }}
+        confirmLoading={submitting} okText="添加" cancelText="取消" destroyOnClose width={480}>
         <div style={{ marginTop: 16 }}>
-          <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>
-            进程名称（如 WeChat.exe、YY.exe）
-          </Text>
-          <Input placeholder="输入进程名称" value={processName}
-            onChange={(e) => setProcessName(e.target.value)} onPressEnter={handleAdd} />
-          <Text type="secondary" style={{ fontSize: 12, marginTop: 12, marginBottom: 4, display: 'block' }}>
-            进程路径（可选）
-          </Text>
-          <Input placeholder="输入完整路径" value={processPath}
-            onChange={(e) => setProcessPath(e.target.value)} />
+          <Radio.Group value={addMode} onChange={(e) => setAddMode(e.target.value)} style={{ marginBottom: 16 }}>
+            <Radio.Button value="select">从陪玩已上报进程选择</Radio.Button>
+            <Radio.Button value="manual">手动输入</Radio.Button>
+          </Radio.Group>
+
+          {addMode === 'select' ? (
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>选择陪玩</Text>
+              <Select placeholder="选择陪玩" style={{ width: '100%', marginBottom: 12 }}
+                value={selectedCompanionForAdd}
+                onChange={(cid) => { setSelectedCompanionForAdd(cid); setSelectedProcess(undefined); loadReportedProcesses(cid); }}
+                options={companions.map((c: any) => ({ label: c.user?.username || c.id, value: c.id }))} />
+              <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>选择进程</Text>
+              <Select placeholder={selectedCompanionForAdd ? '选择进程' : '请先选择陪玩'} style={{ width: '100%' }}
+                value={selectedProcess} onChange={setSelectedProcess}
+                loading={loadingProcesses}
+                disabled={!selectedCompanionForAdd}
+                options={reportedProcesses.map((n) => ({ label: n, value: n }))}
+                showSearch filterOption={(input, option) => (option?.label as string || '').toLowerCase().includes(input.toLowerCase())} />
+              {selectedCompanionForAdd && reportedProcesses.length === 0 && !loadingProcesses && (
+                <Text type="secondary" style={{ fontSize: 12, marginTop: 8, display: 'block' }}>该陪玩暂无进程上报数据</Text>
+              )}
+            </div>
+          ) : (
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>
+                进程名称（如 WeChat.exe、YY.exe）
+              </Text>
+              <Input placeholder="输入进程名称" value={processName}
+                onChange={(e) => setProcessName(e.target.value)} onPressEnter={handleAdd} />
+              <Text type="secondary" style={{ fontSize: 12, marginTop: 12, marginBottom: 4, display: 'block' }}>
+                进程路径（可选）
+              </Text>
+              <Input placeholder="输入完整路径" value={processPath}
+                onChange={(e) => setProcessPath(e.target.value)} />
+            </div>
+          )}
         </div>
       </Modal>
     </div>

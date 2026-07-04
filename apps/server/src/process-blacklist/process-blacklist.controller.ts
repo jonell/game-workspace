@@ -136,6 +136,16 @@ export class ProcessBlacklistController {
 
   @Get('processes/reports')
   @Roles(UserRole.ADMIN, UserRole.OWNER)
+  
+  @Get('processes/unique-names')
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  async getUniqueNames(@Query('companionId') companionId: string) {
+    if (!companionId) return { code: 400, message: '请指定陪玩ID', data: null };
+    const names = await this.service.getUniqueProcessNames(companionId);
+    return { code: 200, data: names };
+  }
+
+
   async getReports(@Req() req: any, @Query('companionId') companionId?: string, @Query('limit') limit?: string) {
     const reports = await this.service.getRecentReports(await this.sid(req), companionId, Number(limit) || 20);
     return { code: 200, data: reports };

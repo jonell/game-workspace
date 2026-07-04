@@ -34,6 +34,7 @@ export const blacklistApi = {
     http.get('/processes/reports', { params }),
   getLatestReport: (companionId: string) =>
     http.get(`/processes/reports/${companionId}`),
+  getUniqueNames: (companionId: string) => http.get('/processes/unique-names', { params: { companionId } }),
   getKillLogs: (params?: { companionId?: string; page?: number; pageSize?: number }) =>
     http.get('/processes/kill-logs', { params }),
 };
