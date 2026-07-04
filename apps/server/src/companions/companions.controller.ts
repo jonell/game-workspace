@@ -214,13 +214,20 @@ export class CompanionsController {
       return { code: 400, message: '当前用户不是陪玩', data: null };
     }
 
+    const ts = new Date().toISOString();
+    console.log(`[HEARTBEAT][${ts}] REST — companionId=${companionId} username=${req.user.username} mode=${body.currentMode || '-'} workSec=${body.workSec || 0}`);
+
     // 1. 更新在线状态（仅当离线时设为在线，避免覆盖用户主动设置的状态）
     const companion = await this.prisma.companion.findUnique({ where: { id: companionId }, select: { status: true } });
+    const currentStatus = companion?.status || 'UNKNOWN';
     if (!companion || companion.status === 'OFFLINE') {
       await this.prisma.companion.update({
         where: { id: companionId },
         data: { status: 'ONLINE' },
       });
+      console.log(`[HEARTBEAT][${ts}] Status changed: ${currentStatus} → ONLINE (was offline)`);
+    } else {
+      console.log(`[HEARTBEAT][${ts}] Status preserved: ${currentStatus} (not overwritten)`);
     }
 
     // 2. 更新 PC 状态

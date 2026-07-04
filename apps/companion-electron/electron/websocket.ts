@@ -110,6 +110,7 @@ export function disconnectWebSocket(): void {
 }
 
 export function emitStatus(status: string, mode?: string): void {
+  console.log(`[STATUS][${new Date().toISOString()}] Electron emit — status=${status} mode=${mode || '-'} connected=${socket?.connected || false}`);
   socket?.emit('companion:status', { status, mode });
 }
 

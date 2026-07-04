@@ -136,6 +136,8 @@ function setupIPC(): void {
 
   ipcMain.on('status:changed', (_e, status: string) => {
     const name = store.get('companionName') as string;
+    const ts = new Date().toISOString();
+    console.log(`[STATUS][${ts}] IPC status:changed received — status=${status} name=${name}`);
     updateTrayTooltip(`蠢驴电竞 - ${name} (${status})`);
     // Sync to server via WebSocket
     emitStatus(status);

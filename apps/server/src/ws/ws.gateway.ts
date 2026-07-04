@@ -98,14 +98,22 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
 
+    const ts = new Date().toISOString();
+    console.log(`[STATUS][${ts}] WS companion:status — companionId=${user.companionId} username=${user.username} status=${data.status} mode=${data.mode || '-'}`);
+
     await this.prisma.companion.update({
       where: { id: user.companionId }, data: { status: data.status },
-    }).catch(() => null);
+    }).then(() => {
+      console.log(`[STATUS][${ts}] DB updated OK — companionId=${user.companionId} → ${data.status}`);
+    }).catch((err) => {
+      console.error(`[STATUS][${ts}] DB update FAILED — companionId=${user.companionId} error=${err.message}`);
+    });
 
     if (user.studioId) {
       this.server.to(`studio:${user.studioId}`).emit('status:broadcast', {
         companionId: user.companionId, status: data.status, mode: data.mode,
       });
+      console.log(`[STATUS][${ts}] Broadcast to studio=${user.studioId}`);
     }
   }
 
@@ -116,6 +124,8 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
+
+    console.log(`[HEARTBEAT][${new Date().toISOString()}] WS — companionId=${user.companionId} username=${user.username} mode=${data.currentMode || '-'} workSec=${data.workSec || 0}`);
 
     await this.prisma.companionPC.upsert({
       where: { companionId: user.companionId },
