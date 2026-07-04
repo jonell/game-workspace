@@ -144,6 +144,36 @@ export class CompanionsController {
     return { code: 200, message: 'ok', data };
   }
 
+  // ── Me endpoints (self-service shortcuts, MUST be before :id routes) ──
+
+  @Put('companions/me/status')
+  @Roles(UserRole.COMPANION)
+  async updateMyStatus(
+    @Body('status') status: string,
+    @Req() req: any,
+  ): Promise<ApiResponse<unknown>> {
+    const id = req.user.companionId;
+    if (!id) return { code: 400, message: '当前用户不是陪玩', data: null };
+
+    // Threshold check when switching to entertainment mode (IDLE)
+    if (status === 'IDLE') {
+      const companion = await this.prisma.companion.findUnique({ where: { id }, select: { deposit: true, monthlyRevenue: true } });
+      if (companion) {
+        const depositCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'entertainment.deposit_threshold' } });
+        const revenueCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'entertainment.revenue_threshold' } });
+        const minDeposit = (depositCfg?.value as number) ?? 500;
+        const minRevenue = (revenueCfg?.value as number) ?? 200;
+        const d = companion.deposit || 0, r = companion.monthlyRevenue || 0;
+        if (d < minDeposit || r < minRevenue) {
+          return { code: 200, message: '不满足娱乐模式条件', data: { blocked: true, deposit: d, revenue: r, depositThreshold: minDeposit, revenueThreshold: minRevenue } };
+        }
+      }
+    }
+    logger.info('REST status update (me)', { companionId: id, username: req.user.username, status });
+    const data = await this.companionsService.updateStatus(id, status, req.user);
+    return { code: 200, message: 'ok', data };
+  }
+
   @Put('companions/:id/status')
   @Roles(UserRole.COMPANION)
   async updateStatus(
