@@ -79,7 +79,9 @@ function setupIPC(): void {
           store.set('companionName', meRes.data.data.displayName || meRes.data.data.username || username);
         }
 
-        connectWebSocket(serverUrl, res.data.data.accessToken, store.get('companionId'));
+        const companionId = store.get('companionId') as string;
+        connectWebSocket(serverUrl, res.data.data.accessToken, companionId);
+        logger.info('Login success', { username, companionId });
 
         return { success: true, user: meRes.data?.data };
       }
@@ -194,6 +196,7 @@ function setupWsEvents(): void {
 
 // App lifecycle
 app.whenReady().then(() => {
+  logger.info('Electron app started', { version: app.getVersion() });
   setupIPC();
   setupWsEvents();
   mainWindow = createMainWindow();
@@ -227,6 +230,7 @@ app.whenReady().then(() => {
 });
 
 app.on('before-quit', () => {
+  logger.info('App quitting');
   isQuitting = true;
   stopProcessMonitor();
   disconnectWebSocket();

@@ -24,11 +24,10 @@ const CURRENT_LEVEL: LogLevel =
   LogLevel.DEBUG;
 
 function getLogDir(): string {
-  try {
-    return path.join(app.getPath('userData'), 'logs');
-  } catch {
-    return path.join(process.cwd(), 'logs');
-  }
+  try { return path.join(app.getPath('userData'), 'logs'); } catch {}
+  try { return path.join(app.getPath('appData'), 'logs'); } catch {}
+  try { return path.join(process.cwd(), 'logs'); } catch {}
+  return path.join(__dirname, '..', 'logs');
 }
 
 function ensureLogDir(): void {

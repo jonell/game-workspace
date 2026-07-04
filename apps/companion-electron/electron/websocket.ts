@@ -45,6 +45,10 @@ export function connectWebSocket(serverUrl: string, token: string, companionId: 
     }, 30_000);
   });
 
+  socket.on('connect_error', (err: any) => {
+    logger.error('WebSocket connect error', { message: err?.message || String(err) });
+  });
+
   socket.on('disconnect', () => {
     logger.warn('WebSocket disconnected');
     if (heartbeatTimer) {
