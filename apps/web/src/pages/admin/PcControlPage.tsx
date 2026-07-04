@@ -20,23 +20,9 @@ import {
 } from '@ant-design/icons';
 import { CompanionStatus } from '@chunlv/shared';
 import { companionsApi } from '../../api/companions';
+import { companionStatusConfig, modeLabels } from '../../constants';
 
 const { Text } = Typography;
-
-const statusConfig: Record<
-  CompanionStatus,
-  { color: string; label: string }
-> = {
-  [CompanionStatus.ONLINE]: { color: 'red', label: '在线' },
-  [CompanionStatus.IDLE]: { color: 'green', label: '空闲' },
-  [CompanionStatus.BUSY]: { color: 'gold', label: '忙碌' },
-  [CompanionStatus.OFFLINE]: { color: 'default', label: '离线' },
-};
-
-const modeLabels: Record<string, string> = {
-  ENTERTAINMENT: '娱乐模式',
-  WORK: '工作模式',
-};
 
 interface CompanionPC {
   currentMode: string;
@@ -140,7 +126,7 @@ const PcControlPage: React.FC = () => {
       key: 'status',
       width: 90,
       render: (status: CompanionStatus) => {
-        const cfg = statusConfig[status];
+        const cfg = companionStatusConfig[status];
         return <Tag color={cfg?.color}>{cfg?.label ?? status}</Tag>;
       },
     },

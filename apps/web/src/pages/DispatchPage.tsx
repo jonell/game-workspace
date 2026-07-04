@@ -193,9 +193,10 @@ const CSView: React.FC = () => {
       return (STATUS_SORT[a.status] ?? 9) - (STATUS_SORT[b.status] ?? 9);
     }), [companions, chatIds]);
 
-  const idleCount = companions.filter((c) => c.status === CompanionStatus.IDLE).length;
+  const idleCount = companions.filter((c) => c.status === CompanionStatus.ONLINE).length;
   const busyCount = companions.filter((c) => c.status === CompanionStatus.BUSY).length;
-  const entertainCount = companions.filter((c) => c.status === CompanionStatus.ONLINE).length;
+  const entertainCount = companions.filter((c) => c.status === CompanionStatus.IDLE).length;
+  const restingCount = companions.filter((c) => c.status === CompanionStatus.RESTING).length;
   const offlineCount = companions.filter((c) => c.status === CompanionStatus.OFFLINE).length;
   const poolCount = poolOrders.length;
 
@@ -399,6 +400,7 @@ const CSView: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟢 空闲</span><b style={{ color: '#00E676' }}>{idleCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🔴 接单中</span><b style={{ color: '#FF4757' }}>{busyCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟡 娱乐中</span><b style={{ color: '#FFD600' }}>{entertainCount}</b></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟠 休息中</span><b style={{ color: '#FF9500' }}>{restingCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>⚪ 离线</span><b style={{ color: '#94A3B8' }}>{offlineCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, borderTop: '1px solid #E2E8F0', paddingTop: 8 }}><span>📦 待派</span><b style={{ color: '#1677ff' }}>{poolCount}</b></div>
             </div>
@@ -755,7 +757,6 @@ const AdminView: React.FC = () => {
               {adminCompanions
                 .filter(
                   (c) =>
-                    c.status === CompanionStatus.IDLE ||
                     c.status === CompanionStatus.ONLINE
                 )
                 .map((c) => (

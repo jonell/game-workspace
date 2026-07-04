@@ -150,8 +150,8 @@ export class CompanionsController {
     @Body('status') status: string,
     @Req() req: any,
   ): Promise<ApiResponse<unknown>> {
-    // Threshold check when switching to entertainment mode (ONLINE)
-    if (status === 'ONLINE') {
+    // Threshold check when switching to entertainment mode (IDLE)
+    if (status === 'IDLE') {
       const companion = await this.prisma.companion.findUnique({ where: { id }, select: { deposit: true, monthlyRevenue: true } });
       if (companion) {
         const depositCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'entertainment.deposit_threshold' } });

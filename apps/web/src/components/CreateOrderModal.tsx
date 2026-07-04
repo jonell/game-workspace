@@ -64,7 +64,7 @@ const CreateOrderModal: React.FC<Props> = ({ open, onClose, onCreated, userId, d
           {({ getFieldValue }) => getFieldValue('dispatchType') === DispatchType.DIRECT ? (
             <Form.Item name="companionId" label="指定陪玩" rules={[{ required: true }]}>
               <Select placeholder="选择陪玩" showSearch optionFilterProp="label">
-                {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
+                {companions.filter((c:any) => c.status !== 'OFFLINE' && c.status !== 'RESTING').map((c:any) => (
                   <Option key={c.id} value={c.id} label={c.user?.username}>{c.user?.username ?? c.id}</Option>))}
               </Select></Form.Item>) : null}
         </Form.Item>

@@ -3,6 +3,7 @@ import { Card, Row, Col, Table, Tag, Typography, Spin, Alert } from 'antd';
 import { RiseOutlined, TeamOutlined, DollarOutlined } from '@ant-design/icons';
 import { dashboardApi } from '../../api/dashboard';
 import { useAuthStore } from '../../stores/authStore';
+import { companionStatusConfig } from '../../constants';
 // Chart temporarily disabled for debugging
 
 const { Text, Title } = Typography;
@@ -63,13 +64,6 @@ const DashboardPage: React.FC = () => {
   const today = data?.today ?? {};
   const ranking = data?.ranking ?? [];
   const alerts = data?.alerts ?? [];
-
-  const statusColor: Record<string, string> = {
-    ONLINE: 'green', BUSY: 'red', IDLE: 'orange', OFFLINE: 'default',
-  };
-  const statusLabel: Record<string, string> = {
-    ONLINE: '\u{1F7E2}等单中', BUSY: '\u{1F534}接单中', IDLE: '\u{26AA}娱乐中', OFFLINE: '\u{26AB}离线',
-  };
 
   return (
     <div>
@@ -136,7 +130,7 @@ const DashboardPage: React.FC = () => {
           locale={{ emptyText: '暂无陪玩' }}>
           <Table.Column title="昵称" dataIndex={['user', 'username']} />
           <Table.Column title="状态" dataIndex="status"
-            render={(s: string) => <Tag color={statusColor[s]}>{statusLabel[s] ?? s}</Tag>} />
+            render={(s: string) => <Tag color={companionStatusConfig[s]?.color}>{companionStatusConfig[s]?.label ?? s}</Tag>} />
           <Table.Column title="本月流水" dataIndex="monthlyRevenue"
             render={(v: number) => `¥${(v ?? 0).toLocaleString()}`} />
         </Table>

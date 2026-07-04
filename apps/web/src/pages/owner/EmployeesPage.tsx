@@ -24,6 +24,7 @@ import { studiosApi } from '../../api/studios';
 import { companionsApi } from '../../api/companions';
 import { useAuthStore } from '../../stores/authStore';
 import { UserRole } from '@chunlv/shared';
+import { companionStatusConfig } from '../../constants';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -32,13 +33,6 @@ const roleLabels: Record<string, { label: string; color: string }> = {
   [UserRole.ADMIN]: { label: '管理员', color: 'blue' },
   [UserRole.CS]: { label: '客服', color: 'green' },
   [UserRole.COMPANION]: { label: '陪玩', color: 'orange' },
-};
-
-const statusLabels: Record<string, { color: string; label: string }> = {
-  ONLINE: { color: 'green', label: '🟢等单中' },
-  BUSY: { color: 'red', label: '🔴接单中' },
-  IDLE: { color: 'orange', label: '⚪娱乐中' },
-  OFFLINE: { color: 'default', label: '⚫离线' },
 };
 
 interface Employee {
@@ -254,7 +248,7 @@ const EmployeesPage: React.FC = () => {
       width: 110,
       render: (_: unknown, record: Employee) => {
         if (!record.companion) return '-';
-        const s = statusLabels[record.companion.status];
+        const s = companionStatusConfig[record.companion.status];
         return <Tag color={s?.color}>{s?.label || record.companion.status}</Tag>;
       },
     },

@@ -29,6 +29,7 @@ export enum CompanionStatus {
   ONLINE = 'ONLINE',
   BUSY = 'BUSY',
   IDLE = 'IDLE',
+  RESTING = 'RESTING',
   OFFLINE = 'OFFLINE',
 }
 

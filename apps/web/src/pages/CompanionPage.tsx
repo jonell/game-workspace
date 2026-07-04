@@ -3,6 +3,7 @@ import { Card, Row, Col, Button, Typography, Tag, Progress, Spin, Space, Modal, 
 import { DollarOutlined, ClockCircleOutlined, ThunderboltOutlined, PlayCircleOutlined, SearchOutlined, CoffeeOutlined, WalletOutlined, BankOutlined, SwapOutlined, LockOutlined } from '@ant-design/icons';
 import { companionsApi } from '../api/companions';
 import { useAuthStore } from '../stores/authStore';
+import { companionStatusConfig } from '../constants';
 
 const { Text, Title } = Typography;
 
@@ -158,14 +159,14 @@ const CompanionPage: React.FC = () => {
           <Card size="small" style={{ textAlign: 'center', marginBottom: 16 }}>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('IDLE')} block>娱乐中</Button>
-              <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('ONLINE')} block>等单中</Button>
-              <Button type="default" icon={IconCoffee} size="large" onClick={() => switchStatus('OFFLINE')} block>休息中</Button>
+              <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('ONLINE')} block>空闲</Button>
+              <Button type="default" icon={IconCoffee} size="large" onClick={() => switchStatus('RESTING')} block>休息中</Button>
             </Space>
           </Card>
           <Card title="在线陪玩" size="small">
             {data.onlineCompanions?.map((c: any) => (
-              <Tag key={c.id} color={c.status === 'BUSY' ? 'red' : 'green'} style={{ marginBottom: 8, padding: '4px 12px', fontSize: 14 }}>
-                {c.user?.username} {c.status === 'BUSY' ? '接单中' : '等单中'}
+              <Tag key={c.id} color={companionStatusConfig[c.status]?.color || 'default'} style={{ marginBottom: 8, padding: '4px 12px', fontSize: 14 }}>
+                {c.user?.username} {companionStatusConfig[c.status]?.label || c.status}
               </Tag>
             ))}
             {(!data.onlineCompanions || data.onlineCompanions.length === 0) && <Text type="secondary">暂无在线陪玩</Text>}

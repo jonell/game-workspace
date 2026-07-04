@@ -2,15 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Table, Tag, Typography, Button, Space, message } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import http from '../api/client';
+import { companionStatusConfig } from '../constants';
 
 const { Text } = Typography;
-
-const statusConfig: Record<string, { color: string; label: string }> = {
-  IDLE: { color: 'green', label: '空闲' },
-  ONLINE: { color: 'gold', label: '在线' },
-  BUSY: { color: 'red', label: '接单中' },
-  OFFLINE: { color: 'default', label: '离线' },
-};
 
 const CompanionListPage: React.FC = () => {
   const [companions, setCompanions] = useState<any[]>([]);
@@ -44,9 +38,9 @@ const CompanionListPage: React.FC = () => {
             render: (_: any, r: any) => (
               <Space>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block',
-                  background: r.status === 'BUSY' ? '#FF4757' : r.status === 'IDLE' ? '#00E676' :
-                    r.status === 'ONLINE' ? '#FFD600' : '#94A3B8',
-                  boxShadow: r.status !== 'OFFLINE' ? `0 0 6px ${r.status === 'BUSY' ? '#FF4757' : r.status === 'IDLE' ? '#00E676' : '#FFD600'}` : 'none',
+                  background: r.status === 'BUSY' ? '#FF4757' : r.status === 'ONLINE' ? '#00E676' :
+                    r.status === 'IDLE' ? '#FFD600' : r.status === 'RESTING' ? '#FF9500' : '#94A3B8',
+                  boxShadow: r.status !== 'OFFLINE' && r.status !== 'RESTING' ? `0 0 6px ${r.status === 'BUSY' ? '#FF4757' : r.status === 'ONLINE' ? '#00E676' : '#FFD600'}` : 'none',
                 }} />
                 <Text strong>{r.user?.username || r.id}</Text>
                 {r.realName && <Text type="secondary" style={{ fontSize: 11 }}>{r.realName}</Text>}
@@ -54,7 +48,7 @@ const CompanionListPage: React.FC = () => {
             ),
           },
           { title: '状态', dataIndex: 'status', width: 80,
-            render: (s: string) => <Tag color={statusConfig[s]?.color}>{statusConfig[s]?.label || s}</Tag> },
+            render: (s: string) => <Tag color={companionStatusConfig[s]?.color}>{companionStatusConfig[s]?.label || s}</Tag> },
           { title: '游戏', dataIndex: 'games', width: 260,
             render: (games: any[]) => {
               if (!games?.length) return <Text type="secondary">未设置</Text>;
