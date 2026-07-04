@@ -63,9 +63,12 @@ function formatHeartbeat(heartbeat: string | null | undefined): string {
   });
 }
 
-function isOnline(heartbeat: string | null | undefined): boolean {
-  if (!heartbeat) return false;
-  return Date.now() - new Date(heartbeat).getTime() < 120_000;
+function isOnline(record: Companion): boolean {
+  // Companion status is the primary indicator (set via WS companion:status or REST)
+  if (record.status === 'ONLINE' || record.status === 'IDLE' || record.status === 'BUSY') return true;
+  // Fallback: heartbeat-based check from PC agent
+  if (!record.pc?.lastHeartbeat) return false;
+  return Date.now() - new Date(record.pc.lastHeartbeat).getTime() < 120_000;
 }
 
 const PcControlPage: React.FC = () => {
@@ -91,6 +94,9 @@ const PcControlPage: React.FC = () => {
 
   useEffect(() => {
     fetchCompanions();
+    // Auto-refresh every 30s as fallback
+    const t = setInterval(fetchCompanions, 30000);
+    return () => clearInterval(t);
   }, [fetchCompanions]);
 
   // Real-time status updates via WebSocket
@@ -154,7 +160,7 @@ const PcControlPage: React.FC = () => {
       key: 'pcOnline',
       width: 100,
       render: (_: unknown, record: Companion) => {
-        const online = isOnline(record.pc?.lastHeartbeat);
+        const online = isOnline(record);
         return (
           <Tag color={online ? 'green' : 'default'}>
             {React.createElement(DesktopOutlined)}
@@ -209,7 +215,7 @@ const PcControlPage: React.FC = () => {
       key: 'actions',
       width: 320,
       render: (_: unknown, record: Companion) => {
-        const pcOnline = isOnline(record.pc?.lastHeartbeat);
+        const pcOnline = isOnline(record);
         const busy = sendingCommands[record.id];
         return (
           <Space size="small" wrap>
