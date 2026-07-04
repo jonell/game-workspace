@@ -26,7 +26,7 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /** companionId -> socketId */
   private companionSockets = new Map<string, string>();
-  /** userId -> socketId (for targeted user notifications, e.g. CS grab alerts) */
+  /** userId -> socketId */
   private userSockets = new Map<string, string>();
 
   constructor(
@@ -39,81 +39,52 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket): Promise<void> {
     try {
       const token = (client.handshake.auth?.token || client.handshake.query?.token) as string | undefined;
-      if (!token) {
-        client.disconnect(true);
-        return;
-      }
+      if (!token) { client.disconnect(true); return; }
 
-      const payload = this.jwt.verify<JwtPayload>(token, {
-        secret: process.env.JWT_SECRET,
-      });
+      const payload = this.jwt.verify<JwtPayload>(token, { secret: process.env.JWT_SECRET });
 
       const user: ConnectedUser = {
-        id: payload.sub,
-        username: payload.username,
-        role: payload.role,
-        studioId: payload.studioId,
-        companionId: payload.companionId,
+        id: payload.sub, username: payload.username, role: payload.role,
+        studioId: payload.studioId, companionId: payload.companionId,
       };
       client.data.user = user;
 
-      // join rooms
       void client.join(`user:${user.id}`);
       this.userSockets.set(user.id, client.id);
-      if (user.studioId) {
-        void client.join(`studio:${user.studioId}`);
-      }
+      if (user.studioId) { void client.join(`studio:${user.studioId}`); }
       if (user.companionId) {
         void client.join(`companion:${user.companionId}`);
         void client.join(`pc:${user.companionId}`);
-
-        // track mapping
         this.companionSockets.set(user.companionId, client.id);
 
-        // mark ONLINE
         await this.prisma.companion.update({
-          where: { id: user.companionId },
-          data: { status: 'ONLINE' },
+          where: { id: user.companionId }, data: { status: 'ONLINE' },
         });
 
-        // broadcast to studio
         if (user.studioId) {
-          this.server
-            .to(`studio:${user.studioId}`)
-            .emit('status:broadcast', {
-              companionId: user.companionId,
-              status: 'ONLINE',
-            });
+          this.server.to(`studio:${user.studioId}`).emit('status:broadcast', {
+            companionId: user.companionId, status: 'ONLINE',
+          });
         }
       }
-    } catch {
-      client.disconnect(true);
-    }
+    } catch { client.disconnect(true); }
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user) return;
-
     this.userSockets.delete(user.id);
-
     if (!user.companionId) return;
     this.companionSockets.delete(user.companionId);
 
-    await this.prisma.companion
-      .update({
-        where: { id: user.companionId },
-        data: { status: 'OFFLINE' },
-      })
-      .catch(() => null);
+    await this.prisma.companion.update({
+      where: { id: user.companionId }, data: { status: 'OFFLINE' },
+    }).catch(() => null);
 
     if (user.studioId) {
-      this.server
-        .to(`studio:${user.studioId}`)
-        .emit('status:broadcast', {
-          companionId: user.companionId,
-          status: 'OFFLINE',
-        });
+      this.server.to(`studio:${user.studioId}`).emit('status:broadcast', {
+        companionId: user.companionId, status: 'OFFLINE',
+      });
     }
   }
 
@@ -127,69 +98,45 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
 
-    await this.prisma.companion
-      .update({
-        where: { id: user.companionId },
-        data: { status: data.status },
-      })
-      .catch(() => null);
+    await this.prisma.companion.update({
+      where: { id: user.companionId }, data: { status: data.status },
+    }).catch(() => null);
 
     if (user.studioId) {
-      this.server
-        .to(`studio:${user.studioId}`)
-        .emit('status:broadcast', {
-          companionId: user.companionId,
-          status: data.status,
-          mode: data.mode,
-        });
+      this.server.to(`studio:${user.studioId}`).emit('status:broadcast', {
+        companionId: user.companionId, status: data.status, mode: data.mode,
+      });
     }
   }
 
   @SubscribeMessage('companion:heartbeat')
   async handleHeartbeat(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    data: {
-      agentVersion?: string;
-      currentMode?: string;
-      workSec?: number;
-      isThrottled?: boolean;
-      throttleLimitKB?: number;
-    },
+    @MessageBody() data: { agentVersion?: string; currentMode?: string; workSec?: number; isThrottled?: boolean; throttleLimitKB?: number },
   ): Promise<void> {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
 
-    // upsert CompanionPC
     await this.prisma.companionPC.upsert({
       where: { companionId: user.companionId },
       create: {
-        companionId: user.companionId,
-        agentVersion: data.agentVersion ?? '0.0.0',
-        lastHeartbeat: new Date(),
-        currentMode: data.currentMode ?? 'ENTERTAINMENT',
-        isThrottled: data.isThrottled ?? false,
-        throttleLimitKB: data.throttleLimitKB ?? null,
+        companionId: user.companionId, agentVersion: data.agentVersion ?? '0.0.0',
+        lastHeartbeat: new Date(), currentMode: data.currentMode ?? 'ENTERTAINMENT',
+        isThrottled: data.isThrottled ?? false, throttleLimitKB: data.throttleLimitKB ?? null,
       },
       update: {
-        agentVersion: data.agentVersion ?? undefined,
-        lastHeartbeat: new Date(),
-        currentMode: data.currentMode ?? undefined,
-        isThrottled: data.isThrottled ?? undefined,
+        agentVersion: data.agentVersion ?? undefined, lastHeartbeat: new Date(),
+        currentMode: data.currentMode ?? undefined, isThrottled: data.isThrottled ?? undefined,
         throttleLimitKB: data.throttleLimitKB ?? undefined,
       },
     });
 
-    // create time-log when workSec is reported
     if (data.workSec && data.workSec > 0) {
       const now = new Date();
       await this.prisma.companionTimeLog.create({
         data: {
-          companionId: user.companionId,
-          mode: data.currentMode ?? 'ENTERTAINMENT',
-          startedAt: new Date(now.getTime() - data.workSec * 1000),
-          endedAt: now,
-          durationSeconds: data.workSec,
+          companionId: user.companionId, mode: data.currentMode ?? 'ENTERTAINMENT',
+          startedAt: new Date(now.getTime() - data.workSec * 1000), endedAt: now, durationSeconds: data.workSec,
         },
       });
     }
@@ -203,73 +150,115 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user as ConnectedUser | undefined;
     if (!user?.companionId) return;
 
-    // lookup the PC row by companionId
-    const pc = await this.prisma.companionPC.findUnique({
-      where: { companionId: user.companionId },
-    });
+    const pc = await this.prisma.companionPC.findUnique({ where: { companionId: user.companionId } });
     if (!pc) return;
 
     await this.prisma.pCOperationLog.create({
+      data: { pcId: pc.id, operation: data.command, operatorId: user.id, detail: JSON.stringify({ success: data.success }) },
+    });
+  }
+
+  // ── blacklist inbound ──────────────────────────────────────────────
+
+  @SubscribeMessage('blacklist:report')
+  async handleBlacklistReport(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { processes: any[]; totalCount: number },
+  ): Promise<void> {
+    const user = client.data.user as ConnectedUser | undefined;
+    if (!user?.companionId) return;
+
+    await this.prisma.companionProcessReport.create({
+      data: { companionId: user.companionId, processes: data.processes as any, totalCount: data.totalCount, reportTime: new Date() },
+    });
+  }
+
+  @SubscribeMessage('blacklist:kill_result')
+  async handleBlacklistKillResult(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { processName: string; pid: number; success: boolean; resultText?: string; triggeredBy?: string; processPath?: string },
+  ): Promise<void> {
+    const user = client.data.user as ConnectedUser | undefined;
+    if (!user?.companionId) return;
+
+    await this.prisma.processKillLog.create({
       data: {
-        pcId: pc.id,
-        operation: data.command,
-        operatorId: user.id,
-        detail: JSON.stringify({ success: data.success }),
+        companionId: user.companionId, processName: data.processName, processPath: data.processPath ?? null,
+        pid: data.pid, success: data.success, resultText: data.resultText ?? null, triggeredBy: data.triggeredBy ?? 'PERIODIC',
       },
     });
   }
 
+  @SubscribeMessage('blacklist:update_ack')
+  async handleBlacklistUpdateAck(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { version: number },
+  ): Promise<void> {
+    const user = client.data.user as ConnectedUser | undefined;
+    if (!user?.companionId) return;
+    console.log(`[Blacklist] Companion ${user.companionId} ack'd version ${data.version}`);
+  }
+
   // ── outbound ───────────────────────────────────────────────────────
 
-  /** Send a command to a specific companion's PC agent. */
-  sendCommand(
-    companionId: string,
-    command: string,
-    params?: unknown,
-  ): void {
+  sendCommand(companionId: string, command: string, params?: unknown): void {
     const socketId = this.companionSockets.get(companionId);
     if (!socketId) return;
-
     this.server.to(socketId).emit('pc:command', { command, params });
   }
 
-  /** Push a new order to a specific companion. */
   pushOrder(companionId: string, order: unknown): void {
     const socketId = this.companionSockets.get(companionId);
     if (!socketId) return;
-
     this.server.to(socketId).emit('order:new', order);
   }
 
-  /** Broadcast an event to all users in a studio room. */
   broadcastToStudio(studioId: string, event: string, data: unknown): void {
     this.server.to(`studio:${studioId}`).emit(event, data);
   }
 
-  /** Broadcast an event to all IDLE companions in a studio (for urgent orders). */
   async broadcastToIdleCompanions(studioId: string, event: string, data: unknown): Promise<void> {
-    const idleCompanions = await this.prisma.companion.findMany({
-      where: { studioId, status: 'ONLINE' },
-      select: { id: true },
-    });
+    const idleCompanions = await this.prisma.companion.findMany({ where: { studioId, status: 'ONLINE' }, select: { id: true } });
     for (const c of idleCompanions) {
       const socketId = this.companionSockets.get(c.id);
       if (socketId) this.server.to(socketId).emit(event, data);
     }
   }
 
-  /** Send a targeted event to a specific user by userId. */
   notifyUser(userId: string, event: string, data: unknown): void {
     const socketId = this.userSockets.get(userId);
-    if (socketId) {
-      this.server.to(socketId).emit(event, data);
-    }
+    if (socketId) { this.server.to(socketId).emit(event, data); }
   }
 
-  /** Notify CS users about a new chat message from a companion. */
   notifyChat(studioId: string, companionName: string, _chatKey: string, companionId?: string, orderId?: string): void {
     this.server.to(`studio:${studioId}`).emit('chat:notify', {
       companionName, companionId, orderId, timestamp: new Date().toISOString(),
     });
+  }
+
+  // ── blacklist outbound ─────────────────────────────────────────────
+
+  sendBlacklistUpdate(
+    companionId: string,
+    blacklist: { processName: string; processPath: string | null }[],
+    whitelist: { processName: string; isSystem: boolean }[],
+    version: number,
+  ): void {
+    const socketId = this.companionSockets.get(companionId);
+    if (!socketId) return;
+    this.server.to(socketId).emit('blacklist:update', { blacklist, whitelist, version });
+  }
+
+  async broadcastBlacklistToStudio(
+    studioId: string,
+    blacklist: { processName: string; processPath: string | null }[],
+    whitelist: { processName: string; isSystem: boolean }[],
+  ): Promise<void> {
+    const companions = await this.prisma.companion.findMany({ where: { studioId }, select: { id: true } });
+    const version = Date.now();
+    for (const c of companions) {
+      const socketId = this.companionSockets.get(c.id);
+      if (socketId) { this.server.to(socketId).emit('blacklist:update', { blacklist, whitelist, version }); }
+    }
   }
 }

@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'ws:poolUpdated',
       'ws:statusBroadcast',
       'ws:pcCommand',
+      'ws:blacklistUpdate',
+      'ws:blacklistRecheck',
+      'fileDropped',
     ];
     if (validChannels.includes(channel)) {
       const subscription = (_event: any, ...args: any[]) => callback(...args);

@@ -14,6 +14,9 @@ import StudiosPage from './pages/owner/StudiosPage';
 import AuthorizationsPage from './pages/owner/AuthorizationsPage';
 import ReviewPage from './pages/admin/ReviewPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import BlacklistPage from './pages/admin/BlacklistPage';
+import ProcessKillLogPage from './pages/admin/ProcessKillLogPage';
+import WhitelistPage from './pages/admin/WhitelistPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import CompanionPage from './pages/CompanionPage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
@@ -57,6 +60,9 @@ export const router = createBrowserRouter([
       { path: 'admin/review', element: <ReviewPage /> },
       { path: 'admin/orders', element: <OrdersPage /> },
       { path: 'admin/traffic', element: <OrderPoolPage /> },
+      { path: 'admin/blacklist', element: <BlacklistPage /> },
+      { path: 'admin/whitelist', element: <WhitelistPage /> },
+      { path: 'admin/process-kill-log', element: <ProcessKillLogPage /> },
       { path: 'admin/settings', element: <SettingsPage /> },
       { path: 'cs/dispatch', element: <DispatchPage /> },
       { path: 'cs/orders', element: <OrdersPage /> },

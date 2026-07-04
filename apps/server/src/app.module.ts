@@ -11,6 +11,7 @@ import { HealthModule } from './health/health.module';
 import { WsModule } from './ws/ws.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AiModule } from './ai/ai.module';
+import { ProcessBlacklistModule } from './process-blacklist/process-blacklist.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AiModule } from './ai/ai.module';
     WsModule,
     DashboardModule,
     AiModule,
+    ProcessBlacklistModule,
   ],
 })
 export class AppModule {}

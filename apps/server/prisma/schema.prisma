@@ -30,12 +30,14 @@ model Studio {
   type      String   @default("DIRECT")  // DIRECT | RENTAL
   createdAt DateTime @default(now())
 
-  users      User[]
-  companions Companion[]
-  orders     Order[]
-  customers  Customer[]
-  expenses        Expense[]
-  expenseReports  ExpenseReport[]
+  users             User[]
+  companions        Companion[]
+  orders            Order[]
+  customers         Customer[]
+  expenses          Expense[]
+  expenseReports    ExpenseReport[]
+  processBlacklists ProcessBlacklist[]
+  processWhitelists ProcessWhitelist[]
 }
 
 model Companion {
@@ -71,6 +73,9 @@ model Companion {
   expenseReports ExpenseReport[]
   walletTransactions WalletTransaction[]
   workWechats WorkWechat[]
+  blacklistOverrides CompanionBlacklistOverride[]
+  processReports     CompanionProcessReport[]
+  processKillLogs    ProcessKillLog[]
 }
 
 model CompanionPC {
@@ -321,4 +326,77 @@ model WorkWechat {
   createdAt   DateTime @default(now())
 
   companion Companion? @relation(fields: [companionId], references: [id])
+}
+
+// ── Blacklist Process Management ──
+
+model ProcessBlacklist {
+  id          String   @id @default(uuid())
+  studioId    String
+  processName String
+  processPath String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  studio      Studio   @relation(fields: [studioId], references: [id])
+
+  @@unique([studioId, processName])
+}
+
+model CompanionBlacklistOverride {
+  id          String    @id @default(uuid())
+  companionId String
+  processName String
+  processPath String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  companion   Companion @relation(fields: [companionId], references: [id])
+
+  @@unique([companionId, processName])
+}
+
+model ProcessWhitelist {
+  id          String   @id @default(uuid())
+  studioId    String
+  processName String
+  processPath String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  studio      Studio   @relation(fields: [studioId], references: [id])
+
+  @@unique([studioId, processName])
+}
+
+model CompanionProcessReport {
+  id          String    @id @default(uuid())
+  companionId String
+  reportTime  DateTime  @default(now())
+  processes   Json
+  totalCount  Int
+  createdAt   DateTime  @default(now())
+
+  companion   Companion @relation(fields: [companionId], references: [id])
+
+  @@index([companionId, createdAt])
+}
+
+model ProcessKillLog {
+  id           String    @id @default(uuid())
+  companionId  String
+  processName  String
+  processPath  String?
+  pid          Int?
+  success      Boolean
+  resultText   String?
+  triggeredBy  String    @default("PERIODIC")
+  createdAt    DateTime  @default(now())
+
+  companion    Companion @relation(fields: [companionId], references: [id])
+
+  @@index([companionId, createdAt])
 }

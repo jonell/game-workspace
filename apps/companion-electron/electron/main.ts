@@ -6,6 +6,10 @@ import { showOrderNotification } from './notification';
 import { store } from './store';
 import { getServerUrl } from './config';
 import { httpRequest } from './http';
+import { startProcessMonitor, stopProcessMonitor, updateBlacklist } from './process-monitor';
+import { killProcess } from './process-killer';
+import { showKillNotification, showKilledToast } from './blacklist-notification';
+import { isConnected as isWsConnected, emitBlacklistReport, emitKillResult } from './websocket';
 
 let mainWindow: BrowserWindow | null = null;
 let isQuitting = false;
@@ -169,6 +173,19 @@ function setupWsEvents(): void {
   onWsEvent('pc:command', (data: any) => {
     mainWindow?.webContents.send('ws:pcCommand', data);
   });
+
+  // Blacklist process management events
+  onWsEvent('blacklist:update', (data: any) => {
+    const updated = updateBlacklist(data.blacklist || [], data.whitelist || [], data.version || 0);
+    if (updated) {
+      console.log('[Blacklist] Updated to version', data.version);
+    }
+    mainWindow?.webContents.send('ws:blacklistUpdate', data);
+  });
+
+  onWsEvent('blacklist:recheck', () => {
+    console.log('[Blacklist] Server requested re-check');
+  });
 }
 
 // App lifecycle
@@ -185,11 +202,29 @@ app.whenReady().then(() => {
   const token = store.get('token') as string;
   if (token) {
     connectWebSocket(getServerUrl(), token, store.get('companionId') as string);
+
+    // Start process monitor (blacklist management - Phase 2/3)
+    startProcessMonitor(
+      (processes, totalCount) => {
+        emitBlacklistReport(processes, totalCount);
+      },
+      (process) => {
+        showKillNotification({
+          processName: process.name,
+          onKillNow: async () => {
+            const result = await killProcess(process);
+            showKilledToast(process.name);
+            emitKillResult(result);
+          },
+        });
+      },
+    );
   }
 });
 
 app.on('before-quit', () => {
   isQuitting = true;
+  stopProcessMonitor();
   disconnectWebSocket();
 });
 

@@ -57,6 +57,16 @@ export function connectWebSocket(serverUrl: string, token: string, companionId: 
     emitEvent('order:new', data);
   });
 
+  // Blacklist process management
+  socket.on('blacklist:update', (data: any) => {
+    emitEvent('blacklist:update', data);
+  });
+
+  socket.on('blacklist:recheck', (data: any) => {
+    emitEvent('blacklist:recheck', data);
+  });
+
+
   socket.on('order:urgent', (data: any) => {
     emitEvent('order:urgent', data);
   });
@@ -76,6 +86,16 @@ export function connectWebSocket(serverUrl: string, token: string, companionId: 
   socket.on('order:new', (data: any) => {
     emitEvent('order:new', data);
   });
+
+  // Blacklist process management
+  socket.on('blacklist:update', (data: any) => {
+    emitEvent('blacklist:update', data);
+  });
+
+  socket.on('blacklist:recheck', (data: any) => {
+    emitEvent('blacklist:recheck', data);
+  });
+
 }
 
 export function disconnectWebSocket(): void {
@@ -93,6 +113,22 @@ export function emitStatus(status: string, mode?: string): void {
   socket?.emit('companion:status', { status, mode });
 }
 
+
+/** Emit a process report to the server. */
+export function emitBlacklistReport(processes: any[], totalCount: number): void {
+  socket?.emit('blacklist:report', { processes, totalCount });
+}
+
+/** Emit a kill result to the server. */
+export function emitKillResult(result: { processName: string; pid: number; success: boolean; resultText: string }): void {
+  socket?.emit('blacklist:kill_result', {
+    processName: result.processName,
+    pid: result.pid,
+    success: result.success,
+    resultText: result.resultText,
+    triggeredBy: 'PERIODIC',
+  });
+}
 export function isConnected(): boolean {
   return socket?.connected ?? false;
 }
