@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, createElement } from 'react';
 import { Table, Button, Space, Modal, Input, Switch, Popconfirm, message, Typography, Select, Tabs, Radio } from 'antd';
 import { ReloadOutlined, PlusOutlined, DeleteOutlined, SendOutlined } from '@ant-design/icons';
 import { blacklistApi } from '../../api/blacklist';
-import { companionsApi } from '../../api/companions';
 
 const { Text } = Typography;
 
@@ -12,11 +11,6 @@ interface BlacklistEntry {
   processPath?: string | null;
   isActive: boolean;
   createdAt: string;
-}
-
-interface CompanionInfo {
-  id: string;
-  user?: { username: string };
 }
 
 const BlacklistPage: React.FC = () => {
@@ -34,7 +28,7 @@ const BlacklistPage: React.FC = () => {
   const [pushModalOpen, setPushModalOpen] = useState(false);
   const [pushTarget, setPushTarget] = useState<'all' | 'selected'>('all');
   const [selectedCompanions, setSelectedCompanions] = useState<string[]>([]);
-  const [companions, setCompanions] = useState<CompanionInfo[]>([]);
+  const [companions, setCompanions] = useState<any[]>([]);
   const [pushing, setPushing] = useState(false);
 
   const fetchItems = useCallback(async () => {
@@ -47,14 +41,7 @@ const BlacklistPage: React.FC = () => {
     } finally { setLoading(false); }
   }, []);
 
-  const fetchCompanions = useCallback(async () => {
-    try {
-      const { data } = await companionsApi.list();
-      setCompanions(data.data ?? []);
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => { fetchItems(); fetchCompanions(); }, [fetchItems, fetchCompanions]);
+  useEffect(() => { fetchItems(); import('../../api/companions').then(m => m.companionsApi.list().then(({ data }: any) => setCompanions(data.data ?? [])).catch(() => {})); }, [fetchItems]);
 
   const loadReportedProcesses = async (companionId: string) => {
     setLoadingProcesses(true);
@@ -158,7 +145,7 @@ const BlacklistPage: React.FC = () => {
         <Space>
           <Button icon={createElement(ReloadOutlined)} onClick={fetchItems} loading={loading}>刷新</Button>
           <Button icon={createElement(SendOutlined)} onClick={() => setPushModalOpen(true)}>推送黑名单</Button>
-          <Button type="primary" icon={createElement(PlusOutlined)} onClick={() => { setProcessName(''); setProcessPath(''); setModalOpen(true); }}>添加进程</Button>
+          <Button type="primary" icon={createElement(PlusOutlined)} onClick={() => { setProcessName(''); setProcessPath(''); setAddMode('select'); setModalOpen(true); }}>添加进程</Button>
         </Space>
       </div>
 
