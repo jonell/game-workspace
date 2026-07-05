@@ -588,7 +588,7 @@ const CustomerDetailPage: React.FC = () => {
             }}
           >
             <Text type="secondary" style={{ fontSize: 16 }}>
-              AI 分析功能即将上线
+              
             </Text>
             <br />
             <Text type="secondary" style={{ fontSize: 13 }}>

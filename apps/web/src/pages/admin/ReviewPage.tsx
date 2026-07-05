@@ -26,6 +26,8 @@ const ReviewPage: React.FC = () => {
   const [companions, setCompanions] = useState<PendingCompanion[]>([]);
   const [loading, setLoading] = useState(false);
   const [reviewNote, setReviewNote] = useState('');
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchPending = useCallback(async () => {
@@ -97,6 +99,13 @@ const ReviewPage: React.FC = () => {
       <Modal open={!!previewImage} footer={null} onCancel={() => setPreviewImage(null)} width={600}>
         {previewImage && <Image src={previewImage} style={{ width: '100%' }} />}
       </Modal>
+          <Modal title="拒绝审核" open={rejectModalOpen} onOk={() => { if (rejectTargetId) { handleReview(rejectTargetId, 'REJECTED'); setRejectModalOpen(false); setRejectTargetId(null); } }} onCancel={() => { setRejectModalOpen(false); setRejectTargetId(null); }} okText="确认拒绝" cancelText="取消">
+        <div style={{ marginTop: 16 }}>
+          <Text type="secondary" style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>拒绝原因（可选）</Text>
+          <TextArea rows={3} placeholder="输入拒绝原因" value={reviewNote} onChange={(e) => setReviewNote(e.target.value)} />
+        </div>
+      </Modal>
+
     </div>
   );
 };

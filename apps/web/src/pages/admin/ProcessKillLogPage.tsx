@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, createElement } from 'react';
-import { Table, Tag, Typography, Select, Button, Space, Tooltip } from 'antd';
+import { Table, Tag, Typography, Select, Button, Space, Tooltip, Card, Row, Col, Statistic, message } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { blacklistApi } from '../../api/blacklist';
 import { companionsApi } from '../../api/companions';
@@ -30,7 +30,7 @@ const ProcessKillLogPage: React.FC = () => {
     try {
       const { data } = await blacklistApi.getKillLogs({ companionId: companionFilter });
       setLogs(data.data?.items ?? []);
-    } catch { /* ignore */ } finally { setLoading(false); }
+    } catch { message.error('加载失败'); } finally { setLoading(false); }
   }, [companionFilter]);
 
   useEffect(() => { fetch(); }, [fetch]);
@@ -63,6 +63,13 @@ const ProcessKillLogPage: React.FC = () => {
           <Button icon={createElement(ReloadOutlined)} onClick={fetch} loading={loading}>刷新</Button>
         </Space>
       </div>
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}><Card size="small"><Statistic title="总杀进程次数" value={logs.length} valueStyle={{ fontSize: 20 }} /></Card></Col>
+        <Col span={6}><Card size="small"><Statistic title="成功" value={logs.filter(l => l.success).length} valueStyle={{ fontSize: 20, color: '#3f8600' }} /></Card></Col>
+        <Col span={6}><Card size="small"><Statistic title="失败" value={logs.filter(l => !l.success).length} valueStyle={{ fontSize: 20, color: '#cf1322' }} /></Card></Col>
+        <Col span={6}><Card size="small"><Statistic title="告警" value={logs.filter(l => l.resultText?.includes('REPEAT_KILL_ALERT') || l.resultText?.includes('RATE_LIMITED')).length} valueStyle={{ fontSize: 20, color: '#faad14' }} /></Card></Col>
+      </Row>
+
       <Table columns={columns} dataSource={logs} rowKey="id" loading={loading}
         locale={{ emptyText: '暂无杀进程记录' }}
         pagination={{ pageSize: 20, showTotal: (t) => `共 ${t} 条` }} />

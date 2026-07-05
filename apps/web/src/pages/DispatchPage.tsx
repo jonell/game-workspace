@@ -98,6 +98,8 @@ const CSView: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [chatPartner, setChatPartner] = useState<{ name: string; avatar?: string; orderId: string; orderInfo?: string } | null>(null);
   const [selectedCompanion, setSelectedCompanion] = useState<Companion | null>(null);
+  const [urgencyFilter, setUrgencyFilter] = useState<string | undefined>();
+  const [gameSearch, setGameSearch] = useState('');
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   
   // Poll localStorage for unread badges every 2s
