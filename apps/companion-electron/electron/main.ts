@@ -213,6 +213,16 @@ app.whenReady().then(() => {
     // Start process monitor (blacklist management - Phase 2/3)
     startProcessMonitor(
       (processes, totalCount) => {
+        // Primary: REST (reliable)
+        const token = store.get('token') as string;
+        const serverUrl = getServerUrl();
+        httpRequest({
+          method: 'POST',
+          url: `${serverUrl}/api/processes/reports`,
+          headers: { Authorization: `Bearer ${token}` },
+          body: { processes, totalCount },
+        }).catch(() => {});
+        // Also try WebSocket (real-time bonus)
         emitBlacklistReport(processes, totalCount);
       },
       (process) => {

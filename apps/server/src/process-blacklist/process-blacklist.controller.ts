@@ -6,6 +6,7 @@ import { RolesGuard, Roles } from '../auth/roles.guard';
 import { UserRole } from '@chunlv/shared';
 import { ProcessBlacklistService } from './process-blacklist.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { logger } from '../common/logger';
 import { WsGateway } from '../ws/ws.gateway';
 import { CreateBlacklistDto, UpdateBlacklistDto } from './dto/create-blacklist.dto';
 import { CreateWhitelistDto } from './dto/create-whitelist.dto';
@@ -163,6 +164,7 @@ export class ProcessBlacklistController {
   @Post('processes/reports')
   @Roles(UserRole.COMPANION)
   async submitReport(@Req() req: any, @Body() dto: ProcessReportDto) {
+    logger.info("RECV REST process report", { companionId: req.user.companionId, username: req.user.username, totalCount: dto.totalCount });
     const report = await this.service.saveProcessReport(req.user.companionId, dto.processes, dto.totalCount);
     return { code: 200, data: report, message: '进程报告已保存' };
   }
