@@ -411,3 +411,33 @@ graph TB
 ---
 
 > 图表使用 Mermaid 语法，支持 GitHub / VS Code / 多数 Markdown 渲染器直接预览。
+
+### 进程黑名单管理模块
+
+**数据模型:**
+- ProcessBlacklist: 工作室级黑名单规则 (processName + isActive)
+- CompanionBlacklistOverride: 陪玩个人黑名单覆盖
+- ProcessWhitelist: 白名单 (isSystem 标记内置条目)
+- CompanionProcessReport: 陪玩进程上报快照
+- ProcessKillLog: 杀进程审计日志
+
+**API 端点:**
+- `GET/POST/PUT/DELETE /api/blacklist` — 黑名单 CRUD
+- `POST /api/blacklist/push` — 推送黑名单到陪玩终端
+- `GET /api/blacklist/my-rules` — 陪玩端拉取自身黑名单(REST兜底)
+- `GET/POST/DELETE /api/whitelist` — 白名单管理
+- `GET /api/processes/unique-names` — 陪玩已上报进程去重列表
+- `GET /api/processes/reports` — 进程上报记录
+- `GET /api/processes/kill-logs` — 杀进程日志
+
+**WebSocket 事件:**
+- `blacklist:report` (C→S): 陪玩上报进程列表
+- `blacklist:update` (S→C): 推送黑名单+白名单
+- `blacklist:kill_result` (C→S): 杀进程结果
+- `blacklist:update_ack` (C→S): 黑名单接收确认
+
+**客户端 (Electron):**
+- process-monitor.ts: PowerShell 进程采集 → OS 过滤 → 5分钟上报
+- process-killer.ts: taskkill /F /PID 杀进程 + 速率限制
+- blacklist-notification.ts: 5秒倒计时气泡弹窗
+- 60秒 REST 轮询拉取黑名单 (WebSocket 断开时兜底)

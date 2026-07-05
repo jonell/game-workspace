@@ -21,16 +21,31 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - **共享常量提取：** 统一 orderType/status/companion/customer 等状态配置至 `constants/`，替换 10+ 页面中的内联重复定义
 - **12 项不一致修复：** 状态标签冲突(已抢/已接单)、颜色交换(ONLINE/BUSY)、客户状态列缺失、布局不统一、API 客户端不一致、分页文本等
 
+### Fixed
+
+
+### Fixed
+
+- **陪玩状态同步：** 修复 Electron 客户端状态变更不通知服务端的 bug（`status:changed` IPC 缺少 `emitStatus` 调用）
+- **心跳覆盖状态：** 修复 REST 心跳每 30 秒无条件设为 ONLINE 导致覆写用户主动设置的状态
+- **OWNER 空 studioId：** 修复 OWNER 角色黑名单/白名单 API 500 错误（null studioId 不兼容 Prisma 复合唯一键 upsert）
+- **unique-names 路由未注册：** 修复装饰器顺序错误导致 `/api/processes/unique-names` 路由被吞掉（TypeScript 装饰器就近绑定）
+- **远程控制按钮离线误判：** `isOnline()` 改为优先检查 companion.status 而非仅依赖心跳时间戳
+- **客户端进程上报丢失：** 改为 REST 主上报 + WS 辅助，解决 WS 超时导致的上报数据丢失
 ### Added
 
-- **进程黑名单管理：** 完整的黑名单/白名单进程管控功能（详见下方）
-  - 陪玩 Electron 客户端进程采集（PowerShell）、OS 过滤、5 分钟定时上报
-  - 服务端黑名单/白名单 CRUD，工作室级规则 + 陪玩个人覆盖
-  - WebSocket 实时推送黑名单更新，陪玩终端即时杀进程
-  - 杀进程前 5 秒倒计时右下角弹窗 + 杀后确认 toast
-  - taskkill 速率限制保护（5次/10秒）
-  - 管理端：BlacklistPage、WhitelistPage、ProcessKillLogPage
-  - 22 个内置白名单进程（微信、浏览器、开发工具等）自动对接
+- **进程黑名单管理：** 完整的黑名单/白名单进程管控功能
+  - 陪玩 Electron 客户端进程采集（PowerShell）、OS 过滤、5 分钟定时上报至服务端
+  - 服务端黑名单/白名单 CRUD，工作室级规则 + 陪玩个人覆盖（合并生效）
+  - 添加进程支持双模式：从陪玩已上报进程多选 或 手动输入
+  - 管理端推送黑名单支持全工作室推送 或 指定陪玩推送（带搜索）
+  - 客户端 REST 拉取黑名单（`GET /api/blacklist/my-rules`）+ WebSocket 推送双通道
+  - 杀进程前 5 秒倒计时右下角弹窗（进度条 + 立即关闭按钮）+ 杀后确认 toast
+  - taskkill 速率限制（5次/10秒）保护
+  - 管理端 4 页面：BlacklistPage、WhitelistPage、ProcessKillLogPage、PcControlPage
+  - 22 个系统内置白名单进程（微信、浏览器、开发工具等）自动对接
+  - CS/ADMIN/OWNER 三角色均可管理黑名单和远程控制
+  - 服务端和客户端全链路日志（debug/info/warn/error 分级落盘）
 
 - **工作室类型选择：** OWNER 创建工作室时增加两步式类型选择流程（线下工作室/线上俱乐部）
 - 新增 `StudioType` 共享枚举 (`DIRECT | RENTAL`)，前端标签映射为「线下工作室」/「线上俱乐部」
