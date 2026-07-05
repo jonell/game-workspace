@@ -149,6 +149,17 @@ export class ProcessBlacklistController {
     return { code: 200, message: '已删除白名单条目' };
   }
 
+  
+  @Post('processes/kill')
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
+  async manualKill(@Req() req: any, @Body() dto: { companionId: string; processName: string; pid?: number }) {
+    if (!dto.companionId || !dto.processName) return { code: 400, message: '缺少参数', data: null };
+    logger.info('Manual kill requested', { operatorId: req.user.id, companionId: dto.companionId, processName: dto.processName });
+    this.wsGateway.sendCommand(dto.companionId, 'kill_process', { processName: dto.processName, pid: dto.pid });
+    return { code: 200, message: '杀进程指令已发送', data: { companionId: dto.companionId, processName: dto.processName } };
+  }
+
+
   // ── Process Reports (viewing) ──
 
   @Get('processes/reports')

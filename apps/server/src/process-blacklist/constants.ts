@@ -1,7 +1,10 @@
 // Built-in system whitelist — processes that are never killed
 // These are auto-seeded into ProcessWhitelist on first access
 export const BUILTIN_WHITELIST: string[] = [
-  'WeChat.exe',              // WeChat desktop (required: default whitelist)
+  'WeChat.exe',              // WeChat desktop
+  'WeChatApp.exe',           // WeChat sub-process
+  'WeChatPlayer.exe',        // WeChat media player
+  'WeChatBrowser.exe',       // WeChat embedded browser
   'explorer.exe',            // Windows Explorer
   'taskmgr.exe',             // Task Manager
   'chrome.exe',              // Google Chrome

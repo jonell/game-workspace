@@ -30,6 +30,7 @@ const BlacklistPage: React.FC = () => {
   const [selectedCompanions, setSelectedCompanions] = useState<string[]>([]);
   const [companions, setCompanions] = useState<any[]>([]);
   const [pushing, setPushing] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -57,7 +58,7 @@ const BlacklistPage: React.FC = () => {
     if (names.length === 0 || !names[0]) { message.warning(addMode === 'select' ? '请选择进程' : '请输入进程名称'); return; }
     setSubmitting(true);
     try {
-      await Promise.all(names.map(name => blacklistApi.add({ processName: name, processPath: addMode === 'manual' ? (processPath.trim() || undefined) : undefined }));
+      await Promise.all(names.map(name => blacklistApi.add({ processName: name, processPath: addMode === 'manual' ? (processPath.trim() || undefined) : undefined })));
       message.success(`已添加 ${names.length} 个进程到黑名单`);
       setModalOpen(false);
       setProcessName('');
@@ -147,6 +148,41 @@ const BlacklistPage: React.FC = () => {
           <Button icon={createElement(SendOutlined)} onClick={() => setPushModalOpen(true)}>推送黑名单</Button>
           <Button type="primary" icon={createElement(PlusOutlined)} onClick={() => { setProcessName(''); setProcessPath(''); setAddMode('select'); setModalOpen(true); }}>添加进程</Button>
         </Space>
+      </div>
+
+      
+      {/* Drag & Drop zone for .lnk files */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files[0];
+          if (file && (file.name.endsWith('.lnk') || file.name.endsWith('.exe'))) {
+            const processName = file.name.replace(/\.lnk$/i, '.exe');
+            setProcessName(processName);
+            setAddMode('manual');
+            setModalOpen(true);
+            message.info(`已识别进程: ${processName}`);
+          } else {
+            message.warning('请拖入 .lnk 或 .exe 文件');
+          }
+        }}
+        style={{
+          border: `2px dashed ${dragOver ? '#00D4FF' : '#d9d9d9'}`,
+          borderRadius: 8,
+          padding: '12px 16px',
+          marginBottom: 16,
+          textAlign: 'center',
+          background: dragOver ? 'rgba(0,212,255,0.06)' : '#fafafa',
+          transition: 'all 0.2s',
+          cursor: 'pointer',
+        }}
+      >
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          📎 拖拽桌面快捷方式(.lnk)或可执行文件(.exe)到此区域快速添加进程
+        </Text>
       </div>
 
       <Table columns={columns} dataSource={items} rowKey="id" loading={loading}
