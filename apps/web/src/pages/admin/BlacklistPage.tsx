@@ -30,6 +30,7 @@ const BlacklistPage: React.FC = () => {
   const [selectedCompanions, setSelectedCompanions] = useState<string[]>([]);
   const [companions, setCompanions] = useState<any[]>([]);
   const [pushing, setPushing] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [dragOver, setDragOver] = useState(false);
 
   const fetchItems = useCallback(async () => {
@@ -78,6 +79,13 @@ const BlacklistPage: React.FC = () => {
       message.success(isActive ? '已启用' : '已禁用');
       fetchItems();
     } catch (err: any) { message.error('更新失败'); }
+  };
+
+  const handleBatchDelete = async () => {
+    for (const id of selectedRowKeys) { await blacklistApi.remove(id).catch(() => {}); }
+    message.success(`已删除 ${selectedRowKeys.length} 条`);
+    setSelectedRowKeys([]);
+    fetchItems();
   };
 
   const handleDelete = async (id: string) => {
@@ -185,7 +193,13 @@ const BlacklistPage: React.FC = () => {
         </Text>
       </div>
 
-      <Table columns={columns} dataSource={items} rowKey="id" loading={loading}
+      {selectedRowKeys.length > 0 && (
+        <div style={{ marginBottom: 8, padding: '8px 12px', background: '#e6f7ff', borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text>已选 {selectedRowKeys.length} 项</Text>
+          <Button size="small" danger onClick={handleBatchDelete}>批量删除</Button>
+        </div>
+      )}
+      <Table rowSelection={{ selectedRowKeys, onChange: (keys) => setSelectedRowKeys(keys as string[]) }} columns={columns} dataSource={items} rowKey="id" loading={loading}
         locale={{ emptyText: '暂无黑名单规则' }}
         pagination={{ pageSize: 20, showTotal: (t) => `共 ${t} 条` }} />
 

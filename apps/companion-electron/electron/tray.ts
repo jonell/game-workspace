@@ -4,15 +4,18 @@ import path from 'path';
 let tray: Tray | null = null;
 let onShowCallback: (() => void) | null = null;
 let onQuitCallback: (() => void) | null = null;
+let onStatusChange: ((status: string) => void) | null = null;
 
 interface TrayOptions {
   onShow: () => void;
   onQuit: () => void;
+  onStatusChange?: (status: string) => void;
 }
 
 export function createTray(opts: TrayOptions): Tray {
   onShowCallback = opts.onShow;
   onQuitCallback = opts.onQuit;
+  onStatusChange = opts.onStatusChange || null;
 
   // Create a simple 16x16 tray icon programmatically
   const icon = createTrayIcon();
@@ -36,6 +39,14 @@ function buildMenu(): Menu {
     {
       label: '显示主窗口',
       click: () => onShowCallback?.(),
+    },
+    {
+      label: '切换状态',
+      submenu: [
+        { label: '空闲', click: () => { if (onStatusChange) onStatusChange('ONLINE'); } },
+        { label: '娱乐中', click: () => { if (onStatusChange) onStatusChange('IDLE'); } },
+        { label: '休息中', click: () => { if (onStatusChange) onStatusChange('RESTING'); } },
+      ],
     },
     { type: 'separator' },
     {
