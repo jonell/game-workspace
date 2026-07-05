@@ -1,4 +1,5 @@
 import { exec } from 'child_process';
+import { logger } from './logger';
 
 // ── Types ──
 
@@ -76,30 +77,49 @@ let onKillCallback: KillCallback | null = null;
 
 /** Collect running processes using PowerShell (structured JSON output, fast). */
 export function collectProcesses(): Promise<ProcessInfo[]> {
+  const startTime = Date.now();
+  logger.info('[ProcessCollect] Starting process collection via PowerShell');
   return new Promise((resolve) => {
     const psCmd = `powershell -NoProfile -Command "Get-Process | Select-Object Name,Id,Path,@{N='MemoryMB';E={[math]::Round(\$_.WorkingSet64/1MB,2)}} | ConvertTo-Json"`;
     exec(psCmd, { timeout: 15000, maxBuffer: 2 * 1024 * 1024 }, (error, stdout) => {
       if (error) {
-        // Fallback: try tasklist
+        logger.warn('[ProcessCollect] PowerShell failed, falling back to tasklist', { error: error.message });
         exec('tasklist /FO CSV /NH', { timeout: 10000 }, (err2, out2) => {
-          if (err2) { resolve([]); return; }
-          resolve(parseTasklist(out2));
+          if (err2) {
+            logger.error('[ProcessCollect] tasklist fallback also failed', { error: err2.message });
+            resolve([]);
+            return;
+          }
+          const result = parseTasklist(out2);
+          logger.info('[ProcessCollect] Collection complete via tasklist', {
+            method: 'tasklist',
+            count: result.length,
+            elapsed: `${Date.now() - startTime}ms`,
+          });
+          resolve(result);
         });
         return;
       }
       try {
         const raw = JSON.parse(stdout);
         const list = Array.isArray(raw) ? raw : [raw];
-        resolve(list
+        const result = list
           .filter((p: any) => p && p.Name)
           .map((p: any) => ({
             name: p.Name,
             pid: p.Id,
             path: p.Path || undefined,
             memoryMB: p.MemoryMB || 0,
-          })),
-        );
-      } catch {
+          }));
+        logger.info('[ProcessCollect] Collection complete via PowerShell', {
+          method: 'powershell',
+          rawCount: list.length,
+          validCount: result.length,
+          elapsed: `${Date.now() - startTime}ms`,
+        });
+        resolve(result);
+      } catch (e: any) {
+        logger.error('[ProcessCollect] Failed to parse PowerShell output', { error: e.message });
         resolve([]);
       }
     });
@@ -134,7 +154,10 @@ function parseMemToMB(mem: string): number {
 
 /** Remove OS-level system processes. */
 export function filterOSProcesses(processes: ProcessInfo[]): ProcessInfo[] {
-  return processes.filter((p) => !OS_PROCESS_PATTERNS.some((pattern) => pattern.test(p.name)));
+  const before = processes.length;
+  const filtered = processes.filter((p) => !OS_PROCESS_PATTERNS.some((pattern) => pattern.test(p.name)));
+  logger.debug('[ProcessCollect] OS processes filtered', { before, after: filtered.length, removed: before - filtered.length });
+  return filtered;
 }
 
 // ── Blacklist Matching ──
@@ -161,6 +184,7 @@ export function startProcessMonitor(
   onReport: ReportCallback,
   onKill: KillCallback,
 ): void {
+  logger.info('[ProcessMonitor] Starting', { reportInterval: '5min', recheckInterval: '30s' });
   onReportCallback = onReport;
   onKillCallback = onKill;
 
@@ -176,6 +200,7 @@ export function startProcessMonitor(
 
 /** Stop periodic monitoring. */
 export function stopProcessMonitor(): void {
+  logger.info('[ProcessMonitor] Stopping');
   if (reportInterval) { clearInterval(reportInterval); reportInterval = null; }
   if (recheckInterval) { clearInterval(recheckInterval); recheckInterval = null; }
 }
@@ -183,32 +208,55 @@ export function stopProcessMonitor(): void {
 // ── Internal Cycles ──
 
 async function runReportCycle(): Promise<void> {
+  const cycleStart = Date.now();
+  logger.info('[ProcessMonitor] Report cycle started');
   try {
     const all = await collectProcesses();
     const filtered = filterOSProcesses(all);
+    logger.info('[ProcessMonitor] Sending process report to server', {
+      totalCount: filtered.length,
+      rawCount: all.length,
+      blacklistVersion,
+      blacklistRules: localBlacklist.length,
+      whitelistRules: localWhitelist.length,
+    });
     onReportCallback?.(filtered, filtered.length);
 
     // Also check blacklist after every report
     const hits = findBlacklisted(filtered, localBlacklist, localWhitelist);
+    if (hits.length > 0) {
+      logger.warn('[ProcessMonitor] Blacklist hits found during report', {
+        hitCount: hits.length,
+        processes: hits.map((h) => ({ name: h.name, pid: h.pid })),
+      });
+    }
     for (const hit of hits) {
       onKillCallback?.(hit);
     }
-  } catch {
-    // silently ignore transient errors
+    logger.info('[ProcessMonitor] Report cycle complete', { elapsed: `${Date.now() - cycleStart}ms` });
+  } catch (e: any) {
+    logger.error('[ProcessMonitor] Report cycle failed', { error: e.message });
   }
 }
 
 async function runBlacklistCheck(): Promise<void> {
   if (localBlacklist.length === 0) return;
+  logger.debug('[ProcessMonitor] Blacklist re-check started');
   try {
     const all = await collectProcesses();
     const filtered = filterOSProcesses(all);
     const hits = findBlacklisted(filtered, localBlacklist, localWhitelist);
+    if (hits.length > 0) {
+      logger.warn('[ProcessMonitor] Blacklist hits found during re-check', {
+        hitCount: hits.length,
+        processes: hits.map((h) => ({ name: h.name, pid: h.pid, path: h.path })),
+      });
+    }
     for (const hit of hits) {
       onKillCallback?.(hit);
     }
-  } catch {
-    // silently ignore
+  } catch (e: any) {
+    logger.error('[ProcessMonitor] Blacklist re-check failed', { error: e.message });
   }
 }
 
@@ -220,7 +268,21 @@ export function updateBlacklist(
   whitelist: { processName: string }[],
   version: number,
 ): boolean {
-  if (version <= blacklistVersion) return false;
+  if (version <= blacklistVersion) {
+    logger.debug('[ProcessMonitor] Blacklist update skipped (same or older version)', {
+      current: blacklistVersion,
+      received: version,
+    });
+    return false;
+  }
+  logger.info('[ProcessMonitor] Blacklist updated from server', {
+    oldVersion: blacklistVersion,
+    newVersion: version,
+    blacklistCount: blacklist.length,
+    blacklistProcesses: blacklist.map((b) => b.processName),
+    whitelistCount: whitelist.length,
+    whitelistProcesses: whitelist.map((w) => w.processName),
+  });
   localBlacklist = blacklist;
   localWhitelist = whitelist.map((w) => w.processName);
   blacklistVersion = version;

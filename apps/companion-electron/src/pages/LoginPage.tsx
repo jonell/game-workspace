@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Input, Button, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Input, Button, message, Typography } from 'antd';
+import { UserOutlined, LockOutlined, GlobalOutlined } from '@ant-design/icons';
+
+const { Text } = Typography;
 
 interface Props {
   onLogin: (user: any) => void;
@@ -10,6 +12,13 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [serverUrl, setServerUrl] = useState('');
+
+  useEffect(() => {
+    if (window.electronAPI) {
+      window.electronAPI.getServerUrl().then(setServerUrl);
+    }
+  }, []);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -101,6 +110,13 @@ const LoginPage: React.FC<Props> = ({ onLogin }) => {
           >
             登 录
           </Button>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <Text style={{ color: '#64748B', fontSize: 12 }}>
+            <GlobalOutlined style={{ marginRight: 4 }} />
+            {serverUrl || '加载中...'}
+          </Text>
         </div>
       </div>
     </div>

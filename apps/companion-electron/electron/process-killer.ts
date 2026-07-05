@@ -1,23 +1,37 @@
 import { exec } from 'child_process';
 import { ProcessInfo } from './process-monitor';
+import { logger } from './logger';
 
 // ── Rate Limiting ──
 
-const killHistory: number[] = [];  // timestamps of recent kills
+const killHistory: number[] = [];
 const MAX_KILLS_PER_10S = 5;
 const KILL_WINDOW_MS = 10_000;
 
-function checkRateLimit(): boolean {
+function checkRateLimit(processName: string): boolean {
   const now = Date.now();
-  // Remove entries older than window
   while (killHistory.length > 0 && killHistory[0] < now - KILL_WINDOW_MS) {
     killHistory.shift();
   }
-  return killHistory.length < MAX_KILLS_PER_10S;
+  const allowed = killHistory.length < MAX_KILLS_PER_10S;
+  if (!allowed) {
+    logger.warn('[ProcessKiller] Rate limit reached', {
+      processName,
+      recentKills: killHistory.length,
+      limit: MAX_KILLS_PER_10S,
+      windowSec: KILL_WINDOW_MS / 1000,
+    });
+  }
+  return allowed;
 }
 
-function recordKill(): void {
+function recordKill(processName: string, pid: number): void {
   killHistory.push(Date.now());
+  logger.info('[ProcessKiller] Kill recorded in rate limiter', {
+    processName,
+    pid,
+    recentKills: killHistory.length,
+  });
 }
 
 // ── Kill Execution ──
@@ -29,9 +43,15 @@ export interface KillResult {
   resultText: string;
 }
 
-/** Kill a process by PID using Windows taskkill. */
 export function killProcess(process: ProcessInfo): Promise<KillResult> {
-  if (!checkRateLimit()) {
+  logger.info('[ProcessKiller] Kill requested', {
+    processName: process.name,
+    pid: process.pid,
+    path: process.path || 'unknown',
+    memoryMB: process.memoryMB,
+  });
+
+  if (!checkRateLimit(process.name)) {
     return Promise.resolve({
       processName: process.name,
       pid: process.pid,
@@ -41,10 +61,12 @@ export function killProcess(process: ProcessInfo): Promise<KillResult> {
   }
 
   return new Promise((resolve) => {
-    recordKill();
+    recordKill(process.name, process.pid);
 
-    // Use PID-based kill for precision (avoids killing wrong process with same name)
-    exec(`taskkill /F /PID ${process.pid}`, { timeout: 10000 }, (error, stdout, stderr) => {
+    const command = `taskkill /F /PID ${process.pid}`;
+    logger.info('[ProcessKiller] Executing taskkill', { command });
+
+    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
       const result: KillResult = {
         processName: process.name,
         pid: process.pid,
@@ -52,27 +74,21 @@ export function killProcess(process: ProcessInfo): Promise<KillResult> {
         resultText: error ? (stderr || error.message) : (stdout || 'OK'),
       };
 
-      // Log locally
-      logKillToFile(result);
+      if (result.success) {
+        logger.info('[ProcessKiller] Kill SUCCESS', {
+          processName: result.processName,
+          pid: result.pid,
+          output: stdout?.trim(),
+        });
+      } else {
+        logger.error('[ProcessKiller] Kill FAILED', {
+          processName: result.processName,
+          pid: result.pid,
+          error: result.resultText,
+        });
+      }
 
       resolve(result);
     });
   });
-}
-
-// ── Local Logging ──
-
-import * as fs from 'fs';
-import * as path from 'path';
-import { app } from 'electron';
-
-function logKillToFile(result: KillResult): void {
-  try {
-    const logDir = app.getPath('userData');
-    const logPath = path.join(logDir, 'process-kill.log');
-    const line = `[${new Date().toISOString()}] ${result.success ? 'KILLED' : 'FAILED'} ${result.processName} (PID ${result.pid}) — ${result.resultText}\n`;
-    fs.appendFileSync(logPath, line);
-  } catch {
-    // silently ignore log failures
-  }
 }

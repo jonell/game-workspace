@@ -5,6 +5,7 @@ import {
   UnorderedListOutlined,
   WalletOutlined,
   SettingOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons';
 import LoginPage from './pages/LoginPage';
 import WorkbenchPage from './pages/WorkbenchPage';
@@ -26,6 +27,14 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('workbench');
   const [currentStatus, setCurrentStatus] = useState('OFFLINE');
   const [orderBadge, setOrderBadge] = useState(0);
+  const [serverUrl, setServerUrl] = useState('');
+
+  // Fetch server URL on mount
+  useEffect(() => {
+    if (window.electronAPI) {
+      window.electronAPI.getServerUrl().then(setServerUrl);
+    }
+  }, []);
 
   // Listen for navigation events from main process
   useEffect(() => {
@@ -117,6 +126,10 @@ const App: React.FC = () => {
               {statusCfg.label}
             </Tag>
             {user?.displayName || user?.username}
+          </div>
+          <div style={{ color: '#64748B', fontSize: 12 }}>
+            <GlobalOutlined style={{ marginRight: 4 }} />
+            {serverUrl || '...'}
           </div>
         </div>
 

@@ -54,39 +54,21 @@ export function updateTrayMenu(items: Electron.MenuItemConstructorOptions[]): vo
 }
 
 function createTrayIcon() {
-  // Create a simple colored square icon using raw bitmap
-  // 16x16 RGBA pixels - green circle on dark background
-  const size = 16;
-  const buf = Buffer.alloc(size * size * 4);
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const px = (y * size + x) * 4;
-      const cx = 8, cy = 8, r = 6;
-      const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-
-      if (dist <= r) {
-        // Green circle
-        buf[px] = 0x00;     // R
-        buf[px + 1] = 0xE6; // G
-        buf[px + 2] = 0x76; // B
-        buf[px + 3] = 0xFF; // A
-      } else if (dist <= r + 1) {
-        // Anti-alias edge
-        const alpha = Math.max(0, Math.min(255, (r + 1 - dist) * 255));
-        buf[px] = 0x00;
-        buf[px + 1] = 0xE6;
-        buf[px + 2] = 0x76;
-        buf[px + 3] = alpha;
-      } else {
-        // Transparent
-        buf[px] = 0;
-        buf[px + 1] = 0;
-        buf[px + 2] = 0;
-        buf[px + 3] = 0;
+  const iconPath = path.join(__dirname, '../dist/donkey.png');
+  try {
+    return nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  } catch {
+    // Fallback: simple colored circle
+    const size = 16;
+    const buf = Buffer.alloc(size * size * 4);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const px = (y * size + x) * 4;
+        const dist = Math.sqrt((x - 8) ** 2 + (y - 8) ** 2);
+        if (dist <= 6) { buf[px] = 0x8B; buf[px+1] = 0x45; buf[px+2] = 0x13; buf[px+3] = 0xFF; }
+        else { buf[px] = 0; buf[px+1] = 0; buf[px+2] = 0; buf[px+3] = 0; }
       }
     }
+    return nativeImage.createFromBuffer(buf, { width: size, height: size });
   }
-
-  return nativeImage.createFromBuffer(buf, { width: size, height: size });
 }
