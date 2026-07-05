@@ -223,7 +223,7 @@ export class CompanionsController {
   }
 
   @Post('companions/:id/command')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async sendCommand(
     @Param('id') id: string,
     @Body('command') command: string,
@@ -308,7 +308,7 @@ export class CompanionsController {
 
   // 踢出陪玩：强制下线
   @Post('companions/:id/kick')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async kickCompanion(
     @Param('id') id: string,
     @Req() req: any,

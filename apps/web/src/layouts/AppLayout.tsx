@@ -91,6 +91,10 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },
     { key: '/cs/orders', icon: IconOrders, label: '订单管理' },
     { key: '/cs/employees', icon: IconEmployees, label: '员工管理' },
+    { key: '/admin/pc-control', icon: IconPc, label: '远程控制' },
+    { key: '/admin/blacklist', icon: IconPc, label: '进程黑名单' },
+    { key: '/admin/whitelist', icon: IconPc, label: '进程白名单' },
+    { key: '/admin/process-kill-log', icon: IconPc, label: '杀进程日志' },
   ],
   [UserRole.COMPANION]: [
     { key: '/companion', icon: IconRevenue, label: '首页' },

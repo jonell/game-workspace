@@ -34,28 +34,28 @@ export class ProcessBlacklistController {
   // ── Blacklist CRUD (ADMIN, OWNER) ──
 
   @Get('blacklist')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async listBlacklist(@Req() req: any, @Query('page') page?: string, @Query('pageSize') pageSize?: string) {
     const items = await this.service.listBlacklist(await this.sid(req), Number(page) || 1, Number(pageSize) || 20);
     return { code: 200, data: items };
   }
 
   @Post('blacklist')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async addBlacklist(@Req() req: any, @Body() dto: CreateBlacklistDto) {
     const entry = await this.service.addBlacklist(await this.sid(req), dto.processName, dto.processPath);
     return { code: 200, data: entry, message: '已添加到黑名单' };
   }
 
   @Put('blacklist/:id')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async updateBlacklist(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateBlacklistDto) {
     const entry = await this.service.updateBlacklist(id, await this.sid(req), dto);
     return { code: 200, data: entry, message: '已更新' };
   }
 
   @Delete('blacklist/:id')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async removeBlacklist(@Req() req: any, @Param('id') id: string) {
     await this.service.removeBlacklist(id, await this.sid(req));
     return { code: 200, message: '已删除' };
@@ -64,7 +64,7 @@ export class ProcessBlacklistController {
   // ── Push ──
 
   @Post('blacklist/push')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async pushBlacklist(@Req() req: any, @Body() dto: PushBlacklistDto) {
     let companionIds: string[];
     if (dto.targetAll) {
@@ -89,21 +89,21 @@ export class ProcessBlacklistController {
   // ── Companion Overrides (ADMIN, OWNER) ──
 
   @Get('blacklist/companions/:companionId/overrides')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async listOverrides(@Param('companionId') companionId: string) {
     const items = await this.service.listCompanionOverrides(companionId);
     return { code: 200, data: items };
   }
 
   @Post('blacklist/companions/:companionId/overrides')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async addOverride(@Param('companionId') companionId: string, @Body() dto: CreateCompanionOverrideDto) {
     const entry = await this.service.addCompanionOverride(companionId, dto.processName, dto.processPath);
     return { code: 200, data: entry, message: '已添加个人黑名单覆盖' };
   }
 
   @Delete('blacklist/companions/:companionId/overrides/:overrideId')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async removeOverride(@Param('companionId') companionId: string, @Param('overrideId') overrideId: string) {
     await this.service.removeCompanionOverride(overrideId, companionId);
     return { code: 200, message: '已删除覆盖' };
@@ -112,21 +112,21 @@ export class ProcessBlacklistController {
   // ── Whitelist (ADMIN, OWNER) ──
 
   @Get('whitelist')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async listWhitelist(@Req() req: any) {
     const items = await this.service.getWhitelist(await this.sid(req));
     return { code: 200, data: items };
   }
 
   @Post('whitelist')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async addWhitelist(@Req() req: any, @Body() dto: CreateWhitelistDto) {
     const entry = await this.service.addWhitelist(await this.sid(req), dto.processName, dto.processPath);
     return { code: 200, data: entry, message: '已添加到白名单' };
   }
 
   @Delete('whitelist/:id')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async removeWhitelist(@Req() req: any, @Param('id') id: string) {
     await this.service.removeWhitelist(id, await this.sid(req));
     return { code: 200, message: '已删除白名单条目' };
@@ -135,10 +135,10 @@ export class ProcessBlacklistController {
   // ── Process Reports (viewing) ──
 
   @Get('processes/reports')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   
   @Get('processes/unique-names')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async getUniqueNames(@Query('companionId') companionId: string) {
     if (!companionId) return { code: 400, message: '请指定陪玩ID', data: null };
     const names = await this.service.getUniqueProcessNames(companionId);
@@ -152,7 +152,7 @@ export class ProcessBlacklistController {
   }
 
   @Get('processes/reports/:companionId')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async getLatestReport(@Param('companionId') companionId: string) {
     const report = await this.service.getLatestReport(companionId);
     return { code: 200, data: report };
@@ -168,7 +168,7 @@ export class ProcessBlacklistController {
   }
 
   @Get('processes/kill-logs')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CS)
   async getKillLogs(
     @Req() req: any,
     @Query('companionId') companionId?: string,
