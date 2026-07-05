@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, createElement } from 'react';
+import React, { useState, useEffect, useCallback, createElement, useMemo } from 'react';
 import { Table, Tag, Typography, Select, Button, Space, Tooltip, Card, Row, Col, Statistic, message } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { blacklistApi } from '../../api/blacklist';
@@ -36,6 +36,18 @@ const ProcessKillLogPage: React.FC = () => {
   useEffect(() => { fetch(); }, [fetch]);
   useEffect(() => { companionsApi.list().then(({ data }) => setCompanions(data.data ?? [])).catch(() => {}); }, []);
 
+  const topProcesses = useMemo(() => {
+    const count: Record<string, number> = {};
+    logs.forEach(l => { count[l.processName] = (count[l.processName] || 0) + 1; });
+    return Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [logs]);
+
+  const topCompanions = useMemo(() => {
+    const count: Record<string, number> = {};
+    logs.forEach(l => { const name = l.companion?.user?.username || '未知'; count[name] = (count[name] || 0) + 1; });
+    return Object.entries(count).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [logs]);
+
   const columns = [
     { title: '陪玩', key: 'companion', width: 120,
       render: (_: unknown, r: KillLog) => r.companion?.user?.username || '-' },
@@ -69,6 +81,28 @@ const ProcessKillLogPage: React.FC = () => {
         <Col span={6}><Card size="small"><Statistic title="失败" value={logs.filter(l => !l.success).length} valueStyle={{ fontSize: 20, color: '#cf1322' }} /></Card></Col>
         <Col span={6}><Card size="small"><Statistic title="告警" value={logs.filter(l => l.resultText?.includes('REPEAT_KILL_ALERT') || l.resultText?.includes('RATE_LIMITED')).length} valueStyle={{ fontSize: 20, color: '#faad14' }} /></Card></Col>
       </Row>
+      {topProcesses.length > 0 && (
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col span={12}>
+            <Card size="small" title="Top 5 被杀进程">
+              {topProcesses.map(([name, count], i) => (
+                <Tag key={name} color={i === 0 ? 'red' : i < 3 ? 'orange' : 'default'} style={{ marginBottom: 4 }}>
+                  {name}: {count}次
+                </Tag>
+              ))}
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card size="small" title="Top 5 陪玩杀进程">
+              {topCompanions.map(([name, count], i) => (
+                <Tag key={name} color={i === 0 ? 'blue' : i < 3 ? 'geekblue' : 'default'} style={{ marginBottom: 4 }}>
+                  {name}: {count}次
+                </Tag>
+              ))}
+            </Card>
+          </Col>
+        </Row>
+      )}
 
       <Table columns={columns} dataSource={logs} rowKey="id" loading={loading}
         locale={{ emptyText: '暂无杀进程记录' }}

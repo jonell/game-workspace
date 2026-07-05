@@ -21,8 +21,8 @@ const roleRouteMap: Record<UserRole, string> = {
 
 const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState('hanlei');
-  const [password, setPassword] = useState('123456');
+  const [username, setUsername] = useState(import.meta.env.DEV ? 'hanlei' : '');
+  const [password, setPassword] = useState(import.meta.env.DEV ? '123456' : '');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();

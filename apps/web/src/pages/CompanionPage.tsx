@@ -32,7 +32,6 @@ const CompanionPage: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Wallet state
   const [wallet, setWallet] = useState<any>(null);
   const [walletLoading, setWalletLoading] = useState(true);
   const [withdrawVisible, setWithdrawVisible] = useState(false);
@@ -66,10 +65,7 @@ const CompanionPage: React.FC = () => {
   useEffect(() => { fetchData(); fetchWallet(); }, [fetchData, fetchWallet]);
 
   const handleWithdraw = async () => {
-    if (withdrawAmount <= 0) {
-      message.warning('请输入有效金额');
-      return;
-    }
+    if (withdrawAmount <= 0) { message.warning('请输入有效金额'); return; }
     setWithdrawSubmitting(true);
     try {
       await companionsApi.requestWithdraw(withdrawAmount);
@@ -77,12 +73,10 @@ const CompanionPage: React.FC = () => {
       setWithdrawVisible(false);
       setWithdrawAmount(0);
       fetchWallet();
+      fetchData();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || '申请失败';
-      message.error(msg);
-    } finally {
-      setWithdrawSubmitting(false);
-    }
+      message.error(err?.response?.data?.message || err?.message || '申请失败');
+    } finally { setWithdrawSubmitting(false); }
   };
 
   const [blockedModal, setBlockedModal] = useState<any>(null);
@@ -104,25 +98,12 @@ const CompanionPage: React.FC = () => {
   return (
     <div>
       <Title level={4}>👤 我的工作台</Title>
-
       <Row gutter={[16, 16]}>
-        <Col span={6}>
-          <StatBlock label="今日流水" value={`¥${data.todayRevenue}`} icon={IconDollar} color="#1677ff" />
-        </Col>
-        <Col span={6}>
-          <StatBlock label="解锁门槛" value={data.isUnlocked ? '✅ 已解锁' : `¥${data.unlockThreshold}`}
-            icon={IconThunder} color={data.isUnlocked ? '#52c41a' : '#faad14'} />
-        </Col>
-        <Col span={6}>
-          <StatBlock label="娱乐计时" value={`${data.entertainmentMinutes}分钟`}
-            icon={IconClock} color="#eb2f96" />
-        </Col>
-        <Col span={6}>
-          <StatBlock label="暂扣费用" value={`¥${data.entertainmentFee}`}
-            icon={IconDollar} color="#ff4d4f" />
-        </Col>
+        <Col span={6}><StatBlock label="今日流水" value={`¥${data.todayRevenue}`} icon={IconDollar} color="#1677ff" /></Col>
+        <Col span={6}><StatBlock label="解锁门槛" value={data.isUnlocked ? '✅ 已解锁' : `¥${data.unlockThreshold}`} icon={IconThunder} color={data.isUnlocked ? '#52c41a' : '#faad14'} /></Col>
+        <Col span={6}><StatBlock label="娱乐计时" value={`${data.entertainmentMinutes}分钟`} icon={IconClock} color="#eb2f96" /></Col>
+        <Col span={6}><StatBlock label="暂扣费用" value={`¥${data.entertainmentFee}`} icon={IconDollar} color="#ff4d4f" /></Col>
       </Row>
-
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={16}>
           <Row gutter={[16, 16]}>
@@ -182,143 +163,37 @@ const CompanionPage: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Wallet */}
       <Title level={4} style={{ marginTop: 24 }}>💰 我的钱包</Title>
       <Spin spinning={walletLoading}>
         {wallet && (
           <>
             <Row gutter={[16, 16]}>
-              <Col span={6}>
-                <Card size="small" style={{ borderLeft: '3px solid #1677ff', textAlign: 'center' }}>
-                  <Statistic
-                    title="总账户"
-                    value={`¥${((wallet.balance ?? 0) + (wallet.deposit ?? 0)).toFixed(2)}`}
-                    prefix={IconWallet}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>余额 ¥{wallet.balance?.toFixed(2) ?? '0.00'} + 押金 ¥{wallet.deposit?.toFixed(2) ?? '0.00'}</Text>
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card size="small" style={{ borderLeft: '3px solid #52c41a', textAlign: 'center' }}>
-                  <Statistic
-                    title="押金"
-                    value={`¥${wallet.deposit?.toFixed(2) ?? '0.00'}`}
-                    prefix={IconBank}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>已缴纳押金</Text>
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card size="small" style={{ borderLeft: '3px solid #faad14', textAlign: 'center' }}>
-                  <Statistic
-                    title="可支取"
-                    value={`¥${wallet.withdrawable?.toFixed(2) ?? '0.00'}`}
-                    prefix={IconSwap}
-                    valueStyle={{ color: wallet.withdrawable > 0 ? '#faad14' : '#999' }}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    月流水 ¥{wallet.monthlyRevenue?.toFixed(2) ?? '0.00'}
-                  </Text>
-                </Card>
-              </Col>
-              <Col span={6}>
-                <Card size="small" style={{ borderLeft: '3px solid #ff4d4f', textAlign: 'center' }}>
-                  <Statistic
-                    title="冻结中"
-                    value={`¥${wallet.frozen?.toFixed(2) ?? '0.00'}`}
-                    prefix={IconLock}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>暂不可用</Text>
-                </Card>
-              </Col>
+              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #1677ff', textAlign: 'center' }}><Statistic title="总账户" value={`¥${((wallet.balance ?? 0) + (wallet.deposit ?? 0)).toFixed(2)}`} prefix={IconWallet} /><Text type="secondary" style={{ fontSize: 12 }}>余额 ¥{wallet.balance?.toFixed(2) ?? '0.00'} + 押金 ¥{wallet.deposit?.toFixed(2) ?? '0.00'}</Text></Card></Col>
+              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #52c41a', textAlign: 'center' }}><Statistic title="押金" value={`¥${wallet.deposit?.toFixed(2) ?? '0.00'}`} prefix={IconBank} /><Text type="secondary" style={{ fontSize: 12 }}>已缴纳押金</Text></Card></Col>
+              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #faad14', textAlign: 'center' }}><Statistic title="可支取" value={`¥${wallet.withdrawable?.toFixed(2) ?? '0.00'}`} prefix={IconSwap} valueStyle={{ color: wallet.withdrawable > 0 ? '#faad14' : '#999' }} /><Text type="secondary" style={{ fontSize: 12 }}>月流水 ¥{wallet.monthlyRevenue?.toFixed(2) ?? '0.00'}</Text></Card></Col>
+              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #ff4d4f', textAlign: 'center' }}><Statistic title="冻结中" value={`¥${wallet.frozen?.toFixed(2) ?? '0.00'}`} prefix={IconLock} /><Text type="secondary" style={{ fontSize: 12 }}>暂不可用</Text></Card></Col>
             </Row>
-
-            <div style={{ marginTop: 12, textAlign: 'right' }}>
-              <Button type="primary" icon={IconSwap} onClick={() => setWithdrawVisible(true)}>
-                申请支取
-              </Button>
-            </div>
-
-            <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>
-              冻结说明：存单未打部分对应提成暂冻结
-            </Text>
-
-            {/* Wallet transaction history */}
+            <div style={{ marginTop: 12, textAlign: 'right' }}><Button type="primary" icon={IconSwap} onClick={() => setWithdrawVisible(true)}>申请支取</Button></div>
+            <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>冻结说明：存单未打部分对应提成暂冻结</Text>
             <Card title="钱包明细" size="small" style={{ marginTop: 16 }}>
-              <Table
-                dataSource={wallet.transactions ?? []}
-                rowKey="id"
-                size="small"
-                pagination={{ pageSize: 10 }}
-                locale={{ emptyText: '暂无交易记录' }}
-              >
-                <Table.Column title="类型" dataIndex="type" width={100}
-                  render={(t: string) => {
-                    const labels: Record<string, { color: string; text: string }> = {
-                      DEPOSIT: { color: 'blue', text: '充值' },
-                      WITHDRAW: { color: 'orange', text: '支取' },
-                      FREEZE: { color: 'red', text: '冻结' },
-                      UNFREEZE: { color: 'green', text: '解冻' },
-                      SETTLEMENT: { color: 'purple', text: '结算' },
-                    };
-                    return <Tag color={labels[t]?.color}>{labels[t]?.text ?? t}</Tag>;
-                  }} />
-                <Table.Column title="金额" dataIndex="amount" width={100}
-                  render={(v: number) => <Text strong style={{ color: '#cf1322' }}>¥{v.toFixed(2)}</Text>} />
-                <Table.Column title="变动前" dataIndex="balanceBefore" width={100}
-                  render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
-                <Table.Column title="变动后" dataIndex="balanceAfter" width={100}
-                  render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
-                <Table.Column title="状态" dataIndex="status" width={90}
-                  render={(s: string) => {
-                    const m: Record<string, { color: string; label: string }> = {
-                      PENDING: { color: 'orange', label: '待审核' },
-                      APPROVED: { color: 'green', label: '已通过' },
-                      REJECTED: { color: 'red', label: '已驳回' },
-                    };
-                    return <Tag color={m[s]?.color}>{m[s]?.label ?? s}</Tag>;
-                  }} />
-                <Table.Column title="时间" dataIndex="createdAt" width={160}
-                  render={(d: string) => new Date(d).toLocaleString('zh-CN')} />
-                <Table.Column title="备注" dataIndex="note" ellipsis
-                  render={(v: string) => v || '-'} />
+              <Table dataSource={wallet.transactions ?? []} rowKey="id" size="small" pagination={{ pageSize: 10 }} locale={{ emptyText: '暂无交易记录' }}>
+                <Table.Column title="类型" dataIndex="type" width={100} render={(t: string) => { const labels: Record<string, { color: string; text: string }> = { DEPOSIT: { color: 'blue', text: '充值' }, WITHDRAW: { color: 'orange', text: '支取' }, FREEZE: { color: 'red', text: '冻结' }, UNFREEZE: { color: 'green', text: '解冻' }, SETTLEMENT: { color: 'purple', text: '结算' } }; return <Tag color={labels[t]?.color}>{labels[t]?.text ?? t}</Tag>; }} />
+                <Table.Column title="金额" dataIndex="amount" width={100} render={(v: number) => <Text strong style={{ color: '#cf1322' }}>¥{v.toFixed(2)}</Text>} />
+                <Table.Column title="变动前" dataIndex="balanceBefore" width={100} render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
+                <Table.Column title="变动后" dataIndex="balanceAfter" width={100} render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
+                <Table.Column title="状态" dataIndex="status" width={90} render={(s: string) => { const m: Record<string, { color: string; label: string }> = { PENDING: { color: 'orange', label: '待审核' }, APPROVED: { color: 'green', label: '已通过' }, REJECTED: { color: 'red', label: '已驳回' } }; return <Tag color={m[s]?.color}>{m[s]?.label ?? s}</Tag>; }} />
+                <Table.Column title="时间" dataIndex="createdAt" width={160} render={(d: string) => new Date(d).toLocaleString('zh-CN')} />
+                <Table.Column title="备注" dataIndex="note" ellipsis render={(v: string) => v || '-'} />
               </Table>
             </Card>
-
-            {/* Withdraw Modal */}
-            <Modal
-              title="申请支取"
-              open={withdrawVisible}
-              onOk={handleWithdraw}
-              onCancel={() => { setWithdrawVisible(false); setWithdrawAmount(0); }}
-              confirmLoading={withdrawSubmitting}
-              okText="提交申请"
-              cancelText="取消"
-            >
-              <div style={{ marginBottom: 16 }}>
-                <Text>可支取金额：</Text>
-                <Text strong style={{ color: '#faad14', fontSize: 18 }}>
-                  ¥{wallet.withdrawable?.toFixed(2) ?? '0.00'}
-                </Text>
-              </div>
-              <div>
-                <Text>支取金额：</Text>
-                <InputNumber
-                  style={{ width: '100%', marginTop: 8 }}
-                  min={0}
-                  max={wallet.withdrawable ?? 0}
-                  value={withdrawAmount}
-                  onChange={(v) => setWithdrawAmount(v ?? 0)}
-                  placeholder="请输入支取金额"
-                  addonAfter="元"
-                />
-              </div>
+            <Modal title="申请支取" open={withdrawVisible} onOk={handleWithdraw} onCancel={() => { setWithdrawVisible(false); setWithdrawAmount(0); }} confirmLoading={withdrawSubmitting} okText="提交申请" cancelText="取消">
+              <div style={{ marginBottom: 16 }}><Text>可支取金额：</Text><Text strong style={{ color: '#faad14', fontSize: 18 }}>¥{wallet.withdrawable?.toFixed(2) ?? '0.00'}</Text></div>
+              <div><Text>支取金额：</Text><InputNumber style={{ width: '100%', marginTop: 8 }} min={0} max={wallet.withdrawable ?? 0} value={withdrawAmount} onChange={(v) => setWithdrawAmount(v ?? 0)} placeholder="请输入支取金额" addonAfter="元" /></div>
             </Modal>
           </>
         )}
       </Spin>
 
-      {/* Blocked — entertainment mode threshold check */}
       <Modal title="⚠️ 无法切换娱乐模式" open={!!blockedModal} onCancel={() => setBlockedModal(null)} footer={null}>
         <div style={{ lineHeight: 2.2 }}>
           <p>您当前不满足娱乐模式的开启条件：</p>
@@ -326,9 +201,7 @@ const CompanionPage: React.FC = () => {
             <div>💰 押金：<Text strong style={{ color: blockedModal?.deposit >= (blockedModal?.depositThreshold||0) ? '#52c41a' : '#ff4d4f' }}>¥{blockedModal?.deposit?.toFixed(2)}</Text> / 需要 ¥{blockedModal?.depositThreshold}</div>
             <div>📊 月流水：<Text strong style={{ color: blockedModal?.revenue >= (blockedModal?.revenueThreshold||0) ? '#52c41a' : '#ff4d4f' }}>¥{blockedModal?.revenue?.toFixed(2)}</Text> / 需要 ¥{blockedModal?.revenueThreshold}</div>
           </div>
-          <div style={{ marginTop: 16, textAlign: 'center' }}>
-            <Button type="primary" onClick={() => setBlockedModal(null)}>知道了</Button>
-          </div>
+          <div style={{ marginTop: 16, textAlign: 'center' }}><Button type="primary" onClick={() => setBlockedModal(null)}>知道了</Button></div>
         </div>
       </Modal>
     </div>

@@ -17,6 +17,7 @@ import {
   Statistic,
   Table,
   Popconfirm,
+  Input,
 } from 'antd';
 import {
   PlusOutlined,
@@ -202,6 +203,14 @@ const CSView: React.FC = () => {
   const offlineCount = companions.filter((c) => c.status === CompanionStatus.OFFLINE).length;
   const poolCount = poolOrders.length;
 
+  // Apply filters
+  const filteredOrders = useMemo(() => {
+    let result = poolOrders;
+    if (gameSearch) result = result.filter(o => o.gameName?.toLowerCase().includes(gameSearch.toLowerCase()));
+    if (urgencyFilter) result = result.filter(o => (o as any).customFields?.urgency === urgencyFilter);
+    return result;
+  }, [poolOrders, gameSearch, urgencyFilter]);
+
   return (
     <div>
       <div
@@ -345,6 +354,22 @@ const CSView: React.FC = () => {
             <div style={{ background: '#FFF', borderRadius: '0 0 16px 16px', padding: '16px 20px',
               minHeight: 400, border: '1px solid #E2E8F0', borderTop: 'none',
               boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+              {/* Filter bar */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <Input.Search placeholder="搜索游戏名" value={gameSearch}
+                  onChange={e => setGameSearch(e.target.value)} allowClear style={{ width: 200 }} size="small" />
+                <Select placeholder="紧急程度" value={urgencyFilter} onChange={setUrgencyFilter}
+                  allowClear style={{ width: 120 }} size="small">
+                  <Select.Option value="now">立即打</Select.Option>
+                  <Select.Option value="later">预约</Select.Option>
+                  <Select.Option value="urgent">急单</Select.Option>
+                </Select>
+                {(gameSearch || urgencyFilter) && (
+                  <Text type="secondary" style={{ fontSize: 12, lineHeight: '24px' }}>
+                    筛选结果: {filteredOrders.length}/{poolCount}
+                  </Text>
+                )}
+              </div>
               {loadingPool && poolOrders.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 48 }}><Spin size="large" /></div>
               ) : poolOrders.length === 0 ? (
@@ -353,7 +378,7 @@ const CSView: React.FC = () => {
                   <Text type="secondary" style={{ fontSize: 15 }}>暂无待派订单，水面平静</Text>
                 </div>
               ) : (
-                <List grid={{ gutter: [0, 8], column: 1 }} dataSource={poolOrders}
+                <List grid={{ gutter: [0, 8], column: 1 }} dataSource={filteredOrders}
                   renderItem={(order, idx) => (
                     <List.Item style={{ marginBottom: 0 }}>
                       <div style={{ background: '#FFF', borderRadius: 10, padding: '8px 14px',

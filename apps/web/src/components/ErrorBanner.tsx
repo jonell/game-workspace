@@ -1,0 +1,31 @@
+import React from 'react';
+import { Alert, Button } from 'antd';
+
+interface ErrorBannerProps {
+  message?: string;
+  description?: string;
+  onRetry?: () => void;
+}
+
+const ErrorBanner: React.FC<ErrorBannerProps> = ({
+  message = '加载失败',
+  description,
+  onRetry,
+}) => (
+  <Alert
+    type="error"
+    showIcon
+    message={message}
+    description={description}
+    action={
+      onRetry ? (
+        <Button size="small" danger onClick={onRetry}>
+          重试
+        </Button>
+      ) : undefined
+    }
+    style={{ marginBottom: 16 }}
+  />
+);
+
+export default ErrorBanner;

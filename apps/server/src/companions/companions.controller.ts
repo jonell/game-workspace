@@ -55,7 +55,32 @@ export class CompanionsController {
 
     // Get messages for the requested orderId, or from notification
     const msgOrderId = orderId || notif?.orderId || '';
-    const messages = msgOrderId ? (chatMessages.get(studioId)?.get(msgOrderId) || []) : [];
+    // Read from in-memory map first, fall back to database
+    let messages: ChatMsg[] = [];
+    if (msgOrderId) {
+      const memMsgs = chatMessages.get(studioId)?.get(msgOrderId);
+      if (memMsgs && memMsgs.length > 0) {
+        messages = memMsgs;
+      } else {
+        // Fall back to database (survives server restart)
+        try {
+          const dbMsgs = await this.prisma.chatMessage.findMany({
+            where: { studioId, orderId: msgOrderId },
+            orderBy: { createdAt: 'asc' },
+            take: 200,
+          });
+          messages = dbMsgs.map(m => ({
+            text: m.text,
+            from: m.senderRole === 'COMPANION' ? 'them' : 'me',
+            time: m.createdAt.toISOString(),
+          }));
+          // Populate in-memory cache
+          if (messages.length > 0 && chatMessages.has(studioId)) {
+            chatMessages.get(studioId)!.set(msgOrderId, messages);
+          }
+        } catch { /* DB read failure is non-critical; in-memory messages still work */ }
+      }
+    }
 
     let avatar: string | null = null;
     if (notif?.companionId) {
@@ -355,6 +380,19 @@ export class CompanionsController {
       from: req.user.role === 'COMPANION' ? 'them' : 'me',
       time,
     });
+
+    // Persist to database so messages survive server restart
+    try {
+      await this.prisma.chatMessage.create({
+        data: {
+          studioId,
+          orderId: chatKey === 'global' ? null : chatKey,
+          senderId: req.user.id || req.user.userId || username,
+          senderRole: req.user.role || 'COMPANION',
+          text: msgText,
+        },
+      });
+    } catch { /* DB write failure is non-critical; in-memory messages still work */ }
 
     // Store notification keyed by orderId, preserve companionId for avatar
     chatNotifications.set(`${studioId}:${chatKey}`, {

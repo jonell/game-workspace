@@ -575,27 +575,70 @@ const CustomerDetailPage: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* ── Section 4: AI Analysis ───────────────────────── */}
-      <Card title="AI 智能分析" style={{ marginBottom: 16 }}>
-        <Skeleton active loading={false} paragraph={{ rows: 2 }}>
-          <div
-            style={{
-              padding: '40px 20px',
-              textAlign: 'center',
-              background: 'linear-gradient(135deg, #667eea10, #764ba210)',
-              borderRadius: 8,
-              border: '1px dashed #d9d9d9',
-            }}
-          >
-            <Text type="secondary" style={{ fontSize: 16 }}>
-              
-            </Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              基于客户画像和消费数据，智能生成客户标签、消费预测和跟进建议
-            </Text>
-          </div>
-        </Skeleton>
+      {/* ── Section 4: Smart Analysis ──────────────────────── */}
+      <Card title="智能分析" style={{ marginBottom: 16 }} loading={loadingCustomer || loadingOrders}>
+        {(() => {
+          const totalSpent = customer?.totalSpent ?? 0;
+          const orderCount = orders.length;
+          const lastOrderDate = orders[0]?.createdAt ? new Date(orders[0].createdAt) : null;
+          const daysSinceLastOrder = lastOrderDate
+            ? Math.floor((Date.now() - lastOrderDate.getTime()) / 86400000)
+            : Infinity;
+
+          const tags: string[] = [];
+          if (totalSpent > 500) tags.push('高价值客户');
+          else if (totalSpent > 100) tags.push('潜力客户');
+          if (orderCount > 5) tags.push('忠实客户');
+          if (daysSinceLastOrder > 30 && orderCount > 0) tags.push('流失风险');
+          if (customer?.status === 'LOST') tags.push('已流失');
+          if (customer?.status === 'FOLLOW_UP') tags.push('待跟进');
+          if (tags.length === 0) tags.push('新客户');
+
+          const riskLevel = customer?.status === 'LOST' ? 'high'
+            : daysSinceLastOrder > 30 && orderCount > 0 ? 'high'
+            : daysSinceLastOrder > 14 && orderCount > 0 ? 'medium'
+            : 'low';
+
+          const suggestion = riskLevel === 'high'
+            ? '建议尽快主动联系客户，超过30天未消费，存在流失风险'
+            : riskLevel === 'medium'
+            ? '客户近期活跃度下降，可发送活动优惠或新游戏推荐'
+            : orderCount === 0
+            ? '新客户尚未下单，建议完善画像并推送首次优惠'
+            : '客户状态良好，继续保持日常维护和关系经营';
+
+          return (
+            <div>
+              <div style={{ marginBottom: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {tags.map(t => (
+                  <Tag key={t} color={
+                    t.includes('风险') || t.includes('流失') ? 'red'
+                    : t.includes('高价值') || t.includes('忠实') ? 'blue'
+                    : t.includes('潜力') ? 'green'
+                    : 'default'
+                  }>{t}</Tag>
+                ))}
+              </div>
+              <div style={{
+                padding: '12px 16px',
+                background: riskLevel === 'high' ? '#fff2f0' : riskLevel === 'medium' ? '#fff7e6' : '#f6ffed',
+                border: `1px solid ${riskLevel === 'high' ? '#ffccc7' : riskLevel === 'medium' ? '#ffe7ba' : '#b7eb8f'}`,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 13 }}>
+                  {suggestion}
+                </Text>
+              </div>
+              <div style={{ marginTop: 10, display: 'flex', gap: 16 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>累计消费：¥{totalSpent.toFixed(2)}</Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>订单数：{orderCount}单</Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  最近消费：{lastOrderDate ? formatDate(lastOrderDate.toISOString()) : '暂无'}
+                </Text>
+              </div>
+            </div>
+          );
+        })()}
       </Card>
 
       {/* ── Section 5: Service History ────────────────────── */}
