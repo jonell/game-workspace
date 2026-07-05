@@ -270,6 +270,7 @@ async function runReportCycle(): Promise<void> {
       });
     }
     for (const hit of hits) {
+      if (shouldSkipLoopKill(hit.name)) continue;
       onKillCallback?.(hit);
     }
     logger.info('[ProcessMonitor] Report cycle complete', { elapsed: `${Date.now() - cycleStart}ms` });
@@ -292,6 +293,7 @@ async function runBlacklistCheck(): Promise<void> {
       });
     }
     for (const hit of hits) {
+      if (shouldSkipLoopKill(hit.name)) continue;
       onKillCallback?.(hit);
     }
   } catch (e: any) {
