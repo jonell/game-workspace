@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Typography, Space, Spin, message, Tag } from 'antd';
+import { Layout, Menu, Button, Typography, Space, Spin, message, Tag, Modal, Input } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSocket } from '../hooks/useSocket';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // Badge pulse animation
 if (!document.getElementById('badge-pulse-css')) {
@@ -22,7 +23,6 @@ import { ControlOutlined, StopOutlined, SafetyOutlined, HistoryOutlined,
   SendOutlined,
   AuditOutlined,
   FileTextOutlined,
-  DesktopOutlined,
   FundOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -44,9 +44,11 @@ const IconAuth = React.createElement(KeyOutlined);
 const IconDispatch = React.createElement(SendOutlined);
 const IconBilling = React.createElement(AuditOutlined);
 const IconOrders = React.createElement(FileTextOutlined);
-const IconPc = React.createElement(DesktopOutlined);
-
-
+// Process管控菜单统一图标
+const IconControl = React.createElement(ControlOutlined);
+const IconStop = React.createElement(StopOutlined);
+const IconSafety = React.createElement(SafetyOutlined);
+const IconHistory = React.createElement(HistoryOutlined);
 
 const IconLogout = React.createElement(LogoutOutlined);
 const IconTraffic = React.createElement(FundOutlined);
@@ -77,10 +79,10 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: 'grp-control', type: 'group', label: '系统管控', children: [
       { key: '/owner/studios', icon: IconStudios, label: '工作室管理' },
       { key: '/owner/authorizations', icon: IconAuth, label: '客户端授权' },
-      { key: '/admin/pc-control', icon: React.createElement(ControlOutlined), label: '远程控制' },
-      { key: '/admin/blacklist', icon: React.createElement(StopOutlined), label: '进程黑名单' },
-      { key: '/admin/whitelist', icon: React.createElement(SafetyOutlined), label: '进程白名单' },
-      { key: '/admin/process-kill-log', icon: React.createElement(HistoryOutlined), label: '杀进程日志' },
+      { key: '/admin/pc-control', icon: IconControl, label: '远程控制' },
+      { key: '/admin/blacklist', icon: IconStop, label: '进程黑名单' },
+      { key: '/admin/whitelist', icon: IconSafety, label: '进程白名单' },
+      { key: '/admin/process-kill-log', icon: IconHistory, label: '杀进程日志' },
     ]},
     { key: 'grp-settings', type: 'group', label: '设置', children: [
       { key: '/owner/settings', icon: IconAuth, label: '系统设置' },
@@ -94,11 +96,10 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/admin/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/admin/traffic', icon: IconTraffic, label: '订单池' },
     { key: '/admin/billing', icon: IconBilling, label: '报账审核' },
-    { key: '/admin/billing', icon: IconBilling, label: '报账审核' },
-    { key: '/admin/pc-control', icon: React.createElement(ControlOutlined), label: '远程控制' },
-    { key: '/admin/blacklist', icon: React.createElement(StopOutlined), label: '进程黑名单' },
-    { key: '/admin/whitelist', icon: React.createElement(SafetyOutlined), label: '进程白名单' },
-    { key: '/admin/process-kill-log', icon: React.createElement(HistoryOutlined), label: '杀进程日志' },
+    { key: '/admin/pc-control', icon: IconControl, label: '远程控制' },
+    { key: '/admin/blacklist', icon: IconStop, label: '进程黑名单' },
+    { key: '/admin/whitelist', icon: IconSafety, label: '进程白名单' },
+    { key: '/admin/process-kill-log', icon: IconHistory, label: '杀进程日志' },
     { key: '/admin/review', icon: IconAuth, label: '实名审核' },
     { key: '/admin/settings', icon: IconAuth, label: '系统设置' },
   ],
@@ -106,10 +107,10 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },
     { key: '/cs/orders', icon: IconOrders, label: '订单管理' },
     { key: '/cs/employees', icon: IconEmployees, label: '员工管理' },
-    { key: '/admin/pc-control', icon: React.createElement(ControlOutlined), label: '远程控制' },
-    { key: '/admin/blacklist', icon: React.createElement(StopOutlined), label: '进程黑名单' },
-    { key: '/admin/whitelist', icon: React.createElement(SafetyOutlined), label: '进程白名单' },
-    { key: '/admin/process-kill-log', icon: React.createElement(HistoryOutlined), label: '杀进程日志' },
+    { key: '/admin/pc-control', icon: IconControl, label: '远程控制' },
+    { key: '/admin/blacklist', icon: IconStop, label: '进程黑名单' },
+    { key: '/admin/whitelist', icon: IconSafety, label: '进程白名单' },
+    { key: '/admin/process-kill-log', icon: IconHistory, label: '杀进程日志' },
   ],
   [UserRole.COMPANION]: [
     { key: '/companion', icon: IconRevenue, label: '首页' },
@@ -131,6 +132,36 @@ const roleLabels: Record<UserRole, string> = {
 const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = React.useState(false);
   const { user, isAuthenticated, fetchUser, logout, chatActive, chatPartner } = useAuthStore();
+  const [commandPalette, setCommandPalette] = React.useState(false);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPalette(true);
+      }
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="搜索"]') as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Auto-collapse sidebar on mobile
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth <= 768) {
+        setCollapsed(true);
+      }
+    };
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -450,7 +481,9 @@ const AppLayout: React.FC = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02)',
           }}
         >
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </Content>
       </Layout>
     </Layout>
@@ -535,6 +568,25 @@ const AppLayout: React.FC = () => {
         </div>
       </div>
     )}
+
+      {/* Command Palette (Ctrl+K) */}
+      <Modal open={commandPalette} onCancel={() => setCommandPalette(false)} footer={null} title="命令面板" width={480}>
+        <Input.Search placeholder="搜索页面..." autoFocus onSearch={(v) => {
+          const allMenuItems = (roleMenus[user?.role || UserRole.COMPANION] || []).flatMap(g => g.children || [g]);
+          const match = allMenuItems.find(m => m.label.toLowerCase().includes(v.toLowerCase()) || m.key.toLowerCase().includes(v.toLowerCase()));
+          if (match) { navigate(match.key); setCommandPalette(false); }
+        }} />
+        <div style={{ marginTop: 12 }}>
+          {(roleMenus[user?.role || UserRole.COMPANION] || []).flatMap(g => g.children || [g]).slice(0, 15).map(m => (
+            <div key={m.key} style={{ padding: '6px 8px', cursor: 'pointer', borderRadius: 6 }}
+              onClick={() => { navigate(m.key); setCommandPalette(false); }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f0f0f0'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+              {m.icon} <Text style={{ marginLeft: 8 }}>{m.label}</Text>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </>
   );
 };

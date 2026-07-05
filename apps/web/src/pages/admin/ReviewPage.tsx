@@ -76,12 +76,8 @@ const ReviewPage: React.FC = () => {
           <Popconfirm title="确认通过审核？" onConfirm={() => handleReview(r.id, 'APPROVED')} okText="通过" cancelText="取消">
             <Button size="small" type="primary" icon={React.createElement(CheckOutlined)}>通过</Button>
           </Popconfirm>
-          <Popconfirm
-            title={<TextArea rows={2} placeholder="拒绝原因（可选）" onChange={(e) => setReviewNote(e.target.value)} />}
-            onConfirm={() => handleReview(r.id, 'REJECTED')} okText="拒绝" cancelText="取消"
-          >
-            <Button size="small" danger icon={React.createElement(CloseOutlined)}>拒绝</Button>
-          </Popconfirm>
+          <Button size="small" danger icon={React.createElement(CloseOutlined)}
+            onClick={() => { setRejectTargetId(r.id); setRejectModalOpen(true); }}>拒绝</Button>
         </Space>
       ),
     },
