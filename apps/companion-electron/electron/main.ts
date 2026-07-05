@@ -81,7 +81,24 @@ function setupIPC(): void {
         }
 
         const companionId = store.get('companionId') as string;
-        connectWebSocket(serverUrl, res.data.data.accessToken, companionId);
+        const token = res.data.data.accessToken;
+
+        // Auto-set status to ONLINE on login
+        if (companionId) {
+          try {
+            await httpRequest({
+              method: 'PUT',
+              url: `${serverUrl}/api/companions/${companionId}/status`,
+              headers: { Authorization: `Bearer ${token}` },
+              body: { status: 'ONLINE' },
+            });
+            logger.info('Auto-set status to ONLINE on login', { companionId });
+          } catch (e: any) {
+            logger.warn('Failed to auto-set ONLINE status', { error: e.message });
+          }
+        }
+
+        connectWebSocket(serverUrl, token, companionId);
         logger.info('Login success', { username, companionId });
 
         return { success: true, user: meRes.data?.data };

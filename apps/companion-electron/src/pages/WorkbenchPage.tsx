@@ -147,6 +147,7 @@ const WorkbenchPage: React.FC<Props> = ({ onStatusChange }) => {
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               <Button icon={<PlayCircleOutlined />} size="large" onClick={() => switchStatus('IDLE')} block>娱乐中</Button>
               <Button type="primary" icon={<SearchOutlined />} size="large" onClick={() => switchStatus('ONLINE')} block>空闲</Button>
+              <Button icon={<ThunderboltOutlined />} size="large" onClick={() => switchStatus('BUSY')} block>接单中</Button>
               <Button icon={<CoffeeOutlined />} size="large" onClick={() => switchStatus('RESTING')} block>休息中</Button>
             </Space>
           </Card>
