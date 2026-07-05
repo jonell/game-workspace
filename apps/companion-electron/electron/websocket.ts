@@ -128,6 +128,10 @@ export function emitKillResult(result: { processName: string; pid: number; succe
   });
 }
 
+export function emitCommandAck(command: string, success: boolean): void {
+  socket?.emit('pc:command_ack', { command, success });
+}
+
 export function isConnected(): boolean {
   return socket?.connected ?? false;
 }

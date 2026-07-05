@@ -9,7 +9,8 @@ import { httpRequest } from './http';
 import { startProcessMonitor, stopProcessMonitor, updateBlacklist } from './process-monitor';
 import { killProcess } from './process-killer';
 import { showKillNotification, showKilledToast } from './blacklist-notification';
-import { emitStatus, isConnected as isWsConnected, emitBlacklistReport, emitKillResult } from './websocket';
+import { handleRemoteCommand } from './remote-command';
+import { emitStatus, isConnected as isWsConnected, emitBlacklistReport, emitKillResult, emitCommandAck } from './websocket';
 import { logger } from './logger';
 
 let mainWindow: BrowserWindow | null = null;
@@ -177,6 +178,10 @@ function setupWsEvents(): void {
   });
 
   onWsEvent('pc:command', (data: any) => {
+    logger.info('Remote command received via WS', { command: data.command });
+    handleRemoteCommand(data, (success: boolean) => {
+      emitCommandAck(data.command, success);
+    });
     mainWindow?.webContents.send('ws:pcCommand', data);
   });
 
