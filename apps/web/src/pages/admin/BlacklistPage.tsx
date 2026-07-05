@@ -166,7 +166,7 @@ const BlacklistPage: React.FC = () => {
           {addMode === 'select' ? (
             <div>
               <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>选择陪玩</Text>
-              <Select placeholder="选择陪玩" style={{ width: '100%', marginBottom: 12 }}
+              <Select placeholder="选择陪玩" style={{ width: '100%', marginBottom: 12 }} showSearch filterOption={(input, option) => (option?.label as string || '').toLowerCase().includes(input.toLowerCase())}
                 value={selectedCompanionForAdd}
                 onChange={(cid) => { setSelectedCompanionForAdd(cid); setSelectedProcess(undefined); loadReportedProcesses(cid); }}
                 options={companions.map((c: any) => ({ label: c.user?.username || c.id, value: c.id }))} />
