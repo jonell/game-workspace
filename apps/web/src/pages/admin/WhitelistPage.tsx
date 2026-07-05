@@ -21,7 +21,7 @@ const WhitelistPage: React.FC = () => {
   const [processPath, setProcessPath] = useState('');
   const [addMode, setAddMode] = useState<'select' | 'manual'>('select');
   const [selectedCompanionForAdd, setSelectedCompanionForAdd] = useState<string | undefined>();
-  const [selectedProcess, setSelectedProcess] = useState<string | undefined>();
+  const [selectedProcess, setSelectedProcess] = useState<string[]>([]);
   const [reportedProcesses, setReportedProcesses] = useState<string[]>([]);
   const [loadingProcesses, setLoadingProcesses] = useState(false);
   const [companions, setCompanions] = useState<any[]>([]);
@@ -48,17 +48,19 @@ const WhitelistPage: React.FC = () => {
   };
 
   const handleAdd = async () => {
-    const name = addMode === 'select' ? selectedProcess : processName.trim();
-    if (!name) { message.warning(addMode === 'select' ? '请选择进程' : '请输入进程名称'); return; }
+    const names = addMode === 'select' ? selectedProcess : [processName.trim()];
+    if (names.length === 0 || !names[0]) { message.warning(addMode === 'select' ? '请选择进程' : '请输入进程名称'); return; }
     setSubmitting(true);
     try {
-      await blacklistApi.addWhitelist({ processName: name, processPath: addMode === 'manual' ? (processPath.trim() || undefined) : undefined });
-      message.success('已添加到白名单');
+      for (const name of names) {
+        await blacklistApi.addWhitelist({ processName: name, processPath: addMode === 'manual' ? (processPath.trim() || undefined) : undefined });
+      }
+      message.success(`已添加 ${names.length} 个进程到白名单`);
       setModalOpen(false);
       setProcessName('');
       setProcessPath('');
       setSelectedCompanionForAdd(undefined);
-      setSelectedProcess(undefined);
+      setSelectedProcess([]);
       setAddMode('select');
       fetchItems();
     } catch (err: any) {
@@ -122,7 +124,7 @@ const WhitelistPage: React.FC = () => {
         pagination={{ pageSize: 50, showTotal: (t) => `共 ${t} 条` }} />
 
       <Modal title="添加白名单进程" open={modalOpen} onOk={handleAdd}
-        onCancel={() => { setModalOpen(false); setAddMode('select'); setSelectedCompanionForAdd(undefined); setSelectedProcess(undefined); }}
+        onCancel={() => { setModalOpen(false); setAddMode('select'); setSelectedCompanionForAdd(undefined); setSelectedProcess([]); }}
         confirmLoading={submitting} okText="添加" cancelText="取消" destroyOnClose width={480}>
         <div style={{ marginTop: 16 }}>
           <Radio.Group value={addMode} onChange={(e) => setAddMode(e.target.value)} style={{ marginBottom: 16 }}>
@@ -135,11 +137,11 @@ const WhitelistPage: React.FC = () => {
               <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>选择陪玩</Text>
               <Select placeholder="选择陪玩" style={{ width: '100%', marginBottom: 12 }} showSearch filterOption={(input, option) => (option?.label as string || '').toLowerCase().includes(input.toLowerCase())}
                 value={selectedCompanionForAdd}
-                onChange={(cid) => { setSelectedCompanionForAdd(cid); setSelectedProcess(undefined); loadReportedProcesses(cid); }}
+                onChange={(cid) => { setSelectedCompanionForAdd(cid); setSelectedProcess([]); loadReportedProcesses(cid); }}
                 options={companions.map((c: any) => ({ label: c.user?.username || c.id, value: c.id }))} />
               <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: 'block' }}>选择进程</Text>
               <Select placeholder={selectedCompanionForAdd ? '选择进程' : '请先选择陪玩'} style={{ width: '100%' }}
-                value={selectedProcess} onChange={setSelectedProcess}
+                mode="multiple" value={selectedProcess} onChange={setSelectedProcess}
                 loading={loadingProcesses}
                 disabled={!selectedCompanionForAdd}
                 options={reportedProcesses.map((n) => ({ label: n, value: n }))}
