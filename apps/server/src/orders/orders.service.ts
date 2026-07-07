@@ -71,6 +71,7 @@ export class OrdersService {
         status: 'PENDING',
         amount: dto.amount,
         gameName: dto.gameName,
+        serviceType: (dto as any).serviceType ?? 'PLAY_WITH',
         duration: dto.duration,
         customFields: {
           customerSource: (dto as any).customerSource,

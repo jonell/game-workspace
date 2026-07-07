@@ -223,7 +223,9 @@ const CompanionPage: React.FC = () => {
               </div>
             </div>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-              <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('ENTERTAINMENT')} block disabled={belowEntertainment} title={belowEntertainment ? `今日流水 ¥${data.todayRevenue}，达标 ¥${entertainmentThreshold} 后可切换` : ''}>切换为娱乐中{belowEntertainment ? ` (还差¥${entertainmentThreshold - data.todayRevenue})` : ''}</Button>
+              <Tooltip title={belowEntertainment ? `今日流水 ¥${data.todayRevenue}，达标 ¥${entertainmentThreshold} 后可切换` : undefined}>
+                <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('ENTERTAINMENT')} block disabled={belowEntertainment}>切换为娱乐中{belowEntertainment ? ` (还差¥${entertainmentThreshold - data.todayRevenue})` : ''}</Button>
+              </Tooltip>
               <Button type="default" icon={IconHourglass} size="large" onClick={() => switchStatus('WAITING')} block>切换为等单</Button>
               <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('AVAILABLE')} block>切换为空闲</Button>
               <Button type="default" icon={IconThunder} size="large" onClick={() => switchStatus('BUSY')} block>切换为接单中</Button>

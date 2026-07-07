@@ -131,6 +131,7 @@ model Order {
   status       String   @default("PENDING")
   amount       Float
   gameName     String
+  serviceType  String   @default("PLAY_WITH")
   duration     Float?
   customFields Json?
   isOnline     Boolean  @default(true)

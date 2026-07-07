@@ -47,6 +47,20 @@ async function main() {
     },
   });
 
+  // Seed game.modes SystemConfig for TASK-02
+  await prisma.systemConfig.upsert({
+    where: { key: 'game.modes' },
+    create: {
+      key: 'game.modes',
+      value: JSON.stringify({
+        '三角洲行动': ['机密', '绝密'],
+        '王者荣耀': ['排位', '匹配', '巅峰赛'],
+        '英雄联盟': ['排位', '匹配', '大乱斗'],
+      }),
+    },
+    update: {},
+  });
+
   console.log('Seed complete:', {
     ownerId: owner.id,
     studioId: studio.id,

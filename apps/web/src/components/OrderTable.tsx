@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Tag, Typography, Space } from 'antd';
-import { orderTypeConfig, orderStatusConfig } from '../constants';
+import { orderTypeConfig, orderStatusConfig, serviceTypeConfig } from '../constants';
 
 const { Text } = Typography;
 
@@ -31,9 +31,14 @@ const OrderTable: React.FC<Props> = ({ dataSource, loading, renderActions, showC
         {r.customer?.customerCode && <><br /><Text type="secondary" style={{ fontSize: 10 }}>{r.customer.customerCode}</Text></>}
         {r.customFields?.customerSource && <><br /><Tag color="orange" style={{fontSize:10,margin:0}}>{r.customFields.customerSource}</Tag></>}
       </>)},
-      { title: '标注', key: 'tags', width: 90, render: (_: any, r: any) => (<>
+      { title: '标注', key: 'tags', width: 110, render: (_: any, r: any) => (<>
         {r.customFields?.urgency === 'later' ? <Tag color="purple" style={{fontSize:10,margin:'2px 0'}}>📅预约</Tag> : <Tag color="green" style={{fontSize:10,margin:'2px 0'}}>⚡立即打</Tag>}
         {r.customFields?.billingMode === 'round' && <Tag style={{fontSize:10,margin:'2px 0'}}>按局</Tag>}
+        {(r.serviceType || r.customFields?.serviceType) && (
+          <Tag color={serviceTypeConfig[(r.serviceType || r.customFields?.serviceType)]?.color} style={{fontSize:10,margin:'2px 0'}}>
+            {serviceTypeConfig[(r.serviceType || r.customFields?.serviceType)]?.label || r.serviceType || r.customFields?.serviceType}
+          </Tag>
+        )}
       </>)},
       ...(showCompanion ? [{ title: '陪玩', key: 'c', width: 80, render: (_: any, r: any) => r.companion?.user?.username || '-' }] : []),
       { title: '状态', key: 'status', width: 120, render: (_: any, r: any) => (<>
