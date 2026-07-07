@@ -210,6 +210,8 @@ const CompanionPage: React.FC = () => {
             </Col>
           </Row>
           <Row gutter={16} style={{ marginTop: 16 }}>
+            {(['entertainment', 'idle', 'work', 'rest'] as const).map(mode => {
+              const labels = { entertainment: '🎮娱乐', idle: '💼空闲', work: '🔴接单', rest: '🛏️休息' };
               return (
                 <Col span={6} key={mode}>
                   <Card size="small" style={{ textAlign: 'center' }}>
