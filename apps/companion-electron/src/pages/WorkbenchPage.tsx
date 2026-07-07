@@ -7,6 +7,7 @@ import {
   PlayCircleOutlined,
   SearchOutlined,
   CoffeeOutlined,
+  HourglassOutlined,
 } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
@@ -21,9 +22,10 @@ const StatBlock: React.FC<{ label: string; value: string | number; icon: React.R
   );
 
 const companionStatusConfig: Record<string, { color: string; label: string }> = {
-  ONLINE: { color: 'green', label: '空闲' },
+  AVAILABLE: { color: 'green', label: '空闲' },
+  WAITING: { color: 'cyan', label: '等单' },
   BUSY: { color: 'red', label: '接单中' },
-  IDLE: { color: 'gold', label: '娱乐中' },
+  ENTERTAINMENT: { color: 'gold', label: '娱乐中' },
   RESTING: { color: 'orange', label: '休息中' },
   OFFLINE: { color: 'default', label: '离线' },
 };
@@ -145,8 +147,9 @@ const WorkbenchPage: React.FC<Props> = ({ onStatusChange }) => {
               </div>
             </div>
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-              <Button icon={<PlayCircleOutlined />} size="large" onClick={() => switchStatus('IDLE')} block>娱乐中</Button>
-              <Button type="primary" icon={<SearchOutlined />} size="large" onClick={() => switchStatus('ONLINE')} block>空闲</Button>
+              <Button icon={<PlayCircleOutlined />} size="large" onClick={() => switchStatus('ENTERTAINMENT')} block>娱乐中</Button>
+              <Button icon={<HourglassOutlined />} size="large" onClick={() => switchStatus('WAITING')} block>等单</Button>
+              <Button type="primary" icon={<SearchOutlined />} size="large" onClick={() => switchStatus('AVAILABLE')} block>空闲</Button>
               <Button icon={<ThunderboltOutlined />} size="large" onClick={() => switchStatus('BUSY')} block>接单中</Button>
               <Button icon={<CoffeeOutlined />} size="large" onClick={() => switchStatus('RESTING')} block>休息中</Button>
             </Space>
