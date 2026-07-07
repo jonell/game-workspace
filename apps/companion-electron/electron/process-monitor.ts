@@ -234,7 +234,7 @@ export function startProcessMonitor(
   reportInterval = setInterval(runReportCycle, 5 * 60 * 1000);
 
   // Re-check against blacklist every 30 seconds
-  recheckInterval = setInterval(runBlacklistCheck, 60 * 1000);
+  recheckInterval = setInterval(runBlacklistCheck, 10 * 1000);
 }
 
 /** Stop periodic monitoring. */
