@@ -132,6 +132,13 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const STATUS_COMPAT: Record<string, string> = { 'ONLINE': 'AVAILABLE', 'IDLE': 'ENTERTAINMENT' };
     const mappedStatus = STATUS_COMPAT[data.status] || data.status;
 
+    // Get previous status for time tracking
+    const prev = await this.prisma.companion.findUnique({
+      where: { id: user.companionId },
+      select: { status: true },
+    }).catch(() => null);
+    const prevStatus = prev?.status;
+
     await this.prisma.companion.update({
       where: { id: user.companionId }, data: { status: mappedStatus },
     }).then(() => {
@@ -139,6 +146,30 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }).catch((err) => {
       logger.error('DB status update failed', { companionId: user.companionId, error: (err as any).message });
     });
+
+    // ── Time tracking: start/stop CompanionTimeLog on status change ──
+    if (mappedStatus !== prevStatus) {
+      const now = new Date();
+      // Close any open time log for the previous status
+      if (prevStatus) {
+        await this.prisma.companionTimeLog.updateMany({
+          where: { companionId: user.companionId, mode: prevStatus, endedAt: null },
+          data: { endedAt: now },
+        });
+        logger.info('TimeLog closed', { companionId: user.companionId, mode: prevStatus });
+      }
+      // Open new time log for the new status (ENTERTAINMENT = billing)
+      await this.prisma.companionTimeLog.create({
+        data: {
+          companionId: user.companionId,
+          mode: mappedStatus,
+          startedAt: now,
+          endedAt: null,
+          durationSeconds: 0,
+        },
+      });
+      logger.info('TimeLog started', { companionId: user.companionId, mode: mappedStatus });
+    }
 
     if (user.studioId) {
       this.server.to(`studio:${user.studioId}`).emit('status:broadcast', {
@@ -172,8 +203,22 @@ export class WsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       },
     });
 
+    // Update duration on open time logs (status-based tracking)
+    const now = new Date();
+    const openLog = await this.prisma.companionTimeLog.findFirst({
+      where: { companionId: user.companionId, endedAt: null },
+      orderBy: { startedAt: 'desc' },
+    });
+    if (openLog) {
+      const elapsed = Math.round((now.getTime() - openLog.startedAt.getTime()) / 1000);
+      await this.prisma.companionTimeLog.update({
+        where: { id: openLog.id },
+        data: { durationSeconds: elapsed },
+      });
+    }
+
+    // Legacy: Go Agent accumulated workSec
     if (data.workSec && data.workSec > 0) {
-      const now = new Date();
       await this.prisma.companionTimeLog.create({
         data: {
           companionId: user.companionId, mode: data.currentMode ?? 'ENTERTAINMENT',
