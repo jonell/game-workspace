@@ -282,44 +282,19 @@ const CompanionPage: React.FC = () => {
         </Col>
       </Row>
 
-      <Title level={4} style={{ marginTop: 24 }}>💰 我的钱包</Title>
-      <Spin spinning={walletLoading}>
-        {wallet && (
-          <>
-            <Row gutter={[16, 16]}>
-              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #1677ff', textAlign: 'center' }}><Statistic title="总流水" value={`¥${(wallet.totalRevenue ?? 0).toFixed(2)}`} prefix={IconDollar} /><Text type="secondary" style={{ fontSize: 12 }}>累计完成订单金额</Text></Card></Col>
-              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #52c41a', textAlign: 'center' }}><Statistic title="未支取" value={`¥${wallet.withdrawable?.toFixed(2) ?? '0.00'}`} prefix={IconBank} valueStyle={{ color: (wallet.withdrawable ?? 0) > 0 ? '#52c41a' : '#999' }} /><Text type="secondary" style={{ fontSize: 12 }}>可分账 {wallet.maxWithdrawable > 0 ? Math.round((wallet.maxWithdrawable / (wallet.totalRevenue || 1)) * 100) : 50}% · 已支取 ¥{(wallet.totalWithdrawn ?? 0).toFixed(2)}</Text></Card></Col>
-              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #faad14', textAlign: 'center' }}><Statistic title="可支取" value={`¥${wallet.withdrawable?.toFixed(2) ?? '0.00'}`} prefix={IconSwap} valueStyle={{ color: wallet.withdrawable > 0 ? '#faad14' : '#999' }} /><Text type="secondary" style={{ fontSize: 12 }}>押金 ¥{wallet.deposit?.toFixed(2) ?? '0.00'} · 余额 ¥{wallet.balance?.toFixed(2) ?? '0.00'}</Text></Card></Col>
-              <Col span={6}><Card size="small" style={{ borderLeft: '3px solid #ff4d4f', textAlign: 'center' }}><Statistic title="冻结中" value={`¥${wallet.frozen?.toFixed(2) ?? '0.00'}`} prefix={IconLock} /><Text type="secondary" style={{ fontSize: 12 }}>月流水 ¥{wallet.monthlyRevenue?.toFixed(2) ?? '0.00'}</Text></Card></Col>
-            </Row>
-            <div style={{ marginTop: 12, textAlign: 'right' }}><Button type="primary" icon={IconSwap} onClick={() => setWithdrawVisible(true)}>申请支取</Button></div>
-            <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>冻结说明：存单未打部分对应提成暂冻结</Text>
-            <Card title="钱包明细" size="small" style={{ marginTop: 16 }}>
-              <Table dataSource={wallet.transactions ?? []} rowKey="id" size="small" pagination={{ pageSize: 10 }} locale={{ emptyText: '暂无交易记录' }}>
-                <Table.Column title="类型" dataIndex="type" width={100} render={(t: string) => { const labels: Record<string, { color: string; text: string }> = { DEPOSIT: { color: 'blue', text: '充值' }, WITHDRAW: { color: 'orange', text: '支取' }, FREEZE: { color: 'red', text: '冻结' }, UNFREEZE: { color: 'green', text: '解冻' }, SETTLEMENT: { color: 'purple', text: '结算' } }; return <Tag color={labels[t]?.color}>{labels[t]?.text ?? t}</Tag>; }} />
-                <Table.Column title="金额" dataIndex="amount" width={100} render={(v: number) => <Text strong style={{ color: '#cf1322' }}>¥{v.toFixed(2)}</Text>} />
-                <Table.Column title="变动前" dataIndex="balanceBefore" width={100} render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
-                <Table.Column title="变动后" dataIndex="balanceAfter" width={100} render={(v: number) => `¥${v?.toFixed(2) ?? '0.00'}`} />
-                <Table.Column title="状态" dataIndex="status" width={90} render={(s: string) => { const m: Record<string, { color: string; label: string }> = { PENDING: { color: 'orange', label: '待审核' }, APPROVED: { color: 'green', label: '已通过' }, REJECTED: { color: 'red', label: '已驳回' } }; return <Tag color={m[s]?.color}>{m[s]?.label ?? s}</Tag>; }} />
-                <Table.Column title="时间" dataIndex="createdAt" width={160} render={(d: string) => new Date(d).toLocaleString('zh-CN')} />
-                <Table.Column title="备注" dataIndex="note" ellipsis render={(v: string) => v || '-'} />
-              </Table>
-            </Card>
-            <Modal title="申请支取" open={withdrawVisible} onOk={handleWithdraw} onCancel={() => { setWithdrawVisible(false); setWithdrawAmount(0); }} confirmLoading={withdrawSubmitting} okText="提交申请" cancelText="取消">
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ background: '#f6ffed', borderRadius: 8, padding: 12, marginBottom: 12 }}>
-                  <Text>📊 总流水：<Text strong>¥{(wallet.totalRevenue ?? 0).toFixed(2)}</Text></Text><br />
-                  <Text>🔢 可分账金额（{wallet.maxWithdrawable > 0 ? Math.round((wallet.maxWithdrawable / (wallet.totalRevenue || 1)) * 100) : 50}%）：<Text strong>¥{(wallet.maxWithdrawable ?? 0).toFixed(2)}</Text></Text><br />
-                  <Text>💸 已支取：<Text strong>¥{(wallet.totalWithdrawn ?? 0).toFixed(2)}</Text></Text><br />
-                  <Text>🏦 可支取余额：<Text strong style={{ color: '#faad14', fontSize: 18 }}>¥{(wallet.withdrawable ?? 0).toFixed(2)}</Text></Text>
-                </div>
-                <Text type="secondary">💡 提示：线下工作室（阶梯分成）最多支取当前档位比例的流水，线上俱乐部（固定比例）按个人分成比例支取。支取后需保留部分余额方可进入娱乐模式。</Text>
-              </div>
-              <div><Text>支取金额：</Text><InputNumber style={{ width: '100%', marginTop: 8 }} min={0} max={wallet.withdrawable ?? 0} value={withdrawAmount} onChange={(v) => setWithdrawAmount(v ?? 0)} placeholder="请输入支取金额" addonAfter="元" /></div>
-            </Modal>
-          </>
-        )}
-      </Spin>
+      <Title level={4} style={{ marginTop: 24 }}>💰 报账系统</Title>
+      <Card size="small" style={{ textAlign: 'center' }}>
+        <Row gutter={16}>
+          <Col span={8}><Statistic title="总流水" value={`¥${(wallet?.totalRevenue ?? 0).toFixed(2)}`} prefix={IconDollar} /></Col>
+          <Col span={8}><Statistic title="可支取" value={`¥${(wallet?.withdrawable ?? 0).toFixed(2)}`} prefix={IconSwap} valueStyle={{ color: (wallet?.withdrawable ?? 0) > 0 ? '#52c41a' : '#999' }} /></Col>
+          <Col span={8}><Statistic title="押金" value={`¥${(wallet?.deposit ?? 0).toFixed(2)}`} prefix={IconBank} /></Col>
+        </Row>
+        <div style={{ marginTop: 16 }}>
+          <Button type="primary" icon={IconSwap} onClick={() => { window.location.href = '/companion/billing'; }}>
+            进入报账系统（支取记录 / 申请支取）
+          </Button>
+        </div>
+      </Card>
 
       {/* TASK-10: 我的待跟进客户 */}
       <Spin spinning={customersLoading}>

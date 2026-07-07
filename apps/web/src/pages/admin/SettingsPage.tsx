@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card, Tabs, InputNumber, Button, Tag, Space, Typography, message,
-  Row, Col, Table, Input, Popconfirm,
+  Row, Col, Table, Input, Popconfirm, Switch, Segmented, Radio,
 } from 'antd';
 import { PlusOutlined, ReloadOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons';
 import { configApi } from '../../api/config';
@@ -31,6 +31,7 @@ interface AllConfig {
   'entertainment.shutdown_countdown': number;
   'entertainment.hourly_rate': number;
   'revenue.club_companion_share': number;
+  'billing.cs_access': boolean;
   'options.contact_results': string[];
   'options.finish_results': string[];
   'options.fail_reasons': string[];
@@ -405,14 +406,14 @@ const SettingsPage: React.FC = () => {
 
   const renderTimeout = () => (
     <Card
-      title="⏰ 超时与关机"
+      title="⏰ 超时与权限"
       extra={
         <Space>
           <Button icon={React.createElement(ReloadOutlined)} onClick={fetchConfig} loading={loading}>刷新</Button>
           <Button
             type="primary"
             icon={React.createElement(SaveOutlined)}
-            loading={saving === '超时与关机'}
+            loading={saving === '超时与权限'}
             onClick={() =>
               save(
                 {
@@ -421,8 +422,9 @@ const SettingsPage: React.FC = () => {
                   'timeout.idle_shutdown': config?.['timeout.idle_shutdown'],
                   'entertainment.idle_shutdown': config?.['entertainment.idle_shutdown'],
                   'entertainment.shutdown_countdown': config?.['entertainment.shutdown_countdown'],
+                  'billing.cs_access': config?.['billing.cs_access'],
                 },
-                '超时与关机',
+                '超时与权限',
               )
             }
           >
@@ -486,6 +488,11 @@ const SettingsPage: React.FC = () => {
             style={{ width: 200 }}
           />
           <Text type="secondary" style={{ marginLeft: 8 }}>关机前倒计时提示秒数</Text>
+        </div>
+        <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 12, marginTop: 8 }}>
+          <Label>CS 报账系统权限</Label>
+          <Switch checked={config?.['billing.cs_access'] === true} onChange={(v) => update('billing.cs_access', v)} />
+          <Text type="secondary" style={{ marginLeft: 8 }}>开启后客服角色可查看报账系统</Text>
         </div>
       </Space>
     </Card>
@@ -627,7 +634,7 @@ const SettingsPage: React.FC = () => {
     { key: 'revenue', label: '💰 流水与价格', children: renderRevenue() },
     { key: 'share', label: '📊 分账规则', children: renderShareTiers() },
     { key: 'withdraw', label: '💸 支取与押金', children: renderWithdraw() },
-    { key: 'timeout', label: '⏰ 超时与关机', children: renderTimeout() },
+    { key: 'timeout', label: '⏰ 超时与权限', children: renderTimeout() },
     { key: 'entertainment', label: '🎮 娱乐模式门槛', children: renderEntertainmentThreshold() },
     { key: 'options', label: '📋 下拉选项', children: renderOptions() },
     { key: 'games', label: '🎮 游戏与段位', children: renderGamesRanks() },
