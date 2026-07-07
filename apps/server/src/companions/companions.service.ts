@@ -254,7 +254,9 @@ export class CompanionsService {
     const isFixed = companion!.studio?.splitMode === 'FIXED';
     let share: number;
     if (isFixed) {
-      share = companion!.revenueShare || 0.8;
+      const clubCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'revenue.club_companion_share' } });
+      const defaultClubShare = (clubCfg?.value as number) ?? 80;
+      share = companion!.revenueShare || (defaultClubShare / 100);
     } else {
       const tiersCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'revenue.share_tiers' } });
       const tiers: Array<{ min: number; max: number | null; companion: number }> =
@@ -304,7 +306,9 @@ export class CompanionsService {
     const isFixed = companion.studio?.splitMode === 'FIXED';
     let share: number;
     if (isFixed) {
-      share = companion.revenueShare || 0.8;
+      const clubCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'revenue.club_companion_share' } });
+      const defaultClubShare = (clubCfg?.value as number) ?? 80;
+      share = companion.revenueShare || (defaultClubShare / 100);
     } else {
       // TIERED: read the lowest tier's companion share from config
       const tiersCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'revenue.share_tiers' } });

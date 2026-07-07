@@ -387,8 +387,10 @@ export class BillingService {
       let studioShare: number;
 
       if (isFixedMode) {
-        // FIXED mode: use companion's personal revenueShare
-        const share = (c.revenueShare as number) ?? 0.8;
+        // FIXED mode: use companion's personal revenueShare, fallback to global config
+        const clubCfg = await this.prisma.systemConfig.findUnique({ where: { key: 'revenue.club_companion_share' } });
+        const defaultClubShare = (clubCfg?.value as number) ?? 80;
+        const share = (c.revenueShare as number) || (defaultClubShare / 100);
         companionPct = Math.round(share * 100);
         companionShare = Math.round(monthlyRevenue * share * 100) / 100;
         studioShare = Math.round((monthlyRevenue - companionShare) * 100) / 100;
