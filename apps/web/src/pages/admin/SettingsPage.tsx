@@ -29,6 +29,7 @@ interface AllConfig {
   'timeout.idle_shutdown': number;
   'entertainment.idle_shutdown': number;
   'entertainment.shutdown_countdown': number;
+  'entertainment.hourly_rate': number;
   'options.contact_results': string[];
   'options.finish_results': string[];
   'options.fail_reasons': string[];
@@ -155,6 +156,7 @@ const SettingsPage: React.FC = () => {
                   'revenue.unlock_threshold': config?.['revenue.unlock_threshold'],
                   'revenue.free_threshold': config?.['revenue.free_threshold'],
                   'revenue.low_warning': config?.['revenue.low_warning'],
+                  'entertainment.hourly_rate': config?.['entertainment.hourly_rate'],
                 },
                 '流水与价格',
               )
@@ -198,6 +200,17 @@ const SettingsPage: React.FC = () => {
             style={{ width: 200 }}
           />
           <Text type="secondary" style={{ marginLeft: 8 }}>低于此金额触发低流水警告</Text>
+        </div>
+        <div>
+          <Label>娱乐模式时薪（元/小时）</Label>
+          <InputNumber
+            min={0}
+            step={10}
+            value={config?.['entertainment.hourly_rate'] ?? 60}
+            onChange={(v) => update('entertainment.hourly_rate', v ?? 60)}
+            style={{ width: 200 }}
+          />
+          <Text type="secondary" style={{ marginLeft: 8 }}>陪玩切换到娱乐模式后每小时扣费金额，默认 ¥60</Text>
         </div>
       </Space>
     </Card>
