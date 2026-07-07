@@ -78,7 +78,7 @@ const CompanionPage: React.FC = () => {
     }
   }, [user?.companionId]);
 
-  useEffect(() => { fetchData(); fetchWallet(); fetchMyCustomers(); }, [fetchData, fetchWallet, fetchMyCustomers]);
+  useEffect(() => { fetchData(); fetchWallet(); fetchMyCustomers(); const t = setInterval(() => { fetchData(); fetchWallet(); }, 30_000); return () => clearInterval(t); }, [fetchData, fetchWallet, fetchMyCustomers]);
 
   // Auto-set AVAILABLE on first load if currently OFFLINE
   useEffect(() => {

@@ -47,7 +47,16 @@ const WorkbenchPage: React.FC<Props> = ({ onStatusChange }) => {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); const t = setInterval(fetchData, 30_000); return () => clearInterval(t); }, [fetchData]);
+
+  // Listen for WebSocket events that should trigger refresh
+  useEffect(() => {
+    if (!window.electronAPI) return;
+    const u1 = window.electronAPI.onWsEvent('ws:statusBroadcast', () => fetchData());
+    const u2 = window.electronAPI.onWsEvent('ws:entertainmentWarning', () => fetchData());
+    const u3 = window.electronAPI.onWsEvent('ws:entertainmentForceIdle', () => fetchData());
+    return () => { u1(); u2(); u3(); };
+  }, [fetchData]);
 
   const switchStatus = async (status: string) => {
     try {
