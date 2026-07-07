@@ -80,6 +80,14 @@ const CompanionPage: React.FC = () => {
 
   useEffect(() => { fetchData(); fetchWallet(); fetchMyCustomers(); const t = setInterval(() => { fetchData(); fetchWallet(); }, 30_000); return () => clearInterval(t); }, [fetchData, fetchWallet, fetchMyCustomers]);
 
+  // Auto-refresh when tab becomes visible (catches data changes from admin panel / Electron)
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') { fetchData(); fetchWallet(); fetchMyCustomers(); } };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => { document.removeEventListener('visibilitychange', onVisible); window.removeEventListener('focus', onVisible); };
+  }, [fetchData, fetchWallet, fetchMyCustomers]);
+
   // Auto-set AVAILABLE on first load if currently OFFLINE
   useEffect(() => {
     if (data?.currentStatus === 'OFFLINE' && user?.companionId) {
