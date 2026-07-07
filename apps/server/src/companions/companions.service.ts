@@ -258,6 +258,49 @@ export class CompanionsService {
     };
   }
 
+  // Check if companion can enter entertainment mode: needs undrawn balance > 0
+  async checkEntertainmentBlocked(companionId: string) {
+    const companion = await this.prisma.companion.findUnique({
+      where: { id: companionId },
+      select: { balance: true, deposit: true, revenueShare: true, studio: { select: { splitMode: true } } },
+    });
+    if (!companion) return { reason: '陪玩不存在' };
+
+    const totalBalance = (companion.balance || 0) + (companion.deposit || 0);
+
+    // Total revenue from all DONE orders
+    const totalRevenue = await this.prisma.order.aggregate({
+      where: { companionId, status: 'DONE' },
+      _sum: { amount: true },
+    });
+    const totalRev = totalRevenue._sum.amount || 0;
+
+    // Split ratio: FIXED uses companion.revenueShare, TIERED defaults 50%
+    const isFixed = companion.studio?.splitMode === 'FIXED';
+    const share = isFixed ? (companion.revenueShare || 0.8) : 0.5;
+
+    // Already withdrawn
+    const withdrawn = await this.prisma.walletTransaction.aggregate({
+      where: { companionId, type: 'WITHDRAW', status: 'APPROVED' },
+      _sum: { amount: true },
+    });
+    const totalWithdrawn = withdrawn._sum.amount || 0;
+
+    const withdrawable = Math.round(totalRev * share * 100) / 100;
+    const remaining = withdrawable - totalWithdrawn;
+
+    if (remaining <= 0) {
+      return {
+        totalRevenue: totalRev,
+        withdrawable,
+        totalWithdrawn,
+        remaining: Math.round(remaining * 100) / 100,
+        totalBalance: Math.round(totalBalance * 100) / 100,
+      };
+    }
+    return null; // not blocked — has undrawn balance
+  }
+
   async requestWithdraw(companionId: string, amount: number) {
     const wallet = await this.getWallet(companionId);
     if (amount > wallet.withdrawable) {

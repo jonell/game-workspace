@@ -361,11 +361,15 @@ const CompanionPage: React.FC = () => {
 
       <Modal title="⚠️ 无法切换娱乐模式" open={!!blockedModal} onCancel={() => setBlockedModal(null)} footer={null}>
         <div style={{ lineHeight: 2.2 }}>
-          <p>您当前不满足娱乐模式的开启条件：</p>
+          <p>您当前没有未支取的余额，无法开启娱乐模式：</p>
           <div style={{ background: '#fff7e6', borderRadius: 8, padding: 12, marginTop: 8 }}>
-            <div>💰 押金：<Text strong style={{ color: blockedModal?.deposit >= (blockedModal?.depositThreshold||0) ? '#52c41a' : '#ff4d4f' }}>¥{blockedModal?.deposit?.toFixed(2)}</Text> / 需要 ¥{blockedModal?.depositThreshold}</div>
-            <div>📊 月流水：<Text strong style={{ color: blockedModal?.revenue >= (blockedModal?.revenueThreshold||0) ? '#52c41a' : '#ff4d4f' }}>¥{blockedModal?.revenue?.toFixed(2)}</Text> / 需要 ¥{blockedModal?.revenueThreshold}</div>
+            <div>📊 总流水：<Text strong>¥{blockedModal?.totalRevenue?.toFixed(2) ?? '0.00'}</Text></div>
+            <div>🔢 可分账金额（{(blockedModal?.totalRevenue > 0 ? Math.round((blockedModal?.withdrawable / blockedModal.totalRevenue) * 100) : 50)}%）：<Text strong>¥{blockedModal?.withdrawable?.toFixed(2) ?? '0.00'}</Text></div>
+            <div>💸 已支取：<Text strong>¥{blockedModal?.totalWithdrawn?.toFixed(2) ?? '0.00'}</Text></div>
+            <div>🏦 剩余未支取：<Text strong style={{ color: '#ff4d4f' }}>¥{blockedModal?.remaining?.toFixed(2) ?? '0.00'}</Text></div>
+            <div style={{ marginTop: 4 }}>💰 账户余额：¥{blockedModal?.totalBalance?.toFixed(2) ?? '0.00'}</div>
           </div>
+          <p style={{ marginTop: 12 }}>请支取部分流水后，有剩余未支取余额即可开启娱乐模式。</p>
           <div style={{ marginTop: 16, textAlign: 'center' }}><Button type="primary" onClick={() => setBlockedModal(null)}>知道了</Button></div>
         </div>
       </Modal>
