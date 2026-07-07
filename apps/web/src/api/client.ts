@@ -49,9 +49,18 @@ http.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // Skip retry for /auth/refresh itself — prevents infinite loop when JWT secrets mismatch
+    if (originalRequest.url?.includes('/auth/refresh')) {
+      sessionStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
+        sessionStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         return Promise.reject(error);
       }
 
