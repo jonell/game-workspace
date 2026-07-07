@@ -148,7 +148,7 @@ export class CompanionsService {
       },
     });
     const onlineCompanions = await this.prisma.companion.findMany({
-      where: { studioId: companion?.studioId, status: { in: ['AVAILABLE', 'WAITING', 'BUSY', 'ENTERTAINMENT'] } },
+      where: { studioId: companion?.studioId, status: { in: ['AVAILABLE', 'BUSY', 'ENTERTAINMENT'] } },
       select: {
         id: true,
         status: true,

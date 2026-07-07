@@ -7,18 +7,16 @@
 
 export const companionStatusConfig: Record<string, { color: string; label: string }> = {
   AVAILABLE:     { color: 'green',  label: '空闲' },
-  WAITING:       { color: 'cyan',   label: '等单' },
-  BUSY:          { color: 'red',    label: '接单中' },
-  ENTERTAINMENT: { color: 'gold',   label: '娱乐中' },
-  RESTING:       { color: 'orange', label: '休息中' },
+  BUSY:          { color: 'red',    label: '接单' },
+  ENTERTAINMENT: { color: 'gold',   label: '娱乐' },
+  RESTING:       { color: 'orange', label: '休息' },
   OFFLINE:       { color: 'default',label: '离线' },
 };
 
 /** 状态排序权重（用于列表排序，空闲排最前） */
 export const STATUS_SORT: Record<string, number> = {
   AVAILABLE: 0,
-  WAITING: 1,
-  BUSY: 2,
+  BUSY: 1,
   ENTERTAINMENT: 3,
   RESTING: 4,
   OFFLINE: 5,

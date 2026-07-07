@@ -19,7 +19,7 @@ interface StatusBlacklistEntry {
   createdAt: string;
 }
 
-const STATUS_OPTIONS = ['AVAILABLE', 'WAITING', 'BUSY', 'ENTERTAINMENT', 'RESTING'];
+const STATUS_OPTIONS = ['AVAILABLE', 'BUSY', 'ENTERTAINMENT', 'RESTING'];
 
 const StatusBlacklistConfigModal: React.FC<Props> = ({ visible, onClose }) => {
   const [companions, setCompanions] = useState<any[]>([]);

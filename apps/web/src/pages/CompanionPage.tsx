@@ -210,8 +210,6 @@ const CompanionPage: React.FC = () => {
             </Col>
           </Row>
           <Row gutter={16} style={{ marginTop: 16 }}>
-            {(['entertainment', 'idle', 'work', 'rest', 'waiting'] as const).map(mode => {
-              const labels = { entertainment: '🎮娱乐', idle: '💼空闲', work: '🔴接单', rest: '🛏️休息', waiting: '⌛等单' };
               return (
                 <Col span={6} key={mode}>
                   <Card size="small" style={{ textAlign: 'center' }}>
@@ -237,7 +235,6 @@ const CompanionPage: React.FC = () => {
               <Tooltip title={belowEntertainment ? `今日流水 ¥${data.todayRevenue}，达标 ¥${entertainmentThreshold} 后可切换` : undefined}>
                 <Button type="default" icon={IconPlay} size="large" onClick={() => switchStatus('ENTERTAINMENT')} block disabled={belowEntertainment}>切换为娱乐中{belowEntertainment ? ` (还差¥${entertainmentThreshold - data.todayRevenue})` : ''}</Button>
               </Tooltip>
-              <Button type="default" icon={IconHourglass} size="large" onClick={() => switchStatus('WAITING')} block>切换为等单</Button>
               <Button type="primary" icon={IconSearch} size="large" onClick={() => switchStatus('AVAILABLE')} block>切换为空闲</Button>
               <Button type="default" icon={IconThunder} size="large" onClick={() => switchStatus('BUSY')} block>切换为接单中</Button>
               <Button type="default" icon={IconCoffee} size="large" onClick={() => switchStatus('RESTING')} block>切换为休息中</Button>

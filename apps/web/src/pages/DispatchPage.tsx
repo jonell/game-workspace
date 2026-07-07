@@ -198,7 +198,6 @@ const CSView: React.FC = () => {
     }), [companions, chatIds]);
 
   const idleCount = companions.filter((c) => c.status === CompanionStatus.AVAILABLE).length;
-  const waitingCount = companions.filter((c) => c.status === CompanionStatus.WAITING).length;
   const busyCount = companions.filter((c) => c.status === CompanionStatus.BUSY).length;
   const entertainCount = companions.filter((c) => c.status === CompanionStatus.ENTERTAINMENT).length;
   const restingCount = companions.filter((c) => c.status === CompanionStatus.RESTING).length;
@@ -431,7 +430,6 @@ const CSView: React.FC = () => {
           <Card title="统计" size="small" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟢 空闲</span><b style={{ color: '#00E676' }}>{idleCount}</b></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🔷 等单</span><b style={{ color: '#06B6D4' }}>{waitingCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🔴 接单中</span><b style={{ color: '#FF4757' }}>{busyCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟡 娱乐中</span><b style={{ color: '#FFD600' }}>{entertainCount}</b></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>🟠 休息中</span><b style={{ color: '#FF9500' }}>{restingCount}</b></div>
