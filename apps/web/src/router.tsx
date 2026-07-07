@@ -5,7 +5,7 @@ import UnifiedDashboard from './pages/admin/UnifiedDashboard';
 import CustomersPage from './pages/CustomersPage';
 import DispatchPage from './pages/DispatchPage';
 import OrdersPage from './pages/OrdersPage';
-import BillingPage from './pages/BillingPage';
+import BillingOverview from './pages/BillingOverview';
 import CompanionsPage from './pages/CompanionsPage';
 import OrderPoolPage from './pages/OrderPoolPage';
 import AdminPcControlPage from './pages/admin/PcControlPage';
@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '', element: <CompanionPage /> },
       { path: 'pool', element: <OrderPoolPage /> },
-      { path: 'billing', element: <BillingPage /> },
+      { path: 'billing', element: <BillingOverview /> },
       { path: 'customers/:id', element: <CustomerDetailPage /> },
       { path: 'customers', element: <CustomersPage /> },
       { path: 'orders', element: <OrdersPage /> },
@@ -56,7 +56,7 @@ export const router = createBrowserRouter([
       { path: 'admin/employees', element: <CompanionsPage /> },
       { path: 'admin/customers/:id', element: <CustomerDetailPage /> },
       { path: 'admin/customers', element: <CustomersPage /> },
-      { path: 'admin/billing', element: <BillingPage /> },
+      { path: 'admin/billing', element: <BillingOverview /> },
       { path: 'admin/pc-control', element: <AdminPcControlPage /> },
       { path: 'admin/review', element: <ReviewPage /> },
       { path: 'admin/orders', element: <OrdersPage /> },
@@ -66,6 +66,7 @@ export const router = createBrowserRouter([
       { path: 'admin/process-kill-log', element: <ProcessKillLogPage /> },
       { path: 'admin/attendance', element: <AttendancePage /> },
       { path: 'admin/settings', element: <SettingsPage /> },
+      { path: 'cs/billing', element: <BillingOverview /> },
       { path: 'cs/dispatch', element: <DispatchPage /> },
       { path: 'cs/orders', element: <OrdersPage /> },
       { path: 'cs/employees', element: <CompanionsPage /> },

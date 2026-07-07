@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RolesGuard, Roles } from '../auth/roles.guard';
 import { BillingService } from './billing.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { WsGateway } from '../ws/ws.gateway';
 import { UserRole } from '@chunlv/shared';
 import type { ApiResponse } from '@chunlv/shared';
 
@@ -25,6 +26,7 @@ export class BillingController {
   constructor(
     private readonly billingService: BillingService,
     private readonly jwtService: JwtService,
+    private readonly wsGateway: WsGateway,
   ) {}
 
   // ── Transactions ──
@@ -215,7 +217,23 @@ export class BillingController {
     const data = await this.billingService.reviewWalletTransaction(
       id, dto.status, req.user.id,
     );
+    this.wsGateway.broadcastToStudio(req.user.studioId, 'billing:updated', {});
     return { code: 200, message: '审核完成', data };
+  }
+
+  // ── Unified Billing Overview ──
+
+  @Get('billing/overview')
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.CS, UserRole.COMPANION)
+  async getOverview(
+    @Req() req: any,
+    @Query('companionId') companionId?: string,
+    @Query('month') month?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const studioId = req.user.studioId;
+    const effectiveCompanionId = req.user.role === 'COMPANION' ? req.user.companionId : companionId;
+    const data = await this.billingService.getOverview(studioId, effectiveCompanionId, month);
+    return { code: 200, message: 'ok', data };
   }
 
   // ── Monthly Settlement ──

@@ -70,7 +70,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: 'grp-overview', type: 'group', label: '经营概览', children: [
       { key: '/admin', icon: IconDashboard, label: '数据看板' },
       { key: '/admin/traffic', icon: IconTraffic, label: '订单池' },
-      { key: '/admin/billing', icon: IconBilling, label: '报账审核' },
+      { key: '/admin/billing', icon: IconBilling, label: '报账系统' },
     ]},
     { key: 'grp-people', type: 'group', label: '人员管理', children: [
       { key: '/owner/orders', icon: IconOrders, label: '订单管理' },
@@ -98,7 +98,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
     { key: '/admin/employees', icon: IconEmployees, label: '员工管理' },
     { key: '/admin/customers', icon: IconCustomers, label: '客户管理' },
     { key: '/admin/traffic', icon: IconTraffic, label: '订单池' },
-    { key: '/admin/billing', icon: IconBilling, label: '报账审核' },
+    { key: '/admin/billing', icon: IconBilling, label: '报账系统' },
     { key: '/admin/pc-control', icon: IconControl, label: '远程控制' },
     { key: '/admin/blacklist', icon: IconStop, label: '进程黑名单' },
     { key: '/admin/whitelist', icon: IconSafety, label: '进程白名单' },
@@ -109,6 +109,7 @@ const roleMenus: Record<UserRole, MenuItemDef[]> = {
   ],
   [UserRole.CS]: [
     { key: '/cs/dispatch', icon: IconDispatch, label: '派单工作台' },
+    { key: '/cs/billing', icon: IconBilling, label: '报账系统' },
     { key: '/cs/orders', icon: IconOrders, label: '订单管理' },
     { key: '/cs/employees', icon: IconEmployees, label: '员工管理' },
     { key: '/admin/pc-control', icon: IconControl, label: '远程控制' },

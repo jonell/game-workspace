@@ -468,4 +468,146 @@ export class BillingService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  // ── Unified Billing Overview ──
+
+  async getOverview(studioId: string, companionId?: string, month?: string) {
+    if (!studioId) {
+      // OWNER may not have a studioId — return all studios' data
+      const firstStudio = await this.prisma.studio.findFirst();
+      if (!firstStudio) return { summary: { todayRevenue:0,totalRevenue:0,totalWithdrawn:0,pendingWithdraw:0,withdrawable:0,deposit:0,splitRatio:50 }, records: [], companions: [] };
+      studioId = firstStudio.id;
+    }
+
+    // All companions in studio (for dropdown)
+    const allCompanions = await this.prisma.companion.findMany({
+      where: { studioId },
+      select: { id: true, user: { select: { username: true } } },
+    });
+
+    // Target companion IDs for aggregation
+    const targetIds = companionId ? [companionId] : allCompanions.map(c => c.id);
+    const companionFilter = companionId
+      ? companionId
+      : { in: targetIds.length > 0 ? targetIds : ['__none__'] };
+
+    // Today's date range
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // Today's DONE revenue
+    const todayAgg = await this.prisma.order.aggregate({
+      where: { studioId, status: 'DONE', companionId: companionFilter, createdAt: { gte: todayStart, lte: todayEnd } },
+      _sum: { amount: true },
+    });
+
+    // All-time DONE revenue
+    const totalAgg = await this.prisma.order.aggregate({
+      where: { studioId, status: 'DONE', companionId: companionFilter },
+      _sum: { amount: true },
+    });
+
+    const totalRevenue = totalAgg._sum.amount ?? 0;
+
+    // Approved WITHDRAW sum (all-time, not month-filtered)
+    const withdrawnAgg = await this.prisma.walletTransaction.aggregate({
+      where: { companionId: companionFilter, type: 'WITHDRAW', status: 'APPROVED' },
+      _sum: { amount: true },
+    });
+
+    // Pending WITHDRAW sum (all-time, not month-filtered)
+    const pendingAgg = await this.prisma.walletTransaction.aggregate({
+      where: { companionId: companionFilter, type: 'WITHDRAW', status: 'PENDING' },
+      _sum: { amount: true },
+    });
+
+    // Deposit
+    let deposit = 0;
+    if (companionId) {
+      const comp = await this.prisma.companion.findUnique({
+        where: { id: companionId }, select: { deposit: true },
+      });
+      deposit = comp?.deposit ?? 0;
+    } else {
+      const depAgg = await this.prisma.companion.aggregate({
+        where: { studioId }, _sum: { deposit: true },
+      });
+      deposit = depAgg._sum.deposit ?? 0;
+    }
+
+    // Split ratio — read from studio config and system configs
+    const studio = await this.prisma.studio.findUnique({
+      where: { id: studioId }, select: { splitMode: true },
+    });
+    let splitRatio = 0;
+
+    if (companionId && totalRevenue > 0) {
+      if (studio?.splitMode === 'FIXED') {
+        const comp = await this.prisma.companion.findUnique({
+          where: { id: companionId }, select: { revenueShare: true },
+        });
+        const clubCfg = await this.prisma.systemConfig.findUnique({
+          where: { key: 'revenue.club_companion_share' },
+        });
+        const defaultShare = (clubCfg?.value as number) ?? 80;
+        const share = (comp?.revenueShare as number) || (defaultShare / 100);
+        splitRatio = Math.round(share * 100);
+      } else {
+        const config = await this.prisma.systemConfig.findUnique({
+          where: { key: 'revenue.share_tiers' },
+        });
+        const tiers: Array<{ min: number; max: number | null; studio: number; companion: number }> =
+          (config?.value as any) ?? [
+            { min: 0, max: 5999.99, studio: 50, companion: 50 },
+            { min: 6000, max: 9999, studio: 40, companion: 60 },
+            { min: 10000, max: null, studio: 30, companion: 70 },
+          ];
+        const tier = tiers.find(
+          t => totalRevenue >= t.min && (t.max === null || totalRevenue <= t.max),
+        ) || tiers[tiers.length - 1];
+        splitRatio = tier.companion;
+      }
+    }
+
+    const totalWithdrawn = withdrawnAgg._sum.amount ?? 0;
+    const pendingWithdraw = pendingAgg._sum.amount ?? 0;
+    const withdrawable = Math.max(0, totalRevenue * (splitRatio / 100) - totalWithdrawn - pendingWithdraw);
+
+    // Records — all wallet transaction types, filtered by month if provided
+    const recordsWhere: any = { companionId: companionFilter };
+    if (month) {
+      const [y, m] = month.split('-').map(Number);
+      recordsWhere.createdAt = { gte: new Date(y, m - 1, 1), lt: new Date(y, m, 1) };
+    }
+
+    const records = await this.prisma.walletTransaction.findMany({
+      where: recordsWhere,
+      include: { companion: { include: { user: { select: { username: true } } } } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      summary: {
+        todayRevenue: todayAgg._sum.amount ?? 0,
+        totalRevenue,
+        totalWithdrawn,
+        pendingWithdraw,
+        withdrawable,
+        deposit,
+        splitRatio,
+      },
+      records: records.map(r => ({
+        id: r.id,
+        type: r.type,
+        amount: r.amount,
+        status: r.status,
+        createdAt: r.createdAt.toISOString(),
+        note: r.note,
+        companionName: r.companion?.user?.username ?? '',
+      })),
+      companions: allCompanions.map(c => ({ id: c.id, name: c.user?.username ?? '' })),
+    };
+  }
 }

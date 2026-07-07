@@ -4,6 +4,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { BillingService } from './billing.service';
 import { BillingController } from './billing.controller';
 import { UploadController } from './upload.controller';
+import { WsModule } from '../ws/ws.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UploadController } from './upload.controller';
     MulterModule.register({
       dest: './uploads/screenshots',
     }),
+    WsModule,
   ],
   controllers: [BillingController, UploadController],
   providers: [BillingService],
