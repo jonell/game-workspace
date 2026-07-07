@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Button, Typography, Tag, Progress, Spin, Space, Modal, InputNumber, Input, Table, message, Statistic, Tooltip, Empty } from 'antd';
-import { DollarOutlined, ClockCircleOutlined, ThunderboltOutlined, PlayCircleOutlined, SearchOutlined, CoffeeOutlined, WalletOutlined, BankOutlined, SwapOutlined, LockOutlined, HourglassOutlined, InfoCircleOutlined, TeamOutlined } from '@ant-design/icons';
+import { DollarOutlined, ClockCircleOutlined, ThunderboltOutlined, PlayCircleOutlined, SearchOutlined, CoffeeOutlined, WalletOutlined, BankOutlined, SwapOutlined, LockOutlined, HourglassOutlined, InfoCircleOutlined, TeamOutlined, ReloadOutlined } from '@ant-design/icons';
 import { companionsApi } from '../api/companions';
 import { customersApi } from '../api/customers';
 import { useAuthStore } from '../stores/authStore';
@@ -181,7 +181,10 @@ const CompanionPage: React.FC = () => {
 
   return (
     <div>
-      <Title level={4}>👤 我的工作台</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={4} style={{ margin: 0 }}>👤 我的工作台</Title>
+        <Button size="small" onClick={() => { fetchData(); fetchWallet(); fetchMyCustomers(); }} icon={React.createElement(ReloadOutlined)}>刷新数据</Button>
+      </div>
       <Row gutter={[16, 16]}>
         <Col span={6}><StatBlock label="今日流水" value={`¥${data.todayRevenue}`} icon={IconDollar} color="#1677ff" /></Col>
         <Col span={6}><StatBlock label="解锁门槛" value={data.isUnlocked ? '✅ 已解锁' : `¥${data.unlockThreshold}`} icon={IconThunder} color={data.isUnlocked ? '#52c41a' : '#faad14'} /></Col>
