@@ -262,6 +262,21 @@ export class OrdersService {
     return this.prisma.order.update({ where: { id: orderId }, data: { amount } });
   }
 
+  async compensateCustomer(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new (require('@nestjs/common').NotFoundException)('订单不存在');
+    const customer = await this.prisma.customer.create({
+      data: {
+        studioId: order.studioId,
+        wechatId: 'BC-'+order.id.slice(0,8),
+        companionId: order.companionId,
+        customerCode: 'BC'+Date.now().toString(36).toUpperCase(),
+        notes: '补单客户（原订单 '+order.id+'）',
+      },
+    });
+    return customer;
+  }
+
   async renew(orderId: string, userId: string) {
     const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) throw new (require('@nestjs/common').NotFoundException)('订单不存在');

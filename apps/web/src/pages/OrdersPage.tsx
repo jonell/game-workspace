@@ -63,7 +63,16 @@ const OrdersPage: React.FC = () => {
           catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
         }}>已添加未同意</Button>
       </>)}
-      {r.status === 'GRABBED' && r.contactStatus === 'not_accepted' && <Tag color="orange">待客户同意</Tag>}
+      {r.status === 'GRABBED' && r.contactStatus === 'not_accepted' && (<>
+        <Tag color="orange">待客户同意</Tag>
+        {r.screenshotUrl && <Image src={r.screenshotUrl} width={40} style={{ marginLeft: 4, borderRadius: 4 }} />}
+        {(user?.role === 'OWNER' || user?.role === 'ADMIN' || user?.role === 'CS') && (
+          <Button size="small" type="primary" style={{ background: '#fa8c16', borderColor: '#fa8c16' }} onClick={async () => {
+            try { await http.post(`/orders/${r.id}/compensate-customer`); message.success('已补客户'); fetch(); }
+            catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
+          }}>补客户</Button>
+        )}
+      </>)}
     </>
   );
 
