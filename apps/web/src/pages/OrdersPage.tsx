@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Button, Select, DatePicker, message, Badge, Tag, Image, Upload } from 'antd';
+import { Typography, Button, Select, DatePicker, message, Badge, Tag, Image, Upload, Modal, Input } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import http from '../api/client';
 import { useAuthStore } from '../stores/authStore';
@@ -92,20 +92,14 @@ const OrdersPage: React.FC = () => {
     catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); }
   };
 
+  const [reassignOrder, setReassignOrder] = useState<any>(null);
+  const [reassignCompanionId, setReassignCompanionId] = useState<string>('');
+  const [reassignNote, setReassignNote] = useState('');
+
   const renderAdminActions = (r: any) => (<>
-    {editingCompanion === r.id ? (
-      <Select size="small" autoFocus value={r.companionId || undefined} style={{ width: 120 }}
-        onBlur={() => setEditingCompanion(null)}
-        onChange={(v) => { reassignCompanion(r.id, v); setEditingCompanion(null); }}>
-        {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
-          <Option key={c.id} value={c.id}>{c.user?.username || c.id.slice(0,6)}</Option>
-        ))}
-      </Select>
-    ) : (
-      <Button type="link" size="small" onClick={() => setEditingCompanion(r.id)}>
-        {r.companion?.user?.username || '归属调整'}
-      </Button>
-    )}
+    <Button type="link" size="small" onClick={() => { setReassignOrder(r); setReassignCompanionId(r.companionId || ''); setReassignNote(''); }}>
+      {r.companion?.user?.username || '归属调整'}
+    </Button>
     {r.contactStatus === 'not_accepted' && r.screenshotUrl && (
       <Image src={r.screenshotUrl} width={40} style={{ borderRadius: 4, cursor: 'pointer', marginLeft: 4 }} preview={{ mask: '查看' }} />
     )}
@@ -147,6 +141,31 @@ const OrdersPage: React.FC = () => {
       <OrderTable dataSource={sorted} loading={loading} unreadMap={unreadMap}
         showCompanion={!isCompanion}
         renderActions={isCompanion ? renderCompanionActions : renderAdminActions} />
+
+      <Modal title="归属调整" open={!!reassignOrder} onOk={async () => {
+        if (!reassignCompanionId) { message.warning('请选择陪玩'); return; }
+        await reassignCompanion(reassignOrder.id, reassignCompanionId);
+        if (reassignNote) await http.put(`/orders/${reassignOrder.id}/contact`, { notes: `[归属调整] ${reassignNote}` });
+        setReassignOrder(null);
+      }} onCancel={() => setReassignOrder(null)} okText="确认调整" cancelText="取消">
+        <div style={{ marginBottom: 12 }}>
+          <Text>当前陪玩：{reassignOrder?.companion?.user?.username || '未分配'}</Text>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <Text>新陪玩：</Text>
+          <Select value={reassignCompanionId || undefined} style={{ width: '100%' }}
+            onChange={(v) => setReassignCompanionId(v)} placeholder="选择新陪玩">
+            {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
+              <Option key={c.id} value={c.id}>{c.user?.username || c.id.slice(0,6)}</Option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Text>备注：</Text>
+          <Input.TextArea rows={3} value={reassignNote} onChange={(e) => setReassignNote(e.target.value)}
+            placeholder="请填写归属调整原因" />
+        </div>
+      </Modal>
     </div>
   );
 };
