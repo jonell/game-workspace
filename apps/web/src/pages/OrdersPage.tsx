@@ -84,13 +84,7 @@ const OrdersPage: React.FC = () => {
 
   // Admin/CS/Owner actions — show screenshot + compensate button + reassign
   const [companions, setCompanions] = useState<any[]>([]);
-  const [editingCompanion, setEditingCompanion] = useState<string | null>(null);
   useEffect(() => { http.get('/companions').then(({data}:any) => setCompanions(data.data||[])).catch(()=>{}); }, []);
-
-  const reassignCompanion = async (orderId: string, newCompanionId: string) => {
-    try { await http.post(`/orders/${orderId}/assign`, { companionId: newCompanionId }); message.success('已重新分配'); fetch(); }
-    catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); }
-  };
 
   const [reassignOrder, setReassignOrder] = useState<any>(null);
   const [reassignCompanionId, setReassignCompanionId] = useState<string>('');
@@ -142,13 +136,18 @@ const OrdersPage: React.FC = () => {
         showCompanion={!isCompanion}
         renderActions={isCompanion ? renderCompanionActions : renderAdminActions} />
 
-      <Modal title="归属调整" open={!!reassignOrder} onOk={async () => {
-        if (!reassignCompanionId) { message.warning('请选择陪玩'); return; }
-        await reassignCompanion(reassignOrder.id, reassignCompanionId);
-        if (reassignNote) await http.put(`/orders/${reassignOrder.id}/contact`, { notes: `[归属调整] ${reassignNote}` });
-        message.success('已重新分配');
-        setReassignOrder(null);
-      }} onCancel={() => setReassignOrder(null)} okText="确认调整" cancelText="取消" destroyOnClose>
+      <Modal title="归属调整" open={!!reassignOrder}
+        onOk={async () => {
+          if (!reassignCompanionId) { message.warning('请选择陪玩'); return Promise.reject(); }
+          try {
+            await http.post(`/orders/${reassignOrder.id}/assign`, { companionId: reassignCompanionId });
+            if (reassignNote) await http.put(`/orders/${reassignOrder.id}/contact`, { notes: `[归属调整] ${reassignNote}` });
+            message.success('已重新分配');
+            fetch();
+            setReassignOrder(null);
+          } catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); return Promise.reject(); }
+        }}
+        onCancel={() => setReassignOrder(null)} okText="确认调整" cancelText="取消" destroyOnClose>
         <div style={{ marginBottom: 12 }}>
           <Text>当前陪玩：{reassignOrder?.companion?.user?.username || '未分配'}</Text>
         </div>
