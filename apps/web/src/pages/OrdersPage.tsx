@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Button, Select, DatePicker, message, Badge, Tag, Image } from 'antd';
+import { Typography, Button, Select, DatePicker, message, Badge, Tag, Image, Upload } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import http from '../api/client';
 import { useAuthStore } from '../stores/authStore';
@@ -58,10 +58,16 @@ const OrdersPage: React.FC = () => {
           try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'added' }); message.success('已标记'); fetch(); }
           catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
         }}>联系方式添加成功</Button>
-        <Button danger size="small" onClick={async () => {
-          try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'not_accepted' }); message.success('已标记'); fetch(); }
-          catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
-        }}>已添加未同意</Button>
+        <Upload showUploadList={false} accept="image/*" beforeUpload={async (file) => {
+          const fd = new FormData(); fd.append('file', file);
+          try { const { data } = await http.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            await http.put(`/orders/${r.id}/contact`, { contactStatus: 'not_accepted', screenshotUrl: data.data?.url || data.url || '' });
+            message.success('截图已上传，等待审核补客户'); fetch();
+          } catch(e:any) { message.error('上传失败'); }
+          return false;
+        }}>
+          <Button danger size="small">📎 已添加未同意</Button>
+        </Upload>
       </>)}
       {r.status === 'GRABBED' && r.contactStatus === 'not_accepted' && (<>
         <Tag color="orange">待客户同意</Tag>
