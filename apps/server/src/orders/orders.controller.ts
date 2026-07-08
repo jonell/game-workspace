@@ -83,7 +83,7 @@ export class OrdersController {
   }
 
   @Post('orders/:id/assign')
-  @Roles(UserRole.CS, UserRole.ADMIN)
+  @Roles(UserRole.CS, UserRole.ADMIN, UserRole.OWNER)
   async assign(@Param('id') id: string, @Body('companionId') companionId: string): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.assign(id, companionId);
     return { code: 200, message: '指派成功', data };
