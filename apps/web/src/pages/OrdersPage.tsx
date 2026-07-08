@@ -82,13 +82,27 @@ const OrdersPage: React.FC = () => {
     </>
   );
 
-  // Admin/CS/Owner actions — show screenshot + compensate button for not_accepted
+  // Admin/CS/Owner actions — show screenshot + compensate button + reassign
+  const [companions, setCompanions] = useState<any[]>([]);
+  useEffect(() => { http.get('/companions').then(({data}:any) => setCompanions(data.data||[])).catch(()=>{}); }, []);
+
+  const reassignCompanion = async (orderId: string, newCompanionId: string) => {
+    try { await http.post(`/orders/${orderId}/assign`, { companionId: newCompanionId }); message.success('已重新分配'); fetch(); }
+    catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); }
+  };
+
   const renderAdminActions = (r: any) => (<>
+    <Select size="small" value={r.companionId || undefined} placeholder="分配陪玩" style={{ width: 100 }}
+      onChange={(v) => reassignCompanion(r.id, v)}>
+      {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
+        <Option key={c.id} value={c.id}>{c.user?.username || c.id.slice(0,6)}</Option>
+      ))}
+    </Select>
     {r.contactStatus === 'not_accepted' && r.screenshotUrl && (
-      <Image src={r.screenshotUrl} width={60} style={{ borderRadius: 4, cursor: 'pointer' }} preview={{ mask: '查看' }} />
+      <Image src={r.screenshotUrl} width={40} style={{ borderRadius: 4, cursor: 'pointer', marginLeft: 4 }} preview={{ mask: '查看' }} />
     )}
     {r.contactStatus === 'not_accepted' && (
-      <Button size="small" type="primary" style={{ background: '#fa8c16', borderColor: '#fa8c16', marginLeft: 8 }}
+      <Button size="small" type="primary" style={{ background: '#fa8c16', borderColor: '#fa8c16', marginLeft: 4 }}
         onClick={async () => {
           try { await http.post(`/orders/${r.id}/compensate-customer`); message.success('已补客户'); fetch(); }
           catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
@@ -123,6 +137,7 @@ const OrdersPage: React.FC = () => {
         </div>
       </div>
       <OrderTable dataSource={sorted} loading={loading} unreadMap={unreadMap}
+        showCompanion={!isCompanion}
         renderActions={isCompanion ? renderCompanionActions : renderAdminActions} />
     </div>
   );
