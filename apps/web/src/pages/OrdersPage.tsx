@@ -98,7 +98,7 @@ const OrdersPage: React.FC = () => {
 
   const renderAdminActions = (r: any) => (<>
     <Button type="link" size="small" onClick={() => { setReassignOrder(r); setReassignCompanionId(r.companionId || ''); setReassignNote(''); }}>
-      {r.companion?.user?.username || '归属调整'}
+      归属调整
     </Button>
     {r.contactStatus === 'not_accepted' && r.screenshotUrl && (
       <Image src={r.screenshotUrl} width={40} style={{ borderRadius: 4, cursor: 'pointer', marginLeft: 4 }} preview={{ mask: '查看' }} />

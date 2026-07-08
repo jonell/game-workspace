@@ -221,9 +221,7 @@ const CustomersPage: React.FC = () => {
       title: '操作', key: 'actions', width: canReassign ? 260 : 160,
       render: (_: unknown, record: Customer) => (
         <Space size="small">
-          {canReassign && <Button type="link" size="small" icon={React.createElement(SwapOutlined)} onClick={() => openReassignModal(record)}>
-            {record.companion?.username || '归属调整'}
-          </Button>}
+          {canReassign && <Button type="link" size="small" icon={React.createElement(SwapOutlined)} onClick={() => openReassignModal(record)}>归属调整</Button>}
           {canManage && <Button type="link" size="small" icon={React.createElement(EditOutlined)} onClick={() => openEditModal(record)}>编辑</Button>}
           {isAdmin && (
             <Popconfirm title="确定删除该客户？" onConfirm={() => handleDelete(record.id)} okText="确定" cancelText="取消">
