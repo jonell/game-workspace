@@ -85,6 +85,7 @@ const CustomersPage: React.FC = () => {
   const [reassigningCustomer, setReassigningCustomer] = useState<Customer | null>(null);
   const [reassigning, setReassigning] = useState(false);
   const [companionOptions, setCompanionOptions] = useState<CompanionOption[]>([]);
+  const [editingCompanion, setEditingCompanion] = useState<string | null>(null);
   const [companionsLoading, setCompanionsLoading] = useState(false);
   const [reassignForm] = Form.useForm();
 
@@ -219,10 +220,17 @@ const CustomersPage: React.FC = () => {
       title: '操作', key: 'actions', width: canReassign ? 260 : 160,
       render: (_: unknown, record: Customer) => (
         <Space size="small">
-          {canReassign && <Select size="small" value={record.companion?.id || undefined} placeholder="分配陪玩" style={{ width: 100 }}
-            onChange={async (v) => { try { await customersApi.reassign(record.id, v); message.success('已重新分配'); fetchCustomers(); } catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); } }}>
-            {companionOptions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (<Option key={c.id} value={c.id}>{c.username||c.id.slice(0,6)}</Option>))}
-          </Select>}
+          {canReassign && (editingCompanion === record.id ? (
+            <Select size="small" autoFocus value={record.companion?.id || undefined} style={{ width: 120 }}
+              onBlur={() => setEditingCompanion(null)}
+              onChange={async (v) => { try { await customersApi.reassign(record.id, v); message.success('已重新分配'); fetchCustomers(); setEditingCompanion(null); } catch(e:any) { message.error(e?.response?.data?.message||'分配失败'); } }}>
+              {companionOptions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (<Option key={c.id} value={c.id}>{c.username||c.id.slice(0,6)}</Option>))}
+            </Select>
+          ) : (
+            <Button type="link" size="small" icon={React.createElement(SwapOutlined)} onClick={() => setEditingCompanion(record.id)}>
+              {record.companion?.username || '归属调整'}
+            </Button>
+          ))}
           {canManage && <Button type="link" size="small" icon={React.createElement(EditOutlined)} onClick={() => openEditModal(record)}>编辑</Button>}
           {isAdmin && (
             <Popconfirm title="确定删除该客户？" onConfirm={() => handleDelete(record.id)} okText="确定" cancelText="取消">

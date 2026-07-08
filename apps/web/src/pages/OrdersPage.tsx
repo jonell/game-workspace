@@ -84,6 +84,7 @@ const OrdersPage: React.FC = () => {
 
   // Admin/CS/Owner actions — show screenshot + compensate button + reassign
   const [companions, setCompanions] = useState<any[]>([]);
+  const [editingCompanion, setEditingCompanion] = useState<string | null>(null);
   useEffect(() => { http.get('/companions').then(({data}:any) => setCompanions(data.data||[])).catch(()=>{}); }, []);
 
   const reassignCompanion = async (orderId: string, newCompanionId: string) => {
@@ -92,12 +93,19 @@ const OrdersPage: React.FC = () => {
   };
 
   const renderAdminActions = (r: any) => (<>
-    <Select size="small" value={r.companionId || undefined} placeholder="分配陪玩" style={{ width: 100 }}
-      onChange={(v) => reassignCompanion(r.id, v)}>
-      {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
-        <Option key={c.id} value={c.id}>{c.user?.username || c.id.slice(0,6)}</Option>
-      ))}
-    </Select>
+    {editingCompanion === r.id ? (
+      <Select size="small" autoFocus value={r.companionId || undefined} style={{ width: 120 }}
+        onBlur={() => setEditingCompanion(null)}
+        onChange={(v) => { reassignCompanion(r.id, v); setEditingCompanion(null); }}>
+        {companions.filter((c:any) => c.status !== 'OFFLINE').map((c:any) => (
+          <Option key={c.id} value={c.id}>{c.user?.username || c.id.slice(0,6)}</Option>
+        ))}
+      </Select>
+    ) : (
+      <Button type="link" size="small" onClick={() => setEditingCompanion(r.id)}>
+        {r.companion?.user?.username || '归属调整'}
+      </Button>
+    )}
     {r.contactStatus === 'not_accepted' && r.screenshotUrl && (
       <Image src={r.screenshotUrl} width={40} style={{ borderRadius: 4, cursor: 'pointer', marginLeft: 4 }} preview={{ mask: '查看' }} />
     )}
