@@ -225,14 +225,16 @@ const OrdersPage: React.FC = () => {
               try { await http.put(`/orders/${r.id}/contact`, { contactStatus: 'added' }); message.success('已标记'); fetch(); }
               catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); }
             }}>联系方式添加成功</Button>
-            <Upload showUploadList={false} beforeUpload={async (file: File) => {
+            <Upload showUploadList={false} accept="image/*" beforeUpload={async (file) => {
               const fd = new FormData(); fd.append('file', file);
               try { const { data } = await http.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
                 await http.put(`/orders/${r.id}/contact`, { contactStatus: 'not_accepted', screenshotUrl: data.data?.url || data.url || '' });
                 message.success('截图已上传，等待审核补客户'); fetch();
               } catch(e:any) { message.error('上传失败'); }
               return false;
-            }}><Button danger size="small" icon={React.createElement(UploadOutlined)}>已添加未同意</Button></Upload>
+            }}>
+              <span style={{ cursor: 'pointer', color: '#ff4d4f', fontSize: 14, marginRight: 8 }}>📎 已添加未同意</span>
+            </Upload>
           </>)}
           {r.status === 'GRABBED' && r.contactStatus === 'added' && (<>
             <Button type="primary" size="small" onClick={async () => { try { await http.post(`/orders/${r.id}/confirm`); message.success('已开始服务'); fetch(); } catch(e:any) { message.error(e?.response?.data?.message||'操作失败'); } }}>开始服务</Button>
