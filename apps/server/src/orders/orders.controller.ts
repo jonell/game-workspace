@@ -35,7 +35,7 @@ export class OrdersController {
 
   @Post('orders/:id/grab')
   @Roles(UserRole.COMPANION)
-  async grab(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async grab(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.grab(id, req.user.companionId);
     return { code: 200, message: '抢单成功', data };
   }
@@ -63,14 +63,14 @@ export class OrdersController {
 
   @Post('orders/:id/renew')
   @Roles(UserRole.COMPANION)
-  async renew(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async renew(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.renew(id, req.user.id);
     return { code: 200, message: '已续单', data };
   }
 
   @Post('orders/:id/republish')
   @Roles(UserRole.COMPANION)
-  async republish(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async republish(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.republish(id, req.user.id);
     return { code: 200, message: '已发布到抢单池', data };
   }
@@ -91,7 +91,7 @@ export class OrdersController {
 
   @Post('orders/:id/confirm')
   @Roles(UserRole.COMPANION)
-  async confirm(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async confirm(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.confirm(id, req.user.companionId);
     return { code: 200, message: '确认成功', data };
   }
@@ -105,7 +105,7 @@ export class OrdersController {
 
   @Post('orders/:id/complete-billing')
   @Roles(UserRole.COMPANION)
-  async completeWithBilling(@Param('id') id: string, @Body() dto: any): Promise<ApiResponse<unknown>> {
+  async completeWithBilling(@Param('id') id: string, @Req() req: any, @Body() dto: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.completeWithBilling(id, req.user.companionId, dto);
     return { code: 200, message: '服务结算完成', data };
   }
@@ -119,42 +119,42 @@ export class OrdersController {
 
   @Post('orders/:id/call-partner')
   @Roles(UserRole.COMPANION)
-  async callPartner(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async callPartner(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.callPartner(id, req.user.companionId);
     return { code: 200, message: 'ok', data };
   }
 
   @Post('orders/:id/accept-partner')
   @Roles(UserRole.COMPANION)
-  async acceptPartner(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async acceptPartner(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.acceptPartner(id, req.user.companionId);
     return { code: 200, message: 'ok', data };
   }
 
   @Post('orders/:id/accept-assignment')
   @Roles(UserRole.COMPANION)
-  async acceptAssignment(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async acceptAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.acceptAssignment(id, req.user.companionId);
     return { code: 200, message: '已接单', data };
   }
 
   @Post('orders/:id/decline-assignment')
   @Roles(UserRole.COMPANION)
-  async declineAssignment(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async declineAssignment(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.declineAssignment(id, req.user.companionId);
     return { code: 200, message: '已拒绝', data };
   }
 
   @Post('orders/:id/quick-grab')
   @Roles(UserRole.COMPANION)
-  async quickGrab(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async quickGrab(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.quickGrab(id, req.user.companionId);
     return { code: 200, message: '抢单成功', data };
   }
 
   @Post('orders/:id/mark-ready')
   @Roles(UserRole.COMPANION)
-  async markReady(@Param('id') id: string): Promise<ApiResponse<unknown>> {
+  async markReady(@Param('id') id: string, @Req() req: any): Promise<ApiResponse<unknown>> {
     const data = await this.ordersService.markReady(id, req.user.companionId);
     return { code: 200, message: '已准备就绪', data };
   }
